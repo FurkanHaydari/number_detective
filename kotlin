@@ -1,0 +1,129 @@
+import kotlin.random.Random
+
+class Game {
+    private val numbers = mutableListOf(0, 1, 2, 3, 4, 5, 6, 7, 8, 9)
+    private val pathSelection = Random.nextInt(1, 4)
+
+    private val firstAChoices = listOf("xax", "xxa")
+    private val firstBChoices = listOf("bxx", "xxb")
+    private val firstCChoices = listOf("cxx", "xcx")
+
+    private val onlyAAndItIsCorrectChoices = listOf("axx")
+    private val onlyBAndItIsCorrectChoices = listOf("xbx")
+    private val onlyCAndItIsCorrectChoices = listOf("xxc")
+
+    private val abFalse = listOf("bax", "bxa", "xab")
+    private val acFalse = listOf("cax", "xca", "cxa")
+    private val cbFalse = listOf("bcx", "cxb", "xcb")
+
+    private val aTrueButRemainCFalse = listOf("acx")
+    private val aTrueButRemainBFalse = listOf("axb")
+
+    private val bTrueButRemainAFalse = listOf("xba")
+    private val bTrueButRemainCFalse = listOf("cbx")
+
+    private val cTrueButRemainAFalse = listOf("xac")
+    private val cTrueButRemainBFalse = listOf("bxc")
+
+    private lateinit var firstChoices: List<String>
+    private lateinit var secondChoices: List<String>
+    private lateinit var thirdChoices: List<String>
+    private lateinit var fourthChoices: List<String>
+    private lateinit var fifthChoices: List<String>
+
+    private var firstHint = ""
+    private var secondHint = ""
+    private var thirdHint = ""
+    private var fourthHint = ""
+    private var fifthHint = ""
+
+    private var hundredDigit = 0
+    private var tenDigit = 0
+    private var oneDigit = 0
+
+    fun play() {
+        generateNumberWith3Digits()
+        generateHintChoices()
+        generateHints()
+        displayHints()
+        generateReadableHints()
+        displayHints()
+    }
+
+    private fun generateNumberWith3Digits() {
+        hundredDigit = numbers.random().also { numbers.remove(it) }
+        tenDigit = numbers.random().also { numbers.remove(it) }
+        oneDigit = numbers.random().also { numbers.remove(it) }
+
+        val number = hundredDigit * 100 + tenDigit * 10 + oneDigit
+        println(number)
+    }
+
+    private fun generateHintChoices() {
+        val temp = Random.nextBoolean()
+        when (pathSelection) {
+            1 -> {
+                firstChoices = firstAChoices
+                secondChoices = onlyAAndItIsCorrectChoices
+                thirdChoices = if (temp) abFalse else acFalse
+                fourthChoices = cbFalse
+                fifthChoices = if (temp) bTrueButRemainCFalse else cTrueButRemainBFalse
+            }
+
+            2 -> {
+                firstChoices = firstBChoices
+                secondChoices = onlyBAndItIsCorrectChoices
+                thirdChoices = if (temp) abFalse else cbFalse
+                fourthChoices = acFalse
+                fifthChoices = if (temp) aTrueButRemainCFalse else cTrueButRemainAFalse
+            }
+
+            3 -> {
+                firstChoices = firstCChoices
+                secondChoices = onlyCAndItIsCorrectChoices
+                thirdChoices = if (temp) acFalse else cbFalse
+                fourthChoices = abFalse
+                fifthChoices = if (temp) aTrueButRemainBFalse else bTrueButRemainAFalse
+            }
+        }
+    }
+
+    private fun generateHints() {
+        firstHint = firstChoices.random()
+        secondHint = secondChoices.random()
+        thirdHint = thirdChoices.random()
+        fourthHint = fourthChoices.random()
+        fifthHint = fifthChoices.random()
+    }
+
+    private fun generateReadableHints() {
+        firstHint = makeReadable(firstHint)
+        secondHint = makeReadable(secondHint)
+        thirdHint = makeReadable(thirdHint)
+        fourthHint = makeReadable(fourthHint)
+        fifthHint = makeReadable(fifthHint)
+    }
+
+    private fun makeReadable(hint: String): String {
+        val switch = mapOf(
+            'x' to { numbers.random().toString() },
+            'a' to { hundredDigit.toString() },
+            'b' to { tenDigit.toString() },
+            'c' to { oneDigit.toString() }
+        )
+        return hint.map { switch[it]?.invoke() ?: "" }.joinToString("")
+    }
+
+    private fun displayHints() {
+        println("First hint: $firstHint -> One number is correct but wrongly placed.")
+        println("Second hint: $secondHint -> One number is correct and correctly placed.")
+        println("Third hint: $thirdHint -> Two numbers are correct but wrongly placed.")
+        println("Fourth hint: $fourthHint -> Two numbers are correct but wrongly placed.")
+        println("Fifth hint: $fifthHint -> Two numbers are correct but one of them is correctly placed.")
+    }
+}
+
+fun main() {
+    val game = Game()
+    game.play()
+}

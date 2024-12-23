@@ -20,9 +20,14 @@ class Game:
         self.ac_false = ["cax","xca","cxa"]
         self.cb_false = ["bcx","cxb","xcb"]
 
-        self.a_true_but_remain_false = ["acx","axb"]
-        self.b_true_but_remain_false = ["xba","cbx"]
-        self.c_true_but_remain_false = ["xac","bxc"]
+        self.a_true_but_remain_c_false = ["acx"]
+        self.a_true_but_remain_b_false = ["axb"]
+
+        self.b_true_but_remain_a_false = ["xba"]
+        self.b_true_but_remain_c_false = ["cbx"]
+        
+        self.c_true_but_remain_a_false = ["xac"]
+        self.c_true_but_remain_b_false = ["bxc"]
 
         self.first_choices,self.second_choices,self.third_choices,self.fourth_choices,self.fifth_choices=[],[],[],[],[]
         self.first_hint,self.second_hint,self.third_hint,self.fourth_hint,self.fifth_hint="","","","",""
@@ -73,13 +78,29 @@ class Game:
 #
 #   */
 
+        temp = random.choice([True, False])
 
-        self.first_choices=self.first_a_choices if self.path_selection == 1 else self.first_b_choices if self.path_selection == 2 else self.first_c_choices
-        self.second_choices=self.only_a_and_it_is_correct_choices if self.path_selection == 1 else self.only_b_and_it_is_correct_choices if self.path_selection == 2 else self.only_c_and_it_is_correct_choices
-        self.third_choices=(self.ab_false if random.choice([True,False]) is True else self.ac_false)
-        self.fourth_choices=self.cb_false
-        self.fifth_choices=self.a_true_but_remain_false if self.path_selection == 1 else self.b_true_but_remain_false if self.path_selection == 2 else self.c_true_but_remain_false
-    
+        if self.path_selection == 1:
+            self.first_choices=self.first_a_choices
+            self.second_choices=self.only_a_and_it_is_correct_choices
+            self.third_choices=(self.ab_false if temp is True else self.ac_false)
+            self.fourth_choices=self.cb_false
+            self.fifth_choices=self.b_true_but_remain_c_false if temp is True else self.c_true_but_remain_b_false
+        
+        elif self.path_selection == 2:
+            self.first_choices= self.first_b_choices
+            self.second_choices= self.only_b_and_it_is_correct_choices
+            self.third_choices=(self.ab_false if temp is True else self.cb_false)
+            self.fourth_choices=self.ac_false
+            self.fifth_choices=self.a_true_but_remain_c_false if temp is True else self.c_true_but_remain_a_false
+        else:
+            self.first_choices= self.first_c_choices
+            self.second_choices= self.only_c_and_it_is_correct_choices
+            self.third_choices=(self.ac_false if temp is True else self.cb_false)
+            self.fourth_choices=self.ab_false
+            self.fifth_choices=self.a_true_but_remain_b_false if temp is True else self.b_true_but_remain_a_false
+
+
     def generate_hints(self):
         self.first_hint = random.choice(self.first_choices)
         self.second_hint = random.choice(self.second_choices)
@@ -117,11 +138,11 @@ class Game:
 
 
     def display_hints(self):
-        print(f"First hint: {self.first_hint}")
-        print(f"Second hint: {self.second_hint}")
-        print(f"Third hint: {self.third_hint}")
-        print(f"Fourth hint: {self.fourth_hint}")
-        print(f"Fifth hint: {self.fifth_hint}")
+        print(f"First hint: {self.first_hint} -> One number is correct but wrongly placed.")
+        print(f"Second hint: {self.second_hint} -> One numbers are correct and correctly placed.")
+        print(f"Third hint: {self.third_hint}" + " -> Two numbers are correct but wrongly placed.")
+        print(f"Fourth hint: {self.fourth_hint}" + " -> Two numbers are correct but wrongly placed.")
+        print(f"Fifth hint: {self.fifth_hint}" + " -> Two numbers are correct but one of them is correctly placed.")
 
 
 def main():
