@@ -1,0 +1,18 @@
+Versiyon 1.0.0 - İlk Sürüm
+
+Yeni Özellikler:
+• Tek oyunculu mod
+• Çok oyunculu rekabet sistemi
+• Günlük görevler ve ödüller
+• Liderlik tablosu
+• Başarımlar
+• Ses efektleri ve animasyonlar
+• Modern ve kullanıcı dostu arayüz
+
+Optimizasyonlar:
+• Performans iyileştirmeleri
+• Bellek kullanımı optimizasyonları
+• Pil tüketimi optimizasyonları
+
+Bilinen Sorunlar:
+• Yok
