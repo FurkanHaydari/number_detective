@@ -31,6 +31,8 @@ class GameActivity : AppCompatActivity() {
     private var currentRow = 0
     private var currentCol = 0
     private var currentScore = 1000
+    private val usedDigits = mutableSetOf<Int>()
+    private val numpadButtons = mutableMapOf<Int, MaterialButton>()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -110,32 +112,36 @@ class GameActivity : AppCompatActivity() {
 
     private fun setupNumpad() {
         numpad.removeAllViews()
-        val numbers = (1..9).toList() + listOf(0)
-        
-        numbers.forEach { number ->
+        for (i in 0..9) {
             val button = MaterialButton(this).apply {
-                text = number.toString()
-                textSize = 22f
-                setTextColor(ContextCompat.getColor(context, R.color.white))
-                setBackgroundResource(R.drawable.button_background)
+                id = View.generateViewId()
+                text = i.toString()
+                textSize = 24f
                 layoutParams = GridLayout.LayoutParams().apply {
                     width = resources.getDimensionPixelSize(R.dimen.numpad_button_size)
                     height = resources.getDimensionPixelSize(R.dimen.numpad_button_size)
-                    setMargins(4, 4, 4, 4)
+                    setMargins(8, 8, 8, 8)
                 }
-                setOnClickListener { onNumberClick(number) }
-                elevation = 4f
-                strokeWidth = 2
-                setStrokeColor(ColorStateList.valueOf(ContextCompat.getColor(context, R.color.neonBlue)))
+                setBackgroundResource(R.drawable.button_background)
+                setOnClickListener { onNumberClick(i) }
             }
+            if (i == 0) {
+                (button.layoutParams as GridLayout.LayoutParams).columnSpec = GridLayout.spec(1)
+            }
+            numpadButtons[i] = button
             numpad.addView(button)
         }
     }
 
     private fun onNumberClick(number: Int) {
-        if (currentCol < 3) {
+        if (currentCol < 3 && !usedDigits.contains(number)) {
             val cell = guessGrid.findViewWithTag<TextView>("cell_${currentRow}_$currentCol")
             cell.text = number.toString()
+            usedDigits.add(number)
+            
+            // Disable the clicked button
+            numpadButtons[number]?.isEnabled = false
+            
             currentCol++
             
             if (currentCol == 3) {
@@ -149,6 +155,12 @@ class GameActivity : AppCompatActivity() {
                 viewModel.makeGuess(guess.toString().toInt())
                 currentCol = 0
                 currentRow++
+                
+                // Reset used digits and enable all buttons for next guess
+                usedDigits.clear()
+                numpadButtons.values.forEach { button ->
+                    button.isEnabled = true
+                }
             }
         }
     }
