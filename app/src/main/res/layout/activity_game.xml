@@ -9,139 +9,91 @@
         android:id="@+id/titleText"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
+        android:layout_marginTop="24dp"
         android:text="NUMBER DETECTIVE"
         android:textColor="@color/colorText"
         android:textSize="24sp"
         android:textStyle="bold"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
     <View
         android:id="@+id/divider"
-        android:layout_width="0dp"
+        android:layout_width="match_parent"
         android:layout_height="2dp"
         android:layout_marginTop="16dp"
         android:background="@color/colorBorder"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/titleText" />
 
     <GridLayout
         android:id="@+id/guessGrid"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="32dp"
+        android:layout_marginTop="24dp"
         android:columnCount="3"
         android:rowCount="6"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/divider">
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/divider" />
 
-        <!-- Grid cells will be added programmatically -->
-
-    </GridLayout>
-
-    <TextView
-        android:id="@+id/hintsContainer"
-        android:layout_width="0dp"
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/numpadLayout"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginHorizontal="16dp"
-        android:layout_marginTop="32dp"
+        android:layout_marginBottom="24dp"
+        android:padding="16dp"
+        app:layout_constraintBottom_toTopOf="@id/submitButton">
+
+        <GridLayout
+            android:id="@+id/numpad"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:columnCount="3"
+            android:rowCount="4"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintRight_toRightOf="parent"
+            app:layout_constraintTop_toTopOf="parent">
+
+            <!-- Numbers will be added programmatically -->
+        </GridLayout>
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+    <com.google.android.material.textfield.TextInputEditText
+        android:id="@+id/guessInput"
+        android:layout_width="200dp"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="16dp"
+        android:hint="Enter 3-digit code"
+        android:inputType="number"
+        android:maxLength="3"
         android:textAlignment="center"
         android:textColor="@color/colorText"
-        android:textSize="16sp"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/guessGrid" />
-
-    <com.google.android.material.textfield.TextInputLayout
-        android:id="@+id/guessInputLayout"
-        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginHorizontal="32dp"
-        android:layout_marginTop="16dp"
-        android:hint="Enter 3-digit code"
         android:textColorHint="@color/colorTextSecondary"
-        app:boxStrokeColor="@color/colorText"
-        app:hintTextColor="@color/colorText"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/hintsContainer">
-
-        <com.google.android.material.textfield.TextInputEditText
-            android:id="@+id/guessInput"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:gravity="center"
-            android:inputType="number"
-            android:maxLength="3"
-            android:textColor="@color/colorText"
-            android:textSize="18sp" />
-
-    </com.google.android.material.textfield.TextInputLayout>
+        app:layout_constraintBottom_toTopOf="@id/submitButton"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent" />
 
     <com.google.android.material.button.MaterialButton
         android:id="@+id/submitButton"
-        android:layout_width="wrap_content"
+        android:layout_width="200dp"
         android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
-        android:paddingHorizontal="32dp"
-        android:paddingVertical="12dp"
+        android:layout_marginBottom="24dp"
         android:text="SUBMIT"
-        android:textColor="@color/colorText"
-        android:textSize="16sp"
-        app:backgroundTint="@color/colorCorrect"
-        app:cornerRadius="4dp"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/guessInputLayout" />
-
-    <LinearLayout
-        android:id="@+id/statsContainer"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="24dp"
-        android:gravity="center"
-        android:orientation="vertical"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/submitButton">
-
-        <TextView
-            android:id="@+id/attemptsText"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:textColor="@color/colorTextSecondary"
-            android:textSize="16sp" />
-
-        <TextView
-            android:id="@+id/scoreText"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
-            android:textColor="@color/colorTextSecondary"
-            android:textSize="16sp" />
-
-    </LinearLayout>
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent" />
 
     <com.google.android.material.button.MaterialButton
-        android:id="@+id/newGameButton"
-        style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+        android:id="@+id/backButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="24dp"
-        android:paddingHorizontal="32dp"
-        android:paddingVertical="12dp"
-        android:text="NEW GAME"
-        android:textColor="@color/colorText"
-        android:textSize="16sp"
-        app:cornerRadius="4dp"
-        app:strokeColor="@color/colorText"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/statsContainer" />
+        android:layout_marginStart="16dp"
+        android:text="Back"
+        android:visibility="gone"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintTop_toTopOf="@id/titleText"
+        app:layout_constraintBottom_toBottomOf="@id/titleText" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
