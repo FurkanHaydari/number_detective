@@ -1,36 +1,34 @@
 package com.brainfocus.numberdetective
 
 import android.os.Bundle
+import android.view.MenuItem
+import android.view.View
 import android.widget.TextView
-import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.brainfocus.numberdetective.adapter.MissionsAdapter
-import com.brainfocus.numberdetective.missions.MissionManager
-import com.brainfocus.numberdetective.utils.PreferencesManager
+import com.brainfocus.numberdetective.base.BaseActivity
 import com.brainfocus.numberdetective.utils.SoundManager
 import com.brainfocus.numberdetective.utils.SoundType
-import com.google.android.material.snackbar.Snackbar
-import java.util.*
+import com.brainfocus.numberdetective.viewmodel.MissionsViewModel
+import org.koin.androidx.viewmodel.ext.android.viewModel
 
-class MissionsActivity : AppCompatActivity() {
-    private lateinit var missionManager: MissionManager
-    private lateinit var prefsManager: PreferencesManager
-    private lateinit var soundManager: SoundManager
-    private lateinit var missionsAdapter: MissionsAdapter
+class MissionsActivity : BaseActivity() {
+    override val viewModel: MissionsViewModel by viewModel()
+    
     private lateinit var resetTimeText: TextView
+    private lateinit var recyclerView: RecyclerView
+    private lateinit var adapter: MissionsAdapter
+    private lateinit var emptyView: View
+    private lateinit var soundManager: SoundManager
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_missions)
-
-        missionManager = MissionManager.getInstance(this)
-        prefsManager = PreferencesManager.getInstance(this)
-        soundManager = SoundManager.getInstance(this)
-
+        
         initializeViews()
         setupRecyclerView()
-        updateResetTime()
+        observeMissionsState()
     }
 
     private fun initializeViews() {
@@ -38,60 +36,55 @@ class MissionsActivity : AppCompatActivity() {
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
         
         resetTimeText = findViewById(R.id.resetTimeText)
+        recyclerView = findViewById(R.id.missionsRecyclerView)
+        emptyView = findViewById(R.id.emptyView)
+        soundManager = SoundManager.getInstance(this)
     }
 
     private fun setupRecyclerView() {
-        val recyclerView = findViewById<RecyclerView>(R.id.missionsRecyclerView)
-        
-        missionsAdapter = MissionsAdapter { mission ->
+        adapter = MissionsAdapter { mission ->
             soundManager.playSound(SoundType.BUTTON_CLICK)
-            
-            missionManager.claimReward(mission.id)?.let { reward ->
-                // Ödülü kullanıcının puanına ekle
-                val currentScore = prefsManager.getHighScore()
-                prefsManager.updateHighScore(currentScore + reward)
-                
-                showMessage("Tebrikler! $reward puan kazandınız!")
-            }
+            viewModel.claimReward(mission)
         }
         
         recyclerView.apply {
             layoutManager = LinearLayoutManager(this@MissionsActivity)
-            adapter = missionsAdapter
+            adapter = this@MissionsActivity.adapter
         }
-        
-        updateMissions()
     }
 
-    private fun updateMissions() {
-        val missions = missionManager.getDailyMissions()
-        missionsAdapter.updateMissions(missions)
-    }
-
-    private fun updateResetTime() {
-        val calendar = Calendar.getInstance()
-        val nextDay = calendar.apply {
-            add(Calendar.DAY_OF_MONTH, 1)
-            set(Calendar.HOUR_OF_DAY, 0)
-            set(Calendar.MINUTE, 0)
-            set(Calendar.SECOND, 0)
+    private fun observeMissionsState() {
+        collectFlow(viewModel.missionsState) { state ->
+            when (state) {
+                is MissionsViewModel.MissionsState.Loading -> {
+                    recyclerView.visibility = View.GONE
+                    emptyView.visibility = View.GONE
+                }
+                is MissionsViewModel.MissionsState.Success -> {
+                    recyclerView.visibility = View.VISIBLE
+                    emptyView.visibility = if (state.missions.isEmpty()) View.VISIBLE else View.GONE
+                    adapter.updateMissions(state.missions)
+                }
+                is MissionsViewModel.MissionsState.Error -> {
+                    recyclerView.visibility = View.GONE
+                    emptyView.visibility = View.VISIBLE
+                    showMessage(state.message)
+                }
+            }
         }
-        
-        val currentTime = System.currentTimeMillis()
-        val timeUntilReset = nextDay.timeInMillis - currentTime
-        
-        val hoursLeft = timeUntilReset / (1000 * 60 * 60)
-        val minutesLeft = (timeUntilReset % (1000 * 60 * 60)) / (1000 * 60)
-        
-        resetTimeText.text = "Yeni görevlere kalan süre: ${hoursLeft}s ${minutesLeft}d"
+
+        collectFlow(viewModel.resetTimeState) { timeText ->
+            resetTimeText.text = timeText
+        }
     }
 
-    private fun showMessage(message: String) {
-        Snackbar.make(findViewById(android.R.id.content), message, Snackbar.LENGTH_LONG).show()
-    }
-
-    override fun onSupportNavigateUp(): Boolean {
-        onBackPressed()
-        return true
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        return when (item.itemId) {
+            android.R.id.home -> {
+                onBackPressed()
+                true
+            }
+            else -> super.onOptionsItemSelected(item)
+        }
     }
 }
