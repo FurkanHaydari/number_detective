@@ -7,6 +7,7 @@ import android.view.Gravity
 import android.view.View
 import android.view.ViewGroup
 import android.widget.GridLayout
+import android.widget.ImageButton
 import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.activity.OnBackPressedCallback
@@ -16,6 +17,8 @@ import androidx.lifecycle.lifecycleScope
 import androidx.viewpager2.widget.ViewPager2
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.progressindicator.LinearProgressIndicator
+import com.google.android.material.tabs.TabLayout
+import com.google.android.material.tabs.TabLayoutMediator
 import kotlinx.coroutines.launch
 import org.koin.androidx.viewmodel.ext.android.viewModel
 import com.brainfocus.numberdetective.viewmodel.GameViewModel
@@ -27,7 +30,9 @@ class GameActivity : AppCompatActivity() {
     private lateinit var guessGrid: GridLayout
     private lateinit var numpad: GridLayout
     private lateinit var hintsViewPager: ViewPager2
-    private lateinit var hintAdapter: HintPagerAdapter
+    private lateinit var hintTabLayout: TabLayout
+    private lateinit var prevHintButton: ImageButton
+    private lateinit var nextHintButton: ImageButton
     private lateinit var attemptsProgress: LinearProgressIndicator
     private lateinit var scoreText: TextView
     private var currentRow = 0
@@ -35,6 +40,7 @@ class GameActivity : AppCompatActivity() {
     private var currentScore = 1000
     private val usedDigits = mutableSetOf<Int>()
     private val numpadButtons = mutableMapOf<Int, MaterialButton>()
+    private lateinit var hintAdapter: HintPagerAdapter
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -60,6 +66,9 @@ class GameActivity : AppCompatActivity() {
         guessGrid = findViewById(R.id.guessGrid)
         numpad = findViewById(R.id.numpad)
         hintsViewPager = findViewById(R.id.hintsViewPager)
+        hintTabLayout = findViewById(R.id.hintTabLayout)
+        prevHintButton = findViewById<ImageButton>(R.id.prevHintButton)
+        nextHintButton = findViewById<ImageButton>(R.id.nextHintButton)
         attemptsProgress = findViewById(R.id.attemptsProgress)
         scoreText = findViewById(R.id.scoreText)
 
@@ -92,6 +101,35 @@ class GameActivity : AppCompatActivity() {
     private fun setupHints() {
         hintAdapter = HintPagerAdapter()
         hintsViewPager.adapter = hintAdapter
+        
+        // Connect TabLayout with ViewPager2
+        TabLayoutMediator(hintTabLayout, hintsViewPager) { tab, _ ->
+            tab.icon = ContextCompat.getDrawable(this, R.drawable.tab_indicator)
+        }.attach()
+
+        // Setup navigation buttons
+        prevHintButton.setOnClickListener {
+            if (hintsViewPager.currentItem > 0) {
+                hintsViewPager.currentItem = hintsViewPager.currentItem - 1
+            }
+        }
+
+        nextHintButton.setOnClickListener {
+            if (hintsViewPager.currentItem < hintAdapter.itemCount - 1) {
+                hintsViewPager.currentItem = hintsViewPager.currentItem + 1
+            }
+        }
+
+        // Update button states when page changes
+        hintsViewPager.registerOnPageChangeCallback(object : ViewPager2.OnPageChangeCallback() {
+            override fun onPageSelected(position: Int) {
+                prevHintButton.isEnabled = position > 0
+                nextHintButton.isEnabled = position < hintAdapter.itemCount - 1
+                
+                prevHintButton.alpha = if (position > 0) 1.0f else 0.5f
+                nextHintButton.alpha = if (position < hintAdapter.itemCount - 1) 1.0f else 0.5f
+            }
+        })
         
         // Initial empty state - will be populated by updatePlayingState
         val initialHints = listOf(
