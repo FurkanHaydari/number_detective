@@ -3,99 +3,96 @@ package com.brainfocus.numberdetective.data.repository
 import com.brainfocus.numberdetective.data.dao.GameResultDao
 import com.brainfocus.numberdetective.data.entities.GameResult
 import com.brainfocus.numberdetective.utils.ErrorHandler
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
-import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.flowOn
+import kotlinx.coroutines.withContext
 
 class GameRepository(
     private val gameResultDao: GameResultDao,
     private val errorHandler: ErrorHandler
 ) {
-    suspend fun saveGameResult(result: GameResult) {
-        try {
-            gameResultDao.insert(result)
-        } catch (e: Exception) {
-            errorHandler.handleError(
-                ErrorHandler.AppError.DatabaseError(
-                    "Error saving game result",
-                    e
-                ),
-                null
-            )
-        }
-    }
-
-    fun getGameResults(): Flow<List<GameResult>> = flow {
-        gameResultDao.getAllResults()
+    fun getHighScores(limit: Int = 10): Flow<List<GameResult>> {
+        return gameResultDao.getTopScores(limit)
             .catch { e ->
                 errorHandler.handleError(
-                    ErrorHandler.AppError.DatabaseError(
-                        "Error fetching game results",
-                        e
-                    ),
+                    ErrorHandler.AppError.DatabaseError("Yüksek skorlar yüklenirken hata oluştu", e),
                     null
                 )
             }
-            .collect { emit(it) }
+            .flowOn(Dispatchers.IO)
     }
 
-    fun getHighScores(limit: Int = 10): Flow<List<GameResult>> = flow {
-        gameResultDao.getTopScores(limit)
+    fun getPlayerGameResults(playerId: String): Flow<List<GameResult>> {
+        return gameResultDao.getPlayerGameResults(playerId)
             .catch { e ->
                 errorHandler.handleError(
-                    ErrorHandler.AppError.DatabaseError(
-                        "Error fetching high scores",
-                        e
-                    ),
+                    ErrorHandler.AppError.DatabaseError("Oyun sonuçları yüklenirken hata oluştu", e),
                     null
                 )
             }
-            .collect { emit(it) }
+            .flowOn(Dispatchers.IO)
     }
 
-    suspend fun getPlayerStats(playerId: String): PlayerStats {
-        return try {
-            val totalGames = gameResultDao.getPlayerGameCount(playerId)
-            val wins = gameResultDao.getPlayerWinCount(playerId)
-            val bestScore = gameResultDao.getPlayerBestScore(playerId)
-            val averageScore = gameResultDao.getPlayerAverageScore(playerId)
+    fun getTotalWins(): Flow<Int> {
+        return gameResultDao.getTotalWins()
+            .catch { e ->
+                errorHandler.handleError(
+                    ErrorHandler.AppError.DatabaseError("Toplam kazanma sayısı yüklenirken hata oluştu", e),
+                    null
+                )
+            }
+            .flowOn(Dispatchers.IO)
+    }
 
-            PlayerStats(
-                totalGames = totalGames,
-                wins = wins,
-                bestScore = bestScore,
-                averageScore = averageScore
-            )
-        } catch (e: Exception) {
-            errorHandler.handleError(
-                ErrorHandler.AppError.DatabaseError(
-                    "Error fetching player stats",
-                    e
-                ),
-                null
-            )
-            PlayerStats() // Boş istatistikler döndür
+    fun getAverageWinTime(): Flow<Long> {
+        return gameResultDao.getAverageWinTime()
+            .catch { e ->
+                errorHandler.handleError(
+                    ErrorHandler.AppError.DatabaseError("Ortalama kazanma süresi yüklenirken hata oluştu", e),
+                    null
+                )
+            }
+            .flowOn(Dispatchers.IO)
+    }
+
+    suspend fun saveGameResult(gameResult: GameResult) {
+        withContext(Dispatchers.IO) {
+            try {
+                gameResultDao.insertGameResult(gameResult)
+            } catch (e: Exception) {
+                errorHandler.handleError(
+                    ErrorHandler.AppError.DatabaseError("Oyun sonucu kaydedilirken hata oluştu", e),
+                    null
+                )
+            }
         }
     }
 
-    suspend fun clearOldResults(daysToKeep: Int = 30) {
-        try {
-            gameResultDao.deleteOldResults(daysToKeep)
-        } catch (e: Exception) {
-            errorHandler.handleError(
-                ErrorHandler.AppError.DatabaseError(
-                    "Error clearing old results",
-                    e
-                ),
-                null
-            )
+    suspend fun deleteGameResult(gameResult: GameResult) {
+        withContext(Dispatchers.IO) {
+            try {
+                gameResultDao.deleteGameResult(gameResult)
+            } catch (e: Exception) {
+                errorHandler.handleError(
+                    ErrorHandler.AppError.DatabaseError("Oyun sonucu silinirken hata oluştu", e),
+                    null
+                )
+            }
         }
     }
 
-    data class PlayerStats(
-        val totalGames: Int = 0,
-        val wins: Int = 0,
-        val bestScore: Int = 0,
-        val averageScore: Double = 0.0
-    )
+    suspend fun clearAllGameResults() {
+        withContext(Dispatchers.IO) {
+            try {
+                gameResultDao.deleteAllGameResults()
+            } catch (e: Exception) {
+                errorHandler.handleError(
+                    ErrorHandler.AppError.DatabaseError("Oyun sonuçları temizlenirken hata oluştu", e),
+                    null
+                )
+            }
+        }
+    }
 }

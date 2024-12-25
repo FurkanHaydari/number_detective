@@ -29,28 +29,24 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun playerDao(): PlayerDao
 
     companion object {
-        private const val DATABASE_NAME = "brain_focus_db"
+        private const val DATABASE_NAME = "number_detective.db"
 
         @Volatile
-        private var instance: AppDatabase? = null
+        private var INSTANCE: AppDatabase? = null
 
         fun getInstance(context: Context): AppDatabase {
-            return instance ?: synchronized(this) {
-                instance ?: buildDatabase(context).also { instance = it }
+            return INSTANCE ?: synchronized(this) {
+                val instance = Room.databaseBuilder(
+                    context.applicationContext,
+                    AppDatabase::class.java,
+                    DATABASE_NAME
+                )
+                .fallbackToDestructiveMigration()
+                .build()
+                
+                INSTANCE = instance
+                instance
             }
-        }
-
-        private fun buildDatabase(context: Context): AppDatabase {
-            return Room.databaseBuilder(
-                context.applicationContext,
-                AppDatabase::class.java,
-                DATABASE_NAME
-            )
-            .addCallback(object : RoomDatabase.Callback() {
-                // Veritabanı oluşturulduğunda başlangıç verilerini ekle
-            })
-            .fallbackToDestructiveMigration()
-            .build()
         }
     }
 }
