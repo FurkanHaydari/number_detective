@@ -11,4 +11,10 @@
     <color name="colorText">#FFFFFF</color>
     <color name="colorTextSecondary">#818384</color>
     <color name="colorBorder">#3A3A3C</color>
+    <color name="black">#FF000000</color>
+    <color name="white">#FFFFFFFF</color>
+    <color name="correct_number">#4CAF50</color>
+    <color name="incorrect_number">#F44336</color>
+    <color name="button_text">#000000</color>
+    <color name="dark_background">#121213</color>
 </resources>
