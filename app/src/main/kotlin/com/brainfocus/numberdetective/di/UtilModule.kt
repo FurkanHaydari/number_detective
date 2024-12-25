@@ -7,7 +7,7 @@ import org.koin.android.ext.koin.androidContext
 import org.koin.dsl.module
 
 val utilModule = module {
-    single { ErrorHandler() }
+    single { ErrorHandler(androidContext()) }
     single { PreferencesManager.getInstance(androidContext()) }
     single { SoundManager.getInstance(androidContext()) }
 }

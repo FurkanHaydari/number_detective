@@ -21,8 +21,13 @@ class OptimizedLayoutManager(
         // RecyclerView optimizasyonları
         view.apply {
             setItemViewCacheSize(20)
-            isDrawingCacheEnabled = true
-            drawingCacheQuality = View.DRAWING_CACHE_QUALITY_HIGH
+            // Deprecated olan kodları kaldır:
+
+            // isDrawingCacheEnabled = true
+            // drawingCacheQuality = View.DRAWING_CACHE_QUALITY_HIGH
+
+            // Modern hardware acceleration kullan:
+            setLayerType(View.LAYER_TYPE_HARDWARE, null)
         }
     }
 
@@ -34,9 +39,10 @@ class OptimizedLayoutManager(
 
     override fun addView(child: View) {
         // View'ı cache'e ekle
-        val position = getPosition(child)
-        viewCache[position] = child
+        // val position = getPosition(child)
+        // viewCache[position] = child
         super.addView(child)
+        child.setLayerType(View.LAYER_TYPE_HARDWARE, null)
     }
 
     override fun removeView(child: View) {

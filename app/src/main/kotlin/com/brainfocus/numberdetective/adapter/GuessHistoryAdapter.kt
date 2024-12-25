@@ -4,47 +4,46 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
+import androidx.recyclerview.widget.DiffUtil
+import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.brainfocus.numberdetective.R
-import com.brainfocus.numberdetective.game.NumberDetectiveGame
 
-class GuessHistoryAdapter : RecyclerView.Adapter<GuessHistoryAdapter.GuessViewHolder>() {
-    private val guesses = mutableListOf<GuessHistoryItem>()
+data class GuessHistoryItem(
+    val guess: Int,
+    val isCorrect: Boolean,
+    val hint: String
+)
 
-    data class GuessHistoryItem(
-        val number: String,
-        val correct: Int,
-        val misplaced: Int
-    )
+class GuessHistoryAdapter : ListAdapter<GuessHistoryItem, GuessHistoryAdapter.ViewHolder>(GuessHistoryDiffCallback()) {
 
-    class GuessViewHolder(view: View) : RecyclerView.ViewHolder(view) {
-        val guessNumberText: TextView = view.findViewById(R.id.guessNumberText)
-        val correctText: TextView = view.findViewById(R.id.correctText)
-        val misplacedText: TextView = view.findViewById(R.id.misplacedText)
-    }
-
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): GuessViewHolder {
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
         val view = LayoutInflater.from(parent.context)
             .inflate(R.layout.item_guess_history, parent, false)
-        return GuessViewHolder(view)
+        return ViewHolder(view)
     }
 
-    override fun onBindViewHolder(holder: GuessViewHolder, position: Int) {
-        val guess = guesses[position]
-        holder.guessNumberText.text = guess.number
-        holder.correctText.text = "Doğru yer: ${guess.correct}"
-        holder.misplacedText.text = "Yanlış yer: ${guess.misplaced}"
+    override fun onBindViewHolder(holder: ViewHolder, position: Int) {
+        holder.bind(getItem(position))
     }
 
-    override fun getItemCount() = guesses.size
+    class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
+        private val guessText: TextView = itemView.findViewById(R.id.guessText)
+        private val resultText: TextView = itemView.findViewById(R.id.resultText)
 
-    fun addGuess(number: String, result: NumberDetectiveGame.Guess) {
-        guesses.add(0, GuessHistoryItem(number, result.correct, result.misplaced))
-        notifyItemInserted(0)
+        fun bind(item: GuessHistoryItem) {
+            guessText.text = item.guess.toString()
+            resultText.text = if (item.isCorrect) "Correct!" else item.hint
+        }
     }
 
-    fun clear() {
-        guesses.clear()
-        notifyDataSetChanged()
+    private class GuessHistoryDiffCallback : DiffUtil.ItemCallback<GuessHistoryItem>() {
+        override fun areItemsTheSame(oldItem: GuessHistoryItem, newItem: GuessHistoryItem): Boolean {
+            return oldItem.guess == newItem.guess
+        }
+
+        override fun areContentsTheSame(oldItem: GuessHistoryItem, newItem: GuessHistoryItem): Boolean {
+            return oldItem == newItem
+        }
     }
 }

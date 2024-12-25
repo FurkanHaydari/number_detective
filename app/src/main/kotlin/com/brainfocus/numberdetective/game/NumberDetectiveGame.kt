@@ -4,9 +4,9 @@ import kotlin.random.Random
 
 class NumberDetectiveGame {
     private var secretNumber: String = ""
-    private var attempts: Int = 3
-    private var gameStartTime: Long = 0L
-    private var score: Int = 1000
+    private var remainingAttempts: Int = 3
+    private var currentScore: Int = 1000
+    private var isGameWon: Boolean = false
     
     data class Guess(
         val correct: Int,  // Doğru yerdeki rakam sayısı
@@ -15,9 +15,9 @@ class NumberDetectiveGame {
 
     fun startNewGame() {
         secretNumber = generateSecretNumber()
-        attempts = 3
-        gameStartTime = System.currentTimeMillis()
-        score = 1000
+        remainingAttempts = 3
+        currentScore = 1000
+        isGameWon = false
     }
 
     private fun generateSecretNumber(): String {
@@ -26,14 +26,12 @@ class NumberDetectiveGame {
     }
 
     fun makeGuess(guessNumber: String): Guess {
-        if (attempts <= 0) {
-            throw IllegalStateException("No attempts left!")
+        if (isGameOver()) {
+            throw IllegalStateException("Game is over. Cannot make more guesses.")
         }
         
-        attempts--
-        
         var correct = 0
-        var misplaced = 0
+        var misplaced : Int
         
         // Doğru yerdeki rakamları kontrol et
         for (i in guessNumber.indices) {
@@ -47,25 +45,32 @@ class NumberDetectiveGame {
         val secretDigits = secretNumber.toSet()
         misplaced = (guessDigits intersect secretDigits).size - correct
         
-        // Skoru güncelle
-        updateScore()
+        // Update game state
+        remainingAttempts--
+        currentScore -= 100
+        
+        if (correct == 3) {
+            isGameWon = true
+        }
         
         return Guess(correct, misplaced)
     }
 
-    private fun updateScore() {
-        val timePassed = (System.currentTimeMillis() - gameStartTime) / 1000
-        score -= (timePassed * 2).toInt() // Her saniye için 2 puan düş
-        score = score.coerceAtLeast(0) // Skor 0'ın altına düşmesin
+    fun isCorrectGuess(guess: Guess): Boolean {
+        return guess.correct == 3
     }
 
-    fun getRemainingAttempts(): Int = attempts
-    
-    fun getCurrentScore(): Int = score
-    
-    fun isGameWon(guess: String): Boolean = guess == secretNumber
-    
-    fun isGameOver(): Boolean = attempts <= 0
-    
     fun getSecretNumber(): String = secretNumber
+    
+    fun getRemainingAttempts(): Int = remainingAttempts
+    
+    fun getCurrentScore(): Int = currentScore
+    
+    fun isGameWon(): Boolean = isGameWon
+    
+    fun isGameOver(): Boolean = remainingAttempts <= 0 || isGameWon
+    
+    fun isGameWon(guess: String): Boolean {
+        return guess == secretNumber
+    }
 }

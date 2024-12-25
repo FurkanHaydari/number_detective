@@ -1,133 +1,123 @@
 package com.brainfocus.numberdetective.missions
 
-import android.content.Context
-import com.brainfocus.numberdetective.utils.PreferencesManager
-import com.google.gson.Gson
-import com.google.gson.reflect.TypeToken
+import com.brainfocus.numberdetective.data.repository.MissionRepository
+import com.brainfocus.numberdetective.utils.ErrorHandler
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.map
 import java.util.*
 
-class MissionManager private constructor(context: Context) {
-    private val prefsManager = PreferencesManager.getInstance(context)
-    private val gson = Gson()
-    private var dailyMissions = mutableListOf<DailyMission>()
-    private var lastUpdateDate: Long = 0
+class MissionManager(
+    private val missionRepository: MissionRepository,
+    private val errorHandler: ErrorHandler
+) {
+    fun getMissions(): Flow<List<DailyMission>> {
+        return missionRepository.getMissions()
+            .catch { e ->
+                errorHandler.handleError(e)
+                emit(emptyList())
+            }
+    }
+
+    suspend fun generateDailyMissions() {
+        try {
+            val missions = listOf(
+                DailyMission(
+                    id = UUID.randomUUID().toString(),
+                    title = "Win Games",
+                    description = "Win 3 games today",
+                    type = MissionType.WINS,
+                    targetProgress = 3,
+                    reward = 500
+                ),
+                DailyMission(
+                    id = UUID.randomUUID().toString(),
+                    title = "Play Games",
+                    description = "Play 5 games today",
+                    type = MissionType.GAMES_PLAYED,
+                    targetProgress = 5,
+                    reward = 300
+                ),
+                DailyMission(
+                    id = UUID.randomUUID().toString(),
+                    title = "High Score",
+                    description = "Achieve a score of 800 or higher",
+                    type = MissionType.HIGH_SCORE,
+                    targetProgress = 1,
+                    reward = 1000
+                )
+            )
+            missionRepository.saveMissions(missions)
+        } catch (e: Exception) {
+            errorHandler.handleError(e)
+        }
+    }
+
+    suspend fun updateMissionProgress(type: MissionType, progress: Int = 1) {
+        try {
+            val missions = missionRepository.getMissions()
+                .map { missionList ->
+                    missionList.map { mission ->
+                        if (mission.type == type && !mission.isCompleted) {
+                            mission.updateProgress(progress)
+                        } else {
+                            mission
+                        }
+                    }
+                }
+                .catch { e ->
+                    errorHandler.handleError(e)
+                    emit(emptyList())
+                }
+
+            missions.collect { updatedMissions ->
+                missionRepository.saveMissions(updatedMissions)
+            }
+        } catch (e: Exception) {
+            errorHandler.handleError(e)
+        }
+    }
+
+    suspend fun claimReward(missionId: String): Boolean {
+        return try {
+            val missions = missionRepository.getMissions()
+                .map { missionList ->
+                    missionList.map { mission ->
+                        if (mission.id == missionId && mission.isRewardClaimable()) {
+                            mission.claimReward()
+                        } else {
+                            mission
+                        }
+                    }
+                }
+                .catch { e ->
+                    errorHandler.handleError(e)
+                    emit(emptyList())
+                }
+
+            var rewardClaimed = false
+            missions.collect { updatedMissions ->
+                missionRepository.saveMissions(updatedMissions)
+                rewardClaimed = updatedMissions.any { it.id == missionId && it.isRewardClaimed }
+            }
+            rewardClaimed
+        } catch (e: Exception) {
+            errorHandler.handleError(e)
+            false
+        }
+    }
+
+    suspend fun resetDailyMissions() {
+        try {
+            generateDailyMissions()
+        } catch (e: Exception) {
+            errorHandler.handleError(e)
+        }
+    }
 
     companion object {
-        private const val PREFS_MISSIONS = "daily_missions"
-        private const val PREFS_LAST_UPDATE = "last_mission_update"
-
-        @Volatile
-        private var instance: MissionManager? = null
-
-        fun getInstance(context: Context): MissionManager {
-            return instance ?: synchronized(this) {
-                instance ?: MissionManager(context).also { instance = it }
-            }
+        fun create(missionRepository: MissionRepository, errorHandler: ErrorHandler): MissionManager {
+            return MissionManager(missionRepository, errorHandler)
         }
-    }
-
-    init {
-        loadMissions()
-        checkAndUpdateDailyMissions()
-    }
-
-    private fun loadMissions() {
-        val missionsJson = prefsManager.getString(PREFS_MISSIONS, "")
-        lastUpdateDate = prefsManager.getLong(PREFS_LAST_UPDATE, 0)
-
-        if (missionsJson.isNotEmpty()) {
-            val type = object : TypeToken<List<DailyMission>>() {}.type
-            dailyMissions = gson.fromJson(missionsJson, type)
-        }
-    }
-
-    private fun saveMissions() {
-        val missionsJson = gson.toJson(dailyMissions)
-        prefsManager.putString(PREFS_MISSIONS, missionsJson)
-        prefsManager.putLong(PREFS_LAST_UPDATE, lastUpdateDate)
-    }
-
-    private fun checkAndUpdateDailyMissions() {
-        val currentDate = Calendar.getInstance().apply {
-            set(Calendar.HOUR_OF_DAY, 0)
-            set(Calendar.MINUTE, 0)
-            set(Calendar.SECOND, 0)
-            set(Calendar.MILLISECOND, 0)
-        }.timeInMillis
-
-        if (currentDate > lastUpdateDate) {
-            generateNewDailyMissions()
-            lastUpdateDate = currentDate
-            saveMissions()
-        }
-    }
-
-    private fun generateNewDailyMissions() {
-        dailyMissions.clear()
-        dailyMissions.addAll(listOf(
-            DailyMission(
-                id = UUID.randomUUID().toString(),
-                title = "Günün Şampiyonu",
-                description = "3 oyun kazan",
-                type = MissionType.WIN_GAMES,
-                target = 3,
-                reward = 500
-            ),
-            DailyMission(
-                id = UUID.randomUUID().toString(),
-                title = "Hızlı Düşünür",
-                description = "30 saniyeden kısa sürede bir oyun kazan",
-                type = MissionType.QUICK_WINS,
-                target = 1,
-                reward = 300
-            ),
-            DailyMission(
-                id = UUID.randomUUID().toString(),
-                title = "Keskin Zeka",
-                description = "İlk denemede doğru tahmin yap",
-                type = MissionType.PERFECT_WINS,
-                target = 1,
-                reward = 1000
-            )
-        ))
-    }
-
-    fun updateMissionProgress(type: MissionType, value: Int = 1, additionalData: Map<String, Any>? = null) {
-        dailyMissions.filter { it.type == type && !it.isCompleted }.forEach { mission ->
-            when (type) {
-                MissionType.QUICK_WINS -> {
-                    val timeSeconds = additionalData?.get("timeSeconds") as? Long ?: return
-                    if (timeSeconds <= 30) {
-                        mission.progress += value
-                    }
-                }
-                MissionType.PERFECT_WINS -> {
-                    val attempts = additionalData?.get("attempts") as? Int ?: return
-                    if (attempts == 1) {
-                        mission.progress += value
-                    }
-                }
-                else -> mission.progress += value
-            }
-
-            if (mission.progress >= mission.target) {
-                mission.isCompleted = true
-            }
-        }
-        saveMissions()
-    }
-
-    fun claimReward(missionId: String): Int? {
-        val mission = dailyMissions.find { it.id == missionId }
-        return if (mission != null && mission.isCompleted && !mission.isClaimed) {
-            mission.isClaimed = true
-            saveMissions()
-            mission.reward
-        } else null
-    }
-
-    fun getDailyMissions(): List<DailyMission> {
-        checkAndUpdateDailyMissions()
-        return dailyMissions
     }
 }

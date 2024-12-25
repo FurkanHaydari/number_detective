@@ -3,26 +3,17 @@ package com.brainfocus.numberdetective.utils
 import android.app.ActivityManager
 import android.content.Context
 import android.os.Debug
-import android.os.Handler
-import android.os.Looper
+import android.os.Process
 import android.util.Log
-import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.LifecycleObserver
-import androidx.lifecycle.OnLifecycleEvent
 import java.io.File
-import java.text.SimpleDateFormat
-import java.util.*
+import java.io.RandomAccessFile
 
-class PerformanceMonitor private constructor(private val context: Context) : LifecycleObserver {
-    private val handler = Handler(Looper.getMainLooper())
-    private val metrics = mutableMapOf<String, Long>()
-    private var isMonitoring = false
+class PerformanceMonitor private constructor(private val context: Context) {
+    private val activityManager = context.getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager
+    private val processId = Process.myPid()
     
     companion object {
         private const val TAG = "PerformanceMonitor"
-        private const val MONITOR_INTERVAL = 1000L // 1 saniye
-        private const val MEMORY_THRESHOLD = 80 // %80 bellek kullanımı
-        private const val FPS_THRESHOLD = 30 // 30 FPS altı
         
         @Volatile
         private var instance: PerformanceMonitor? = null
@@ -34,99 +25,66 @@ class PerformanceMonitor private constructor(private val context: Context) : Lif
         }
     }
 
-    private val monitorRunnable = object : Runnable {
-        override fun run() {
-            if (isMonitoring) {
-                checkMemoryUsage()
-                checkFrameRate()
-                logMetrics()
-                handler.postDelayed(this, MONITOR_INTERVAL)
+    fun getMemoryInfo(): String {
+        val memInfo = ActivityManager.MemoryInfo()
+        activityManager.getMemoryInfo(memInfo)
+        
+        val nativeHeapSize = Debug.getNativeHeapSize() / 1024
+        val nativeHeapFreeSize = Debug.getNativeHeapFreeSize() / 1024
+        val nativeHeapAllocatedSize = Debug.getNativeHeapAllocatedSize() / 1024
+        
+        return buildString {
+            append("Memory Info:\n")
+            append("Available Memory: ${memInfo.availMem / 1024 / 1024} MB\n")
+            append("Total Memory: ${memInfo.totalMem / 1024 / 1024} MB\n")
+            append("Low Memory: ${memInfo.lowMemory}\n")
+            append("Native Heap Size: $nativeHeapSize KB\n")
+            append("Native Heap Free: $nativeHeapFreeSize KB\n")
+            append("Native Heap Allocated: $nativeHeapAllocatedSize KB")
+        }
+    }
+
+    fun getCpuInfo(): String {
+        return try {
+            val cpuInfoFile = File("/proc/cpuinfo")
+            if (!cpuInfoFile.exists()) return "CPU info not available"
+            
+            val cpuInfo = cpuInfoFile.readLines()
+                .filter { it.startsWith("processor") || it.startsWith("model name") }
+                .joinToString("\n")
+            
+            val cpuFreq = File("/sys/devices/system/cpu/cpu0/cpufreq/scaling_cur_freq")
+            val currentFreq = if (cpuFreq.exists()) {
+                "Current CPU Frequency: ${cpuFreq.readText().trim().toLong() / 1000} MHz"
+            } else {
+                "CPU frequency info not available"
             }
-        }
-    }
-
-    @OnLifecycleEvent(Lifecycle.Event.ON_START)
-    fun startMonitoring() {
-        isMonitoring = true
-        handler.post(monitorRunnable)
-        Log.d(TAG, "Performance monitoring started")
-    }
-
-    @OnLifecycleEvent(Lifecycle.Event.ON_STOP)
-    fun stopMonitoring() {
-        isMonitoring = false
-        handler.removeCallbacks(monitorRunnable)
-        Log.d(TAG, "Performance monitoring stopped")
-    }
-
-    private fun checkMemoryUsage() {
-        val activityManager = context.getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager
-        val memoryInfo = ActivityManager.MemoryInfo()
-        activityManager.getMemoryInfo(memoryInfo)
-
-        val usedMemory = memoryInfo.totalMem - memoryInfo.availMem
-        val memoryUsagePercentage = (usedMemory.toFloat() / memoryInfo.totalMem.toFloat() * 100).toInt()
-
-        metrics["memory_usage"] = memoryUsagePercentage.toLong()
-
-        if (memoryUsagePercentage > MEMORY_THRESHOLD) {
-            Log.w(TAG, "High memory usage: $memoryUsagePercentage%")
-            // Bellek optimizasyonu önerilerini tetikle
-            suggestMemoryOptimizations()
-        }
-    }
-
-    private fun checkFrameRate() {
-        val frameStats = Debug.getBinderThreadState()
-        metrics["frame_rate"] = frameStats.toLong()
-
-        if (frameStats < FPS_THRESHOLD) {
-            Log.w(TAG, "Low frame rate: $frameStats FPS")
-            // Performans optimizasyonu önerilerini tetikle
-            suggestPerformanceOptimizations()
-        }
-    }
-
-    private fun logMetrics() {
-        val timestamp = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault()).format(Date())
-        val logEntry = StringBuilder("Performance Metrics [$timestamp]:\n")
-        
-        metrics.forEach { (key, value) ->
-            logEntry.append("$key: $value\n")
-        }
-        
-        Log.d(TAG, logEntry.toString())
-        
-        // Metrikleri dosyaya kaydet
-        saveMetricsToFile(logEntry.toString())
-    }
-
-    private fun saveMetricsToFile(metrics: String) {
-        try {
-            val logFile = File(context.filesDir, "performance_log.txt")
-            logFile.appendText("$metrics\n")
+            
+            "$cpuInfo\n$currentFreq"
         } catch (e: Exception) {
-            Log.e(TAG, "Error saving metrics to file", e)
+            Log.e(TAG, "Error reading CPU info", e)
+            "Error reading CPU info: ${e.message}"
         }
     }
 
-    private fun suggestMemoryOptimizations() {
-        // Bellek optimizasyonu önerileri
-        ImageUtils.clearCache() // Görsel önbelleğini temizle
-        System.gc() // Garbage collection'ı öner
-    }
-
-    private fun suggestPerformanceOptimizations() {
-        // Performans optimizasyonu önerileri
-        Log.i(TAG, "Performance optimization suggestions:")
-        Log.i(TAG, "1. Disable animations temporarily")
-        Log.i(TAG, "2. Reduce view hierarchy depth")
-        Log.i(TAG, "3. Use hardware acceleration")
-    }
-
-    fun getMetrics(): Map<String, Long> = metrics.toMap()
-
-    fun clearMetrics() {
-        metrics.clear()
+    fun getProcessStats(): String {
+        return try {
+            val statFile = RandomAccessFile("/proc/$processId/stat", "r")
+            val stats = statFile.readLine().split(" ")
+            statFile.close()
+            
+            buildString {
+                append("Process Stats:\n")
+                append("PID: ${stats[0]}\n")
+                append("Name: ${stats[1]}\n")
+                append("State: ${stats[2]}\n")
+                append("Parent PID: ${stats[3]}\n")
+                append("Priority: ${stats[17]}\n")
+                append("Threads: ${stats[19]}")
+            }
+        } catch (e: Exception) {
+            Log.e(TAG, "Error reading process stats", e)
+            "Error reading process stats: ${e.message}"
+        }
     }
 }

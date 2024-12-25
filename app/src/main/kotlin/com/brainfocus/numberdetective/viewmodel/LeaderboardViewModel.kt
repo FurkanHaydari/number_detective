@@ -1,58 +1,41 @@
 package com.brainfocus.numberdetective.viewmodel
 
 import com.brainfocus.numberdetective.base.BaseViewModel
-import com.brainfocus.numberdetective.data.entities.GameResult
+import com.brainfocus.numberdetective.data.entities.Player
 import com.brainfocus.numberdetective.data.repository.GameRepository
+import com.brainfocus.numberdetective.utils.ErrorHandler
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 
 class LeaderboardViewModel(
-    private val gameRepository: GameRepository
-) : BaseViewModel() {
+    private val gameRepository: GameRepository,
+    errorHandler: ErrorHandler
+) : BaseViewModel(errorHandler) {
 
-    private val _leaderboardState = MutableStateFlow<LeaderboardState>(LeaderboardState.Loading)
-    val leaderboardState: StateFlow<LeaderboardState> = _leaderboardState
-
-    private val _sortType = MutableStateFlow(SortType.SCORE)
-    val sortType: StateFlow<SortType> = _sortType
+    private val _leaderboardEntries = MutableStateFlow<List<Player>>(emptyList())
+    val leaderboardEntries: StateFlow<List<Player>> = _leaderboardEntries
 
     init {
         loadLeaderboard()
     }
 
-    fun loadLeaderboard() {
-        launchIO {
-            _leaderboardState.emit(LeaderboardState.Loading)
-            
-            gameRepository.getHighScores()
-                .collect { results ->
-                    val sortedResults = when (_sortType.value) {
-                        SortType.SCORE -> results.sortedByDescending { it.score }
-                        SortType.WINS -> results.sortedByDescending { it.isWin }
-                        SortType.TIME -> results.sortedBy { it.timeTaken }
-                    }
-                    
-                    _leaderboardState.emit(LeaderboardState.Success(sortedResults))
-                }
+    private fun loadLeaderboard() {
+        launchWithErrorHandling {
+            gameRepository.getHighScores().collect { results ->
+                _leaderboardEntries.value = results.mapIndexed { index, result ->
+                    Player(
+                        id = result.id.toString(),
+                        name = "Player ${index + 1}",
+                        score = result.score,
+                        attempts = result.attempts,
+                        timestamp = result.timestamp
+                    )
+                }.sortedByDescending { it.score }
+            }
         }
     }
 
-    fun setSortType(type: SortType) {
-        launchMain {
-            _sortType.emit(type)
-            loadLeaderboard()
-        }
-    }
-
-    sealed class LeaderboardState {
-        object Loading : LeaderboardState()
-        data class Success(val results: List<GameResult>) : LeaderboardState()
-        data class Error(val message: String) : LeaderboardState()
-    }
-
-    enum class SortType {
-        SCORE,
-        WINS,
-        TIME
+    fun refreshLeaderboard() {
+        loadLeaderboard()
     }
 }

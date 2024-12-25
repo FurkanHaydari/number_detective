@@ -1,90 +1,77 @@
 package com.brainfocus.numberdetective
 
 import android.os.Bundle
-import android.view.MenuItem
 import android.view.View
+import android.widget.ProgressBar
 import android.widget.TextView
+import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.brainfocus.numberdetective.adapter.MissionsAdapter
-import com.brainfocus.numberdetective.base.BaseActivity
-import com.brainfocus.numberdetective.utils.SoundManager
-import com.brainfocus.numberdetective.utils.SoundType
+import com.brainfocus.numberdetective.missions.DailyMission
 import com.brainfocus.numberdetective.viewmodel.MissionsViewModel
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.launch
 import org.koin.androidx.viewmodel.ext.android.viewModel
 
-class MissionsActivity : BaseActivity() {
-    override val viewModel: MissionsViewModel by viewModel()
-    
-    private lateinit var resetTimeText: TextView
-    private lateinit var recyclerView: RecyclerView
+class MissionsActivity : AppCompatActivity() {
+    private val viewModel: MissionsViewModel by viewModel()
     private lateinit var adapter: MissionsAdapter
-    private lateinit var emptyView: View
-    private lateinit var soundManager: SoundManager
+    private lateinit var recyclerView: RecyclerView
+    private lateinit var progressBar: ProgressBar
+    private lateinit var emptyText: TextView
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_missions)
-        
-        initializeViews()
+
+        supportActionBar?.setDisplayHomeAsUpEnabled(true)
+
+        setupViews()
         setupRecyclerView()
-        observeMissionsState()
+        observeMissions()
     }
 
-    private fun initializeViews() {
-        setSupportActionBar(findViewById(R.id.toolbar))
-        supportActionBar?.setDisplayHomeAsUpEnabled(true)
-        
-        resetTimeText = findViewById(R.id.resetTimeText)
+    private fun setupViews() {
         recyclerView = findViewById(R.id.missionsRecyclerView)
-        emptyView = findViewById(R.id.emptyView)
-        soundManager = SoundManager.getInstance(this)
+        progressBar = findViewById(R.id.progressBar)
+        emptyText = findViewById(R.id.emptyText)
     }
 
     private fun setupRecyclerView() {
         adapter = MissionsAdapter { mission ->
-            soundManager.playSound(SoundType.BUTTON_CLICK)
-            viewModel.claimReward(mission)
+            viewModel.claimReward(mission.id)
         }
-        
         recyclerView.apply {
             layoutManager = LinearLayoutManager(this@MissionsActivity)
             adapter = this@MissionsActivity.adapter
         }
     }
 
-    private fun observeMissionsState() {
-        collectFlow(viewModel.missionsState) { state ->
-            when (state) {
-                is MissionsViewModel.MissionsState.Loading -> {
+    private fun observeMissions() {
+        lifecycleScope.launch {
+            viewModel.missions.collectLatest { missions ->
+                if (missions.isEmpty()) {
                     recyclerView.visibility = View.GONE
-                    emptyView.visibility = View.GONE
-                }
-                is MissionsViewModel.MissionsState.Success -> {
+                    emptyText.visibility = View.VISIBLE
+                } else {
                     recyclerView.visibility = View.VISIBLE
-                    emptyView.visibility = if (state.missions.isEmpty()) View.VISIBLE else View.GONE
-                    adapter.updateMissions(state.missions)
-                }
-                is MissionsViewModel.MissionsState.Error -> {
-                    recyclerView.visibility = View.GONE
-                    emptyView.visibility = View.VISIBLE
-                    showMessage(state.message)
+                    emptyText.visibility = View.GONE
+                    adapter.submitList(missions)
                 }
             }
         }
 
-        collectFlow(viewModel.resetTimeState) { timeText ->
-            resetTimeText.text = timeText
+        lifecycleScope.launch {
+            viewModel.isLoading.collectLatest { isLoading ->
+                progressBar.visibility = if (isLoading) View.VISIBLE else View.GONE
+            }
         }
     }
 
-    override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        return when (item.itemId) {
-            android.R.id.home -> {
-                onBackPressed()
-                true
-            }
-            else -> super.onOptionsItemSelected(item)
-        }
+    override fun onSupportNavigateUp(): Boolean {
+        finish()
+        return true
     }
 }

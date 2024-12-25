@@ -5,12 +5,10 @@ import androidx.room.PrimaryKey
 
 @Entity(tableName = "game_results")
 data class GameResult(
-    @PrimaryKey
-    val id: String,
-    val playerId: String,
+    @PrimaryKey(autoGenerate = true)
+    val id: Long = 0,
     val score: Int,
     val attempts: Int,
-    val isWin: Boolean,
-    val timeTaken: Long,
-    val date: Long
+    val timestamp: Long,
+    val isWin: Boolean = true
 )

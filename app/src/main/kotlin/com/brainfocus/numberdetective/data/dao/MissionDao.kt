@@ -6,30 +6,21 @@ import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface MissionDao {
-    @Query("SELECT * FROM missions WHERE expiryDate > :currentTime ORDER BY expiryDate ASC")
-    fun getActiveMissions(currentTime: Long): Flow<List<Mission>>
-
-    @Query("SELECT * FROM missions WHERE isCompleted = 1 AND isRewardClaimed = 0")
-    fun getCompletedMissionsWithUnclaimedRewards(): Flow<List<Mission>>
-
-    @Query("SELECT SUM(reward) FROM missions WHERE isCompleted = 1 AND isRewardClaimed = 1")
-    fun getTotalClaimedRewards(): Flow<Int>
+    @Query("SELECT * FROM missions")
+    fun getAllMissions(): Flow<List<Mission>>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insertMission(mission: Mission)
+    suspend fun insert(mission: Mission)
 
     @Update
-    suspend fun updateMission(mission: Mission)
+    suspend fun update(mission: Mission)
 
-    @Query("UPDATE missions SET isCompleted = 1 WHERE id = :missionId")
-    suspend fun completeMission(missionId: String)
-
-    @Query("UPDATE missions SET isRewardClaimed = 1 WHERE id = :missionId")
-    suspend fun claimMissionReward(missionId: String)
-
-    @Query("DELETE FROM missions WHERE expiryDate < :currentTime")
-    suspend fun deleteExpiredMissions(currentTime: Long)
+    @Delete
+    suspend fun delete(mission: Mission)
 
     @Query("DELETE FROM missions")
-    suspend fun deleteAllMissions()
+    suspend fun clearMissions()
+
+    @Query("SELECT * FROM missions WHERE id = :id")
+    suspend fun getMissionById(id: String): Mission?
 }

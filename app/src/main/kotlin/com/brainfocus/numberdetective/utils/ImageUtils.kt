@@ -4,8 +4,6 @@ import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.util.LruCache
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
 
 object ImageUtils {
     private const val CACHE_SIZE = 4 * 1024 * 1024 // 4MB
@@ -15,54 +13,28 @@ object ImageUtils {
         }
     }
 
-    suspend fun loadOptimizedBitmap(
-        context: Context,
-        resourceId: Int,
-        reqWidth: Int,
-        reqHeight: Int
-    ): Bitmap = withContext(Dispatchers.IO) {
-        val cacheKey = "${resourceId}_${reqWidth}_${reqHeight}"
-        
-        // Cache'den kontrol et
-        memoryCache.get(cacheKey)?.let { return@withContext it }
+    fun loadBitmapFromResource(context: Context, resourceId: Int): Bitmap? {
+        val cacheKey = resourceId.toString()
+        var bitmap = getBitmapFromCache(cacheKey)
 
-        // Bitmap boyutlarını hesapla
-        val options = BitmapFactory.Options().apply {
-            inJustDecodeBounds = true
-        }
-        BitmapFactory.decodeResource(context.resources, resourceId, options)
-
-        options.apply {
-            inSampleSize = calculateInSampleSize(this, reqWidth, reqHeight)
-            inJustDecodeBounds = false
-            inPreferredConfig = Bitmap.Config.RGB_565 // Daha az bellek kullanımı
-        }
-
-        // Bitmap'i yükle ve cache'e ekle
-        BitmapFactory.decodeResource(context.resources, resourceId, options)?.also {
-            memoryCache.put(cacheKey, it)
-        } ?: throw IllegalStateException("Bitmap yüklenemedi")
-    }
-
-    private fun calculateInSampleSize(
-        options: BitmapFactory.Options,
-        reqWidth: Int,
-        reqHeight: Int
-    ): Int {
-        val (height: Int, width: Int) = options.run { outHeight to outWidth }
-        var inSampleSize = 1
-
-        if (height > reqHeight || width > reqWidth) {
-            val halfHeight: Int = height / 2
-            val halfWidth: Int = width / 2
-
-            while (halfHeight / inSampleSize >= reqHeight && 
-                   halfWidth / inSampleSize >= reqWidth) {
-                inSampleSize *= 2
+        if (bitmap == null) {
+            bitmap = BitmapFactory.decodeResource(context.resources, resourceId)
+            if (bitmap != null) {
+                addBitmapToCache(cacheKey, bitmap)
             }
         }
 
-        return inSampleSize
+        return bitmap
+    }
+
+    private fun getBitmapFromCache(key: String): Bitmap? {
+        return memoryCache.get(key)
+    }
+
+    private fun addBitmapToCache(key: String, bitmap: Bitmap) {
+        if (getBitmapFromCache(key) == null) {
+            memoryCache.put(key, bitmap)
+        }
     }
 
     fun clearCache() {

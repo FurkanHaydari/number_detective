@@ -6,6 +6,7 @@ import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import com.airbnb.lottie.LottieAnimationView
 import com.google.android.material.button.MaterialButton
+import com.brainfocus.numberdetective.utils.SoundManager
 
 class GameResultActivity : AppCompatActivity() {
     private lateinit var resultAnimation: LottieAnimationView
@@ -20,6 +21,8 @@ class GameResultActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_game_result)
+
+        supportActionBar?.setDisplayHomeAsUpEnabled(true)
 
         initializeViews()
         setupGameResult()
@@ -83,12 +86,11 @@ class GameResultActivity : AppCompatActivity() {
     }
 
     private fun playSound(soundResourceId: Int) {
-        // TODO: MediaPlayer ile ses efekti çal
+        SoundManager.getInstance(this).playSound(soundResourceId)
     }
 
-    override fun onBackPressed() {
-        // Ana menüye dön
-        startActivity(Intent(this, MainActivity::class.java))
+    override fun onSupportNavigateUp(): Boolean {
         finish()
+        return true
     }
 }

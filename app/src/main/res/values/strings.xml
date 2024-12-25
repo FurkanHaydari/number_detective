@@ -1,3 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">Number Detective</string>
+
+    <!-- Game Activity -->
+    <string name="score_text">Score: %1$d</string>
+    <string name="attempts_text">Attempts Left: %1$d</string>
+    <string name="victory_title">Congratulations!</string>
+    <string name="victory_message">You won with a score of %1$d!</string>
+    <string name="game_over_title">Game Over</string>
+    <string name="game_over_message">The number was %1$s. Try again!</string>
+    <string name="submit">Submit</string>
+    <string name="hint_enter_number">Enter a 4-digit number</string>
+
+    <!-- Leaderboard Activity -->
+    <string name="leaderboard">Leaderboard</string>
+    <string name="sort_by_score">Score</string>
+    <string name="sort_by_wins">Wins</string>
+    <string name="no_scores">No scores yet</string>
+
+    <!-- Missions Activity -->
+    <string name="missions">Daily Missions</string>
+    <string name="no_missions">No missions available</string>
+    <string name="mission_completed">Mission Completed!</string>
+    <string name="mission_reward">+%1$d points</string>
+    <string name="next_missions">Next missions in: %1$s</string>
+
+    <!-- Common -->
+    <string name="refresh">Refresh</string>
+    <string name="back">Back</string>
+    <string name="error">Error</string>
+    <string name="ok">OK</string>
+    <string name="cancel">Cancel</string>
 </resources>

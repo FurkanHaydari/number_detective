@@ -1,126 +1,64 @@
 package com.brainfocus.numberdetective.data.repository
 
 import com.brainfocus.numberdetective.data.dao.MissionDao
-import com.brainfocus.numberdetective.data.entities.Mission
+import com.brainfocus.numberdetective.missions.DailyMission
 import com.brainfocus.numberdetective.utils.ErrorHandler
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
-import kotlinx.coroutines.flow.flowOn
-import kotlinx.coroutines.withContext
+import kotlinx.coroutines.flow.flow
 
 class MissionRepository(
     private val missionDao: MissionDao,
     private val errorHandler: ErrorHandler
 ) {
-    fun getActiveMissions(): Flow<List<Mission>> {
-        return missionDao.getActiveMissions(System.currentTimeMillis())
-            .catch { e ->
-                errorHandler.handleError(
-                    ErrorHandler.AppError.DatabaseError("Aktif görevler yüklenirken hata oluştu", e),
-                    null
-                )
+
+    fun getMissions(): Flow<List<DailyMission>> = flow {
+        try {
+            missionDao.getAllMissions().collect { missions ->
+                emit(missions.map { mission ->
+                    DailyMission(
+                        id = mission.id,
+                        title = mission.title,
+                        description = mission.description,
+                        type = mission.type,
+                        targetProgress = mission.targetProgress,
+                        reward = mission.reward,
+                        currentProgress = mission.currentProgress,
+                        isCompleted = mission.isCompleted,
+                        isRewardClaimed = mission.isRewardClaimed
+                    )
+                })
             }
-            .flowOn(Dispatchers.IO)
+        } catch (e: Exception) {
+            errorHandler.handleError(e)
+            emit(emptyList())
+        }
+    }.catch { e -> 
+        errorHandler.handleError(e)
+        emit(emptyList())
     }
 
-    fun getUnclaimedRewards(): Flow<List<Mission>> {
-        return missionDao.getCompletedMissionsWithUnclaimedRewards()
-            .catch { e ->
-                errorHandler.handleError(
-                    ErrorHandler.AppError.DatabaseError("Alınmamış ödüller yüklenirken hata oluştu", e),
-                    null
-                )
+    suspend fun saveMissions(missions: List<DailyMission>) {
+        try {
+            missionDao.clearMissions()
+            missions.forEach { mission ->
+                missionDao.insert(mission.toEntity())
             }
-            .flowOn(Dispatchers.IO)
-    }
-
-    fun getTotalClaimedRewards(): Flow<Int> {
-        return missionDao.getTotalClaimedRewards()
-            .catch { e ->
-                errorHandler.handleError(
-                    ErrorHandler.AppError.DatabaseError("Toplam ödül miktarı yüklenirken hata oluştu", e),
-                    null
-                )
-            }
-            .flowOn(Dispatchers.IO)
-    }
-
-    suspend fun addMission(mission: Mission) {
-        withContext(Dispatchers.IO) {
-            try {
-                missionDao.insertMission(mission)
-            } catch (e: Exception) {
-                errorHandler.handleError(
-                    ErrorHandler.AppError.DatabaseError("Görev eklenirken hata oluştu", e),
-                    null
-                )
-            }
+        } catch (e: Exception) {
+            errorHandler.handleError(e)
+            throw e
         }
     }
 
-    suspend fun updateMission(mission: Mission) {
-        withContext(Dispatchers.IO) {
-            try {
-                missionDao.updateMission(mission)
-            } catch (e: Exception) {
-                errorHandler.handleError(
-                    ErrorHandler.AppError.DatabaseError("Görev güncellenirken hata oluştu", e),
-                    null
-                )
-            }
-        }
-    }
-
-    suspend fun completeMission(missionId: String) {
-        withContext(Dispatchers.IO) {
-            try {
-                missionDao.completeMission(missionId)
-            } catch (e: Exception) {
-                errorHandler.handleError(
-                    ErrorHandler.AppError.DatabaseError("Görev tamamlanırken hata oluştu", e),
-                    null
-                )
-            }
-        }
-    }
-
-    suspend fun claimReward(missionId: String) {
-        withContext(Dispatchers.IO) {
-            try {
-                missionDao.claimMissionReward(missionId)
-            } catch (e: Exception) {
-                errorHandler.handleError(
-                    ErrorHandler.AppError.DatabaseError("Ödül alınırken hata oluştu", e),
-                    null
-                )
-            }
-        }
-    }
-
-    suspend fun cleanupExpiredMissions() {
-        withContext(Dispatchers.IO) {
-            try {
-                missionDao.deleteExpiredMissions(System.currentTimeMillis())
-            } catch (e: Exception) {
-                errorHandler.handleError(
-                    ErrorHandler.AppError.DatabaseError("Süresi geçmiş görevler temizlenirken hata oluştu", e),
-                    null
-                )
-            }
-        }
-    }
-
-    suspend fun clearAllMissions() {
-        withContext(Dispatchers.IO) {
-            try {
-                missionDao.deleteAllMissions()
-            } catch (e: Exception) {
-                errorHandler.handleError(
-                    ErrorHandler.AppError.DatabaseError("Görevler temizlenirken hata oluştu", e),
-                    null
-                )
-            }
-        }
-    }
+    private fun DailyMission.toEntity() = com.brainfocus.numberdetective.data.entities.Mission(
+        id = id,
+        title = title,
+        description = description,
+        type = type,
+        targetProgress = targetProgress,
+        reward = reward,
+        currentProgress = currentProgress,
+        isCompleted = isCompleted,
+        isRewardClaimed = isRewardClaimed
+    )
 }

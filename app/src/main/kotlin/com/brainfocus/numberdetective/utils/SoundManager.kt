@@ -6,7 +6,7 @@ import com.brainfocus.numberdetective.R
 
 class SoundManager private constructor(private val context: Context) {
     private var mediaPlayer: MediaPlayer? = null
-    private var isSoundEnabled = true
+    private val preferencesManager = PreferencesManager.getInstance(context)
 
     companion object {
         @Volatile
@@ -19,38 +19,42 @@ class SoundManager private constructor(private val context: Context) {
         }
     }
 
-    fun playSound(soundType: SoundType) {
-        if (!isSoundEnabled) return
-
-        val soundResId = when (soundType) {
-            SoundType.WIN -> R.raw.win_sound
-            SoundType.LOSE -> R.raw.lose_sound
-            SoundType.BUTTON_CLICK -> R.raw.button_click
+    fun playWinSound() {
+        if (preferencesManager.isSoundEnabled()) {
+            playSound(R.raw.victory)
         }
+    }
 
+    fun playLoseSound() {
+        if (preferencesManager.isSoundEnabled()) {
+            playSound(R.raw.game_over)
+        }
+    }
+
+    fun playWrongSound() {
+        if (preferencesManager.isSoundEnabled()) {
+            playSound(R.raw.wrong_guess)
+        }
+    }
+
+    fun playCorrectSound() {
+        if (preferencesManager.isSoundEnabled()) {
+            playSound(R.raw.correct_guess)
+        }
+    }
+
+    fun playSound(resourceId: Int) {
         try {
             mediaPlayer?.release()
-            mediaPlayer = MediaPlayer.create(context, soundResId).apply {
-                setOnCompletionListener { release() }
-                start()
-            }
+            mediaPlayer = MediaPlayer.create(context, resourceId)
+            mediaPlayer?.start()
         } catch (e: Exception) {
-            e.printStackTrace()
+            // Handle error silently
         }
     }
-
-    fun toggleSound() {
-        isSoundEnabled = !isSoundEnabled
-    }
-
-    fun isSoundEnabled() = isSoundEnabled
 
     fun release() {
         mediaPlayer?.release()
         mediaPlayer = null
     }
-}
-
-enum class SoundType {
-    WIN, LOSE, BUTTON_CLICK
 }

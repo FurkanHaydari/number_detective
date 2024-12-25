@@ -1,22 +1,40 @@
 package com.brainfocus.numberdetective.missions
 
+import com.brainfocus.numberdetective.missions.MissionType
+
 data class DailyMission(
     val id: String,
     val title: String,
     val description: String,
     val type: MissionType,
-    val target: Int,
+    val targetProgress: Int,
     val reward: Int,
-    var progress: Int = 0,
-    var isCompleted: Boolean = false,
-    var isClaimed: Boolean = false
-)
+    val currentProgress: Int = 0,
+    val isCompleted: Boolean = false,
+    val isRewardClaimed: Boolean = false
+) {
+    fun isCompletable(): Boolean {
+        return currentProgress >= targetProgress && !isCompleted
+    }
 
-enum class MissionType {
-    WIN_GAMES,           // Belirli sayıda oyun kazanma
-    PLAY_GAMES,         // Belirli sayıda oyun oynama
-    ACHIEVE_SCORE,      // Belirli bir skora ulaşma
-    PERFECT_WINS,       // İlk denemede doğru tahmin
-    QUICK_WINS,         // Belirli bir süreden önce kazanma
-    DAILY_LOGIN         // Günlük giriş
+    fun isRewardClaimable(): Boolean {
+        return isCompleted && !isRewardClaimed
+    }
+
+    fun updateProgress(progress: Int): DailyMission {
+        val newProgress = currentProgress + progress
+        val completed = newProgress >= targetProgress
+        return copy(
+            currentProgress = newProgress,
+            isCompleted = completed
+        )
+    }
+
+    fun claimReward(): DailyMission {
+        return if (isRewardClaimable()) {
+            copy(isRewardClaimed = true)
+        } else {
+            this
+        }
+    }
 }

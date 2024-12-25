@@ -1,123 +1,120 @@
 package com.brainfocus.numberdetective.viewmodel
 
-import androidx.lifecycle.viewModelScope
 import com.brainfocus.numberdetective.base.BaseViewModel
-import com.brainfocus.numberdetective.data.entities.GameResult
 import com.brainfocus.numberdetective.data.repository.GameRepository
-import com.brainfocus.numberdetective.game.NumberDetectiveGame
+import com.brainfocus.numberdetective.missions.MissionManager
+import com.brainfocus.numberdetective.missions.MissionType
 import com.brainfocus.numberdetective.utils.ErrorHandler
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.launch
-import java.util.*
+import kotlin.random.Random
 
 class GameViewModel(
     private val gameRepository: GameRepository,
-    private val errorHandler: ErrorHandler
-) : BaseViewModel() {
+    private val missionManager: MissionManager,
+    errorHandler: ErrorHandler
+) : BaseViewModel(errorHandler) {
 
-    private val game = NumberDetectiveGame()
-    
     private val _gameState = MutableStateFlow<GameState>(GameState.Initial)
     val gameState: StateFlow<GameState> = _gameState
 
-    private val _score = MutableStateFlow(1000)
-    val score: StateFlow<Int> = _score
-
-    private val _attempts = MutableStateFlow(3)
-    val attempts: StateFlow<Int> = _attempts
-
-    private val _guessHistory = MutableStateFlow<List<GuessResult>>(emptyList())
-    val guessHistory: StateFlow<List<GuessResult>> = _guessHistory
-
-    private var startTime: Long = 0
+    private var targetNumber: Int = 0
+    private var attempts: Int = 0
+    private var score: Int = 0
+    private val maxAttempts = 10
 
     init {
         startNewGame()
     }
 
     fun startNewGame() {
-        viewModelScope.launch {
-            game.startNewGame()
-            _gameState.emit(GameState.Playing)
-            _score.emit(1000)
-            _attempts.emit(3)
-            _guessHistory.emit(emptyList())
-            startTime = System.currentTimeMillis()
-        }
+        targetNumber = Random.nextInt(1, 101)
+        attempts = 0
+        score = 1000
+        _gameState.value = GameState.Initial
     }
 
-    fun makeGuess(guess: String) {
-        if (_gameState.value !is GameState.Playing) return
-
-        viewModelScope.launch {
-            try {
-                val result = game.makeGuess(guess)
-                val currentAttempts = _attempts.value - 1
-                _attempts.emit(currentAttempts)
-
-                // Tahmin geçmişini güncelle
-                val guessResult = GuessResult(
-                    guess = guess,
-                    correct = result.correct,
-                    misplaced = result.misplaced
+    fun makeGuess(guessStr: String) {
+        try {
+            val guess = guessStr.toInt()
+            if (guess !in 1..100) {
+                _gameState.value = GameState.Playing(
+                    hint = "Please enter a number between 1 and 100",
+                    attempts = attempts,
+                    maxAttempts = maxAttempts,
+                    score = score
                 )
-                _guessHistory.emit(_guessHistory.value + guessResult)
-
-                // Skoru güncelle
-                val timePenalty = ((System.currentTimeMillis() - startTime) / 1000) * 10
-                val newScore = (_score.value - timePenalty).coerceAtLeast(0).toInt()
-                _score.emit(newScore)
-
-                when {
-                    result.correct == 3 -> handleWin(newScore)
-                    currentAttempts <= 0 -> handleLoss()
-                }
-            } catch (e: Exception) {
-                errorHandler.handleError(
-                    ErrorHandler.AppError.GameError("Invalid guess", e),
-                    null
-                )
+                return
             }
+
+            attempts++
+            score = calculateScore(attempts)
+
+            when {
+                guess == targetNumber -> {
+                    handleWin()
+                }
+                attempts >= maxAttempts -> {
+                    handleLoss()
+                }
+                guess < targetNumber -> {
+                    _gameState.value = GameState.Playing(
+                        hint = "Higher!",
+                        attempts = attempts,
+                        maxAttempts = maxAttempts,
+                        score = score
+                    )
+                }
+                else -> {
+                    _gameState.value = GameState.Playing(
+                        hint = "Lower!",
+                        attempts = attempts,
+                        maxAttempts = maxAttempts,
+                        score = score
+                    )
+                }
+            }
+        } catch (e: NumberFormatException) {
+            _gameState.value = GameState.Playing(
+                hint = "Please enter a valid number",
+                attempts = attempts,
+                maxAttempts = maxAttempts,
+                score = score
+            )
         }
     }
 
-    private suspend fun handleWin(finalScore: Int) {
-        _gameState.emit(GameState.Won(finalScore))
-        saveGameResult(true, finalScore)
-    }
-
-    private suspend fun handleLoss() {
-        _gameState.emit(GameState.Lost(game.getSecretNumber()))
-        saveGameResult(false, 0)
-    }
-
-    private suspend fun saveGameResult(isWin: Boolean, score: Int) {
-        val gameResult = GameResult(
-            id = UUID.randomUUID().toString(),
-            playerId = "current_player", // TODO: Gerçek oyuncu ID'si eklenecek
-            score = score,
-            attempts = 3 - _attempts.value,
-            isWin = isWin,
-            timeTaken = (System.currentTimeMillis() - startTime) / 1000,
-            date = System.currentTimeMillis()
-        )
-
-        launchIO {
-            gameRepository.saveGameResult(gameResult)
+    private fun handleWin() {
+        launchWithErrorHandling {
+            gameRepository.saveGameResult(score, attempts)
+            missionManager.updateMissionProgress(MissionType.WINS)
+            if (score > 800) {
+                missionManager.updateMissionProgress(MissionType.HIGH_SCORE)
+            }
+            _gameState.value = GameState.Won(score)
         }
     }
 
-    sealed class GameState {
-        object Initial : GameState()
-        object Playing : GameState()
-        data class Won(val score: Int) : GameState()
-        data class Lost(val secretNumber: String) : GameState()
+    private fun handleLoss() {
+        launchWithErrorHandling {
+            missionManager.updateMissionProgress(MissionType.GAMES_PLAYED)
+            _gameState.value = GameState.Lost(targetNumber)
+        }
     }
 
-    data class GuessResult(
-        val guess: String,
-        val correct: Int,
-        val misplaced: Int
-    )
+    private fun calculateScore(attempts: Int): Int {
+        return maxOf(0, 1000 - (attempts - 1) * 100)
+    }
+}
+
+sealed class GameState {
+    object Initial : GameState()
+    data class Playing(
+        val hint: String,
+        val attempts: Int,
+        val maxAttempts: Int,
+        val score: Int
+    ) : GameState()
+    data class Won(val score: Int) : GameState()
+    data class Lost(val targetNumber: Int) : GameState()
 }
