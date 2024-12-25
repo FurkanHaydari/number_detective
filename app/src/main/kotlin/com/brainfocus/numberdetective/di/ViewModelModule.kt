@@ -10,7 +10,7 @@ import org.koin.dsl.module
 val viewModelModule = module {
     single { MissionManager.create(get(), get()) }
     
-    viewModel { GameViewModel(get(), get(), get()) }
+    viewModel { GameViewModel(get()) }
     viewModel { LeaderboardViewModel(get(), get()) }
     viewModel { MissionsViewModel(get(), get()) }
 }

@@ -15,7 +15,7 @@
         <!-- AdMob uygulama ID -->
         <meta-data
             android:name="com.google.android.gms.ads.APPLICATION_ID"
-            android:value="ca-app-pub-xxxxxxxxxxxxxxxx~yyyyyyyyyy"/>
+            android:value="ca-app-pub-2169146656559706~5290972275"/>
 
         <activity
             android:name=".MainActivity"
@@ -28,6 +28,7 @@
 
         <activity android:name=".LeaderboardActivity" />
         <activity android:name=".MissionsActivity" />
+        <activity android:name=".GameActivity" />
 
     </application>
 </manifest>

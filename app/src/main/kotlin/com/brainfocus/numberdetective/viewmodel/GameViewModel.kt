@@ -1,17 +1,12 @@
 package com.brainfocus.numberdetective.viewmodel
 
 import com.brainfocus.numberdetective.base.BaseViewModel
-import com.brainfocus.numberdetective.data.repository.GameRepository
-import com.brainfocus.numberdetective.missions.MissionManager
-import com.brainfocus.numberdetective.missions.MissionType
 import com.brainfocus.numberdetective.utils.ErrorHandler
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlin.random.Random
 
 class GameViewModel(
-    private val gameRepository: GameRepository,
-    private val missionManager: MissionManager,
     errorHandler: ErrorHandler
 ) : BaseViewModel(errorHandler) {
 
@@ -57,6 +52,13 @@ class GameViewModel(
     private lateinit var fourthChoices: List<String>
     private lateinit var fifthChoices: List<String>
 
+    private var firstHint = ""
+    private var secondHint = ""
+    private var thirdHint = ""
+    private var fourthHint = ""
+    private var fifthHint = ""
+    private var pathSelection = 1
+
     init {
         startNewGame()
     }
@@ -66,14 +68,11 @@ class GameViewModel(
         generateNumberWith3Digits()
         attempts = 0
         score = 1000
+        pathSelection = Random.nextInt(1, 4)
         generateHintChoices()
         generateHints()
-        _gameState.value = GameState.Playing(
-            hints = hints,
-            attempts = attempts,
-            maxAttempts = maxAttempts,
-            score = score
-        )
+        generateReadableHints()
+        updateGameState()
     }
 
     private fun resetNumbers() {
@@ -89,9 +88,7 @@ class GameViewModel(
     }
 
     private fun generateHintChoices() {
-        val pathSelection = Random.nextInt(1, 4)
         val temp = Random.nextBoolean()
-
         when (pathSelection) {
             1 -> {
                 firstChoices = firstAChoices
@@ -118,26 +115,29 @@ class GameViewModel(
     }
 
     private fun generateHints() {
-        hints.clear()
-        val firstHint = makeReadable(firstChoices.random())
-        val secondHint = makeReadable(secondChoices.random())
-        val thirdHint = makeReadable(thirdChoices.random())
-        val fourthHint = makeReadable(fourthChoices.random())
-        val fifthHint = makeReadable(fifthChoices.random())
+        firstHint = firstChoices.random()
+        secondHint = secondChoices.random()
+        thirdHint = thirdChoices.random()
+        fourthHint = fourthChoices.random()
+        fifthHint = fifthChoices.random()
+    }
 
-        hints.apply {
-            add("Hint 1: $firstHint - One number is correct but wrongly placed")
-            add("Hint 2: $secondHint - One number is correct and correctly placed")
-            add("Hint 3: $thirdHint - Two numbers are correct but wrongly placed")
-            add("Hint 4: $fourthHint - Two numbers are correct but wrongly placed")
-            add("Hint 5: $fifthHint - Two numbers are correct but one of them is correctly placed")
-        }
+    private fun generateReadableHints() {
+        hints.clear()
+        hints.add(makeReadableWithDescription(firstHint, "One number is correct but wrongly placed"))
+        hints.add(makeReadableWithDescription(secondHint, "One number is correct and correctly placed"))
+        hints.add(makeReadableWithDescription(thirdHint, "Two numbers are correct but wrongly placed"))
+        hints.add(makeReadableWithDescription(fourthHint, "Two numbers are correct but wrongly placed"))
+        hints.add(makeReadableWithDescription(fifthHint, "Two numbers are correct but one of them is correctly placed"))
+    }
+
+    private fun makeReadableWithDescription(hint: String, description: String): String {
+        return "${makeReadable(hint)} - $description"
     }
 
     private fun makeReadable(hint: String): String {
-        val remainingNumbers = numbers.toMutableList()
         val switch = mapOf(
-            'x' to { remainingNumbers.random().also { remainingNumbers.remove(it) }.toString() },
+            'x' to { numbers.random().also { numbers.remove(it) }.toString() },
             'a' to { hundredDigit.toString() },
             'b' to { tenDigit.toString() },
             'c' to { oneDigit.toString() }
@@ -146,47 +146,28 @@ class GameViewModel(
     }
 
     fun makeGuess(guess: Int) {
-        attempts++
-        score = calculateScore(attempts)
+        if (attempts < maxAttempts) {
+            attempts++
+            score -= 100
 
-        when {
-            guess == targetNumber -> {
-                handleWin()
-            }
-            attempts >= maxAttempts -> {
-                handleLoss()
-            }
-            else -> {
-                _gameState.value = GameState.Playing(
-                    hints = hints,
-                    attempts = attempts,
-                    maxAttempts = maxAttempts,
-                    score = score
-                )
+            if (guess == targetNumber) {
+                _gameState.value = GameState.Won(score)
+            } else if (attempts >= maxAttempts) {
+                _gameState.value = GameState.Lost(targetNumber)
+            } else {
+                updateGameState(guess)
             }
         }
     }
 
-    private fun calculateScore(attempts: Int): Int {
-        return maxOf(1000 - (attempts - 1) * 100, 0)
-    }
-
-    private fun handleWin() {
-        launchWithErrorHandling {
-            gameRepository.saveGameResult(score, attempts)
-            missionManager.updateMissionProgress(MissionType.WINS)
-            if (score > 800) {
-                missionManager.updateMissionProgress(MissionType.HIGH_SCORE)
-            }
-            _gameState.value = GameState.Won(score)
-        }
-    }
-
-    private fun handleLoss() {
-        launchWithErrorHandling {
-            missionManager.updateMissionProgress(MissionType.GAMES_PLAYED)
-            _gameState.value = GameState.Lost(targetNumber)
-        }
+    private fun updateGameState(lastGuess: Int? = null) {
+        _gameState.value = GameState.Playing(
+            hints = hints,
+            attempts = attempts,
+            maxAttempts = maxAttempts,
+            score = score,
+            lastGuess = lastGuess
+        )
     }
 }
 
@@ -196,7 +177,8 @@ sealed class GameState {
         val hints: List<String>,
         val attempts: Int,
         val maxAttempts: Int,
-        val score: Int
+        val score: Int,
+        val lastGuess: Int? = null
     ) : GameState()
     data class Won(val score: Int) : GameState()
     data class Lost(val targetNumber: Int) : GameState()
