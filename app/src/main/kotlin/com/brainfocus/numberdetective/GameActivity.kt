@@ -13,6 +13,7 @@ import androidx.activity.OnBackPressedCallback
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.lifecycleScope
+import androidx.viewpager2.widget.ViewPager2
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.progressindicator.LinearProgressIndicator
 import kotlinx.coroutines.launch
@@ -25,7 +26,8 @@ class GameActivity : AppCompatActivity() {
     private val viewModel: GameViewModel by viewModel()
     private lateinit var guessGrid: GridLayout
     private lateinit var numpad: GridLayout
-    private lateinit var hintsContainer: LinearLayout
+    private lateinit var hintsViewPager: ViewPager2
+    private lateinit var hintAdapter: HintPagerAdapter
     private lateinit var attemptsProgress: LinearProgressIndicator
     private lateinit var scoreText: TextView
     private var currentRow = 0
@@ -57,7 +59,7 @@ class GameActivity : AppCompatActivity() {
     private fun setupViews() {
         guessGrid = findViewById(R.id.guessGrid)
         numpad = findViewById(R.id.numpad)
-        hintsContainer = findViewById(R.id.hintsContainer)
+        hintsViewPager = findViewById(R.id.hintsViewPager)
         attemptsProgress = findViewById(R.id.attemptsProgress)
         scoreText = findViewById(R.id.scoreText)
 
@@ -88,26 +90,17 @@ class GameActivity : AppCompatActivity() {
     }
 
     private fun setupHints() {
-        hintsContainer.removeAllViews()
-        // Add 5 hint rows initially
-        for (i in 0 until 5) {
-            val hintRow = layoutInflater.inflate(R.layout.hint_row, hintsContainer, false)
-            val hintText = hintRow.findViewById<TextView>(R.id.hintText)
-            hintText.visibility = View.VISIBLE
-            hintText.text = "Hint ${i + 1}"
-            
-            // Initialize circles with default background
-            val circles = listOf(
-                hintRow.findViewById<View>(R.id.hintCircle1),
-                hintRow.findViewById<View>(R.id.hintCircle2),
-                hintRow.findViewById<View>(R.id.hintCircle3)
+        hintAdapter = HintPagerAdapter()
+        hintsViewPager.adapter = hintAdapter
+        
+        // Initial empty state - will be populated by updatePlayingState
+        val initialHints = listOf(
+            HintPagerAdapter.HintItem(
+                "Waiting for game to start...",
+                "000"
             )
-            circles.forEach { circle ->
-                circle.setBackgroundResource(R.drawable.circle_background)
-            }
-            
-            hintsContainer.addView(hintRow)
-        }
+        )
+        hintAdapter.updateHints(initialHints)
     }
 
     private fun setupNumpad() {
@@ -244,47 +237,56 @@ class GameActivity : AppCompatActivity() {
     }
 
     private fun updatePlayingState(state: GameState.Playing) {
-        attemptsProgress.progress = state.attempts
-        attemptsProgress.max = state.maxAttempts
-        animateScore(state.score)
+        // Update score
+        currentScore = state.score
+        scoreText.text = "Score: $currentScore"
         
-        // Update hints text
-        state.hints.forEachIndexed { index, hint ->
-            if (index >= hintsContainer.childCount) return@forEachIndexed
-            
-            val hintRow = hintsContainer.getChildAt(index) as? ViewGroup ?: return@forEachIndexed
-            val hintText = hintRow.findViewById<TextView>(R.id.hintText) ?: return@forEachIndexed
-            hintText.text = hint
+        // Update hints
+        val hintItems = state.hints.map { hint ->
+            val parts = hint.split(" - ")
+            val number = parts[0]
+            val description = parts[1]
+            HintPagerAdapter.HintItem(description, number)
         }
+        hintAdapter.updateHints(hintItems)
         
-        // Update colors for the last guess
-        state.lastGuess?.let { guess ->
-            if (state.attempts <= 0 || state.attempts > 3) return@let
-            
-            val guessStr = guess.toString().padStart(3, '0')
-            val targetStr = viewModel.targetNumber.toString().padStart(3, '0')
-            var correctCount = 0
-            var misplacedCount = 0
+        // Update attempts progress
+        attemptsProgress.progress = state.attempts
+        
+        // Update colors for the last guess if available
+        state.lastGuess?.let { updateGridColors(it) }
+    }
 
-            // First count exact matches
-            guessStr.forEachIndexed { index, digit ->
-                if (digit == targetStr[index]) {
-                    correctCount++
-                }
+    private fun updateGridColors(guess: Int) {
+        val targetStr = viewModel.targetNumber.toString().padStart(3, '0')
+        val guessStr = guess.toString().padStart(3, '0')
+        val cells = mutableListOf<TextView>()
+        
+        // Collect cells
+        for (col in 0..2) {
+            val cell = guessGrid.findViewWithTag<TextView>("cell_${currentRow - 1}_$col")
+            cells.add(cell)
+        }
+
+        // First mark correct positions
+        cells.forEachIndexed { index, cell ->
+            if (guessStr[index] == targetStr[index]) {
+                cell.setBackgroundResource(R.drawable.grid_cell_correct)
             }
+        }
 
-            // Then count misplaced digits
-            guessStr.forEach { digit ->
-                when {
-                    targetStr.count { targetDigit -> targetDigit == digit } > 
-                        guessStr.filterIndexed { index, d -> 
-                            d == digit && guessStr[index] == targetStr[index] 
-                        }.count() -> misplacedCount++
-                }
+        // Then mark misplaced positions
+        cells.forEachIndexed { index, cell ->
+            if (guessStr[index] != targetStr[index] && targetStr.contains(guessStr[index])) {
+                cell.setBackgroundResource(R.drawable.grid_cell_misplaced)
             }
+        }
 
-            // Update the guess colors
-            updateGuessColors(state.attempts - 1, correctCount, misplacedCount)
+        // Finally mark incorrect positions
+        cells.forEachIndexed { index, cell ->
+            if (!targetStr.contains(guessStr[index])) {
+                cell.setBackgroundResource(R.drawable.grid_cell_incorrect)
+            }
         }
     }
 }

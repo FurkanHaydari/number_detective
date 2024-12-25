@@ -30,16 +30,13 @@
         app:trackColor="@color/colorBorder"
         app:indicatorColor="@color/neonBlue"/>
 
-    <LinearLayout
-        android:id="@+id/hintsContainer"
+    <androidx.viewpager2.widget.ViewPager2
+        android:id="@+id/hintsViewPager"
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1"
-        android:orientation="vertical"
         android:layout_marginBottom="24dp"
-        android:divider="@android:drawable/divider_horizontal_bright"
-        android:showDividers="middle"
-        android:dividerPadding="8dp"/>
+        android:orientation="horizontal" />
 
     <GridLayout
         android:id="@+id/guessGrid"
