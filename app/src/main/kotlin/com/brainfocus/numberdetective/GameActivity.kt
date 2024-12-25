@@ -5,6 +5,7 @@ import android.text.SpannableString
 import android.text.SpannableStringBuilder
 import android.text.style.ForegroundColorSpan
 import android.view.Gravity
+import android.view.View
 import android.widget.EditText
 import android.widget.GridLayout
 import android.widget.TextView
@@ -27,7 +28,10 @@ class GameActivity : AppCompatActivity() {
     private lateinit var attemptsText: TextView
     private lateinit var scoreText: TextView
     private lateinit var guessGrid: GridLayout
+    private lateinit var numpad: GridLayout
+    private lateinit var backButton: MaterialButton
     private val gridCells = mutableListOf<TextView>()
+    private var currentGuess = StringBuilder()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -35,6 +39,8 @@ class GameActivity : AppCompatActivity() {
 
         initViews()
         setupGrid()
+        setupNumpad()
+        setupBackButton()
         setupListeners()
         observeGameState()
     }
@@ -47,6 +53,8 @@ class GameActivity : AppCompatActivity() {
         attemptsText = findViewById(R.id.attemptsText)
         scoreText = findViewById(R.id.scoreText)
         guessGrid = findViewById(R.id.guessGrid)
+        numpad = findViewById(R.id.numpad)
+        backButton = findViewById(R.id.backButton)
     }
 
     private fun setupGrid() {
@@ -73,6 +81,43 @@ class GameActivity : AppCompatActivity() {
                 guessGrid.addView(cell, params)
                 gridCells.add(cell)
             }
+        }
+    }
+
+    private fun setupNumpad() {
+        val numbers = (1..9).toList() + listOf(0)
+        
+        numbers.forEach { number ->
+            val button = MaterialButton(this).apply {
+                text = number.toString()
+                textSize = 18f
+                layoutParams = GridLayout.LayoutParams().apply {
+                    width = resources.getDimensionPixelSize(R.dimen.numpad_button_size)
+                    height = resources.getDimensionPixelSize(R.dimen.numpad_button_size)
+                    setMargins(4, 4, 4, 4)
+                }
+                setOnClickListener { onNumberClick(number) }
+            }
+            numpad.addView(button)
+        }
+
+        // Add backspace button
+        val backspaceButton = MaterialButton(this).apply {
+            text = "⌫"
+            textSize = 18f
+            layoutParams = GridLayout.LayoutParams().apply {
+                width = resources.getDimensionPixelSize(R.dimen.numpad_button_size)
+                height = resources.getDimensionPixelSize(R.dimen.numpad_button_size)
+                setMargins(4, 4, 4, 4)
+            }
+            setOnClickListener { onBackspaceClick() }
+        }
+        numpad.addView(backspaceButton)
+    }
+
+    private fun setupBackButton() {
+        backButton.setOnClickListener {
+            finish()
         }
     }
 
@@ -170,5 +215,23 @@ class GameActivity : AppCompatActivity() {
             }
         }
         hintsContainer.text = builder
+    }
+
+    private fun onNumberClick(number: Int) {
+        if (currentGuess.length < 3) {
+            currentGuess.append(number)
+            updateGuessInput()
+        }
+    }
+
+    private fun onBackspaceClick() {
+        if (currentGuess.isNotEmpty()) {
+            currentGuess.deleteCharAt(currentGuess.length - 1)
+            updateGuessInput()
+        }
+    }
+
+    private fun updateGuessInput() {
+        guessInput.setText(currentGuess.toString())
     }
 }
