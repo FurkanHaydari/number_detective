@@ -17,7 +17,6 @@ abstract class BaseActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setupViews()
     }
 
     protected abstract fun setupViews()
@@ -40,10 +39,6 @@ abstract class BaseActivity : AppCompatActivity() {
         }
     }
 
-    protected fun showLoading(show: Boolean) {
-        progressBar?.visibility = if (show) View.VISIBLE else View.GONE
-    }
-
     protected fun showError(message: String, retry: (() -> Unit)? = null) {
         rootView?.let { view ->
             val snackbar = Snackbar.make(view, message, Snackbar.LENGTH_LONG)
@@ -52,5 +47,9 @@ abstract class BaseActivity : AppCompatActivity() {
             }
             snackbar.show()
         }
+    }
+
+    protected fun showLoading(show: Boolean) {
+        progressBar?.visibility = if (show) View.VISIBLE else View.GONE
     }
 }

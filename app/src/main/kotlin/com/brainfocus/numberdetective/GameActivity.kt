@@ -1,237 +1,278 @@
 package com.brainfocus.numberdetective
 
+import android.animation.ValueAnimator
+import android.content.res.ColorStateList
 import android.os.Bundle
-import android.text.SpannableString
-import android.text.SpannableStringBuilder
-import android.text.style.ForegroundColorSpan
 import android.view.Gravity
 import android.view.View
-import android.widget.EditText
+import android.view.ViewGroup
 import android.widget.GridLayout
+import android.widget.LinearLayout
 import android.widget.TextView
+import androidx.activity.OnBackPressedCallback
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.lifecycleScope
-import com.brainfocus.numberdetective.viewmodel.GameState
-import com.brainfocus.numberdetective.viewmodel.GameViewModel
 import com.google.android.material.button.MaterialButton
-import kotlinx.coroutines.flow.collectLatest
+import com.google.android.material.progressindicator.LinearProgressIndicator
 import kotlinx.coroutines.launch
 import org.koin.androidx.viewmodel.ext.android.viewModel
+import com.brainfocus.numberdetective.viewmodel.GameViewModel
+import com.brainfocus.numberdetective.viewmodel.GameState
 
 class GameActivity : AppCompatActivity() {
+
     private val viewModel: GameViewModel by viewModel()
-    private lateinit var guessInput: EditText
-    private lateinit var submitButton: MaterialButton
-    private lateinit var newGameButton: MaterialButton
-    private lateinit var hintsContainer: TextView
-    private lateinit var attemptsText: TextView
-    private lateinit var scoreText: TextView
     private lateinit var guessGrid: GridLayout
     private lateinit var numpad: GridLayout
-    private lateinit var backButton: MaterialButton
-    private val gridCells = mutableListOf<TextView>()
-    private var currentGuess = StringBuilder()
+    private lateinit var hintsContainer: LinearLayout
+    private lateinit var attemptsProgress: LinearProgressIndicator
+    private lateinit var scoreText: TextView
+    private var currentRow = 0
+    private var currentCol = 0
+    private var currentScore = 1000
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_game)
-
-        initViews()
+        setupViews()
         setupGrid()
+        setupHints()
         setupNumpad()
-        setupBackButton()
-        setupListeners()
         observeGameState()
+        
+        // Start a new game
+        viewModel.startNewGame()
+
+        // Handle back press
+        onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
+            override fun handleOnBackPressed() {
+                finish()
+            }
+        })
     }
 
-    private fun initViews() {
-        guessInput = findViewById(R.id.guessInput)
-        submitButton = findViewById(R.id.submitButton)
-        newGameButton = findViewById(R.id.newGameButton)
-        hintsContainer = findViewById(R.id.hintsContainer)
-        attemptsText = findViewById(R.id.attemptsText)
-        scoreText = findViewById(R.id.scoreText)
+    private fun setupViews() {
         guessGrid = findViewById(R.id.guessGrid)
         numpad = findViewById(R.id.numpad)
-        backButton = findViewById(R.id.backButton)
+        hintsContainer = findViewById(R.id.hintsContainer)
+        attemptsProgress = findViewById(R.id.attemptsProgress)
+        scoreText = findViewById(R.id.scoreText)
+
+        attemptsProgress.max = 3
+        scoreText.text = "Score: $currentScore"
     }
 
     private fun setupGrid() {
-        // Create 6 rows x 3 columns grid for guesses
-        repeat(6) { row ->
-            repeat(3) { col ->
+        guessGrid.removeAllViews()
+        for (row in 0 until 3) {
+            for (col in 0 until 3) {
                 val cell = TextView(this).apply {
-                    width = resources.getDimensionPixelSize(R.dimen.grid_cell_size)
-                    height = resources.getDimensionPixelSize(R.dimen.grid_cell_size)
+                    id = resources.getIdentifier("cell_${row}_$col", "id", packageName)
+                    layoutParams = GridLayout.LayoutParams().apply {
+                        width = resources.getDimensionPixelSize(R.dimen.grid_cell_size)
+                        height = resources.getDimensionPixelSize(R.dimen.grid_cell_size)
+                        setMargins(8, 8, 8, 8)
+                    }
                     gravity = Gravity.CENTER
+                    setBackgroundResource(R.drawable.grid_cell_background)
                     textSize = 24f
                     setTextColor(ContextCompat.getColor(context, R.color.colorText))
-                    background = ContextCompat.getDrawable(context, R.drawable.grid_cell_background)
+                    tag = "cell_${row}_$col"
                 }
-                
-                val params = GridLayout.LayoutParams().apply {
-                    width = GridLayout.LayoutParams.WRAP_CONTENT
-                    height = GridLayout.LayoutParams.WRAP_CONTENT
-                    setMargins(4, 4, 4, 4)
-                    rowSpec = GridLayout.spec(row)
-                    columnSpec = GridLayout.spec(col)
-                }
-                
-                guessGrid.addView(cell, params)
-                gridCells.add(cell)
+                guessGrid.addView(cell)
             }
         }
     }
 
+    private fun setupHints() {
+        hintsContainer.removeAllViews()
+        // Add 5 hint rows initially
+        for (i in 0 until 5) {
+            val hintRow = layoutInflater.inflate(R.layout.hint_row, hintsContainer, false)
+            val hintText = hintRow.findViewById<TextView>(R.id.hintText)
+            hintText.visibility = View.VISIBLE
+            hintText.text = "Hint ${i + 1}"
+            
+            // Initialize circles with default background
+            val circles = listOf(
+                hintRow.findViewById<View>(R.id.hintCircle1),
+                hintRow.findViewById<View>(R.id.hintCircle2),
+                hintRow.findViewById<View>(R.id.hintCircle3)
+            )
+            circles.forEach { circle ->
+                circle.setBackgroundResource(R.drawable.circle_background)
+            }
+            
+            hintsContainer.addView(hintRow)
+        }
+    }
+
     private fun setupNumpad() {
+        numpad.removeAllViews()
         val numbers = (1..9).toList() + listOf(0)
         
         numbers.forEach { number ->
             val button = MaterialButton(this).apply {
                 text = number.toString()
-                textSize = 18f
+                textSize = 22f
+                setTextColor(ContextCompat.getColor(context, R.color.white))
+                setBackgroundResource(R.drawable.button_background)
                 layoutParams = GridLayout.LayoutParams().apply {
                     width = resources.getDimensionPixelSize(R.dimen.numpad_button_size)
                     height = resources.getDimensionPixelSize(R.dimen.numpad_button_size)
                     setMargins(4, 4, 4, 4)
                 }
                 setOnClickListener { onNumberClick(number) }
+                elevation = 4f
+                strokeWidth = 2
+                setStrokeColor(ColorStateList.valueOf(ContextCompat.getColor(context, R.color.neonBlue)))
             }
             numpad.addView(button)
         }
-
-        // Add backspace button
-        val backspaceButton = MaterialButton(this).apply {
-            text = "⌫"
-            textSize = 18f
-            layoutParams = GridLayout.LayoutParams().apply {
-                width = resources.getDimensionPixelSize(R.dimen.numpad_button_size)
-                height = resources.getDimensionPixelSize(R.dimen.numpad_button_size)
-                setMargins(4, 4, 4, 4)
-            }
-            setOnClickListener { onBackspaceClick() }
-        }
-        numpad.addView(backspaceButton)
     }
 
-    private fun setupBackButton() {
-        backButton.setOnClickListener {
-            finish()
+    private fun onNumberClick(number: Int) {
+        if (currentCol < 3) {
+            val cell = guessGrid.findViewWithTag<TextView>("cell_${currentRow}_$currentCol")
+            cell.text = number.toString()
+            currentCol++
+            
+            if (currentCol == 3) {
+                // Get the guess from the current row
+                val guess = StringBuilder()
+                for (col in 0..2) {
+                    val guessCell = guessGrid.findViewWithTag<TextView>("cell_${currentRow}_$col")
+                    guess.append(guessCell.text)
+                }
+                
+                viewModel.makeGuess(guess.toString().toInt())
+                currentCol = 0
+                currentRow++
+            }
         }
     }
 
-    private fun setupListeners() {
-        submitButton.setOnClickListener {
-            val guess = guessInput.text.toString()
-            if (guess.length == 3) {
-                viewModel.makeGuess(guess.toInt())
-                guessInput.text.clear()
+    private fun animateScore(newScore: Int) {
+        val animator = ValueAnimator.ofInt(currentScore, newScore)
+        animator.duration = 1000
+        animator.addUpdateListener { animation ->
+            val animatedValue = animation.animatedValue as Int
+            scoreText.text = "Score: $animatedValue"
+        }
+        animator.start()
+        currentScore = newScore
+    }
+
+    private fun updateGuessColors(row: Int, correctCount: Int, misplacedCount: Int) {
+        val targetStr = viewModel.targetNumber.toString().padStart(3, '0')
+        val guessStr = StringBuilder()
+        val cells = mutableListOf<TextView>()
+        
+        // Collect guess and cells
+        for (col in 0..2) {
+            val cell = guessGrid.findViewWithTag<TextView>("cell_${row}_$col")
+            cells.add(cell)
+            guessStr.append(cell.text)
+        }
+
+        // First mark correct positions
+        cells.forEachIndexed { index, cell ->
+            if (guessStr[index] == targetStr[index]) {
+                cell.setBackgroundResource(R.drawable.grid_cell_correct)
             }
         }
 
-        newGameButton.setOnClickListener {
-            viewModel.startNewGame()
-            guessInput.text.clear()
-            submitButton.isEnabled = true
-            guessInput.isEnabled = true
-            clearGrid()
+        // Then mark misplaced positions
+        cells.forEachIndexed { index, cell ->
+            if (guessStr[index] != targetStr[index] && targetStr.contains(guessStr[index])) {
+                cell.setBackgroundResource(R.drawable.grid_cell_misplaced)
+            }
+        }
+
+        // Finally mark incorrect positions
+        cells.forEachIndexed { index, cell ->
+            if (!targetStr.contains(guessStr[index])) {
+                cell.setBackgroundResource(R.drawable.grid_cell_incorrect)
+            }
         }
     }
 
     private fun observeGameState() {
         lifecycleScope.launch {
-            viewModel.gameState.collectLatest { state ->
+            viewModel.gameState.collect { state ->
                 when (state) {
                     is GameState.Initial -> {
-                        hintsContainer.text = ""
-                        attemptsText.text = "Attempts: 0/10"
-                        scoreText.text = "Score: 0"
-                        submitButton.isEnabled = true
-                        guessInput.isEnabled = true
-                        clearGrid()
+                        // Reset UI for new game
+                        currentRow = 0
+                        currentCol = 0
+                        currentScore = 1000
+                        scoreText.text = "Score: $currentScore"
+                        
+                        // Clear grid
+                        for (row in 0 until 3) {
+                            for (col in 0 until 3) {
+                                val cell = guessGrid.findViewWithTag<TextView>("cell_${row}_$col")
+                                cell.text = ""
+                                cell.setBackgroundResource(R.drawable.grid_cell_background)
+                            }
+                        }
                     }
-                    is GameState.Playing -> {
-                        updateGrid(state.attempts - 1, state.lastGuess)
-                        formatHints(state.hints)
-                        attemptsText.text = "Attempts: ${state.attempts}/${state.maxAttempts}"
-                        scoreText.text = "Score: ${state.score}"
-                        submitButton.isEnabled = true
-                        guessInput.isEnabled = true
-                    }
+                    is GameState.Playing -> updatePlayingState(state)
                     is GameState.Won -> {
-                        hintsContainer.text = "🎉 Congratulations! You won with a score of ${state.score}!"
-                        submitButton.isEnabled = false
-                        guessInput.isEnabled = false
+                        animateScore(state.score)
+                        // TODO: Add winning animation
                     }
                     is GameState.Lost -> {
-                        hintsContainer.text = "Game Over! The code was ${state.targetNumber}"
-                        submitButton.isEnabled = false
-                        guessInput.isEnabled = false
+                        // TODO: Add losing animation
                     }
                 }
             }
         }
     }
 
-    private fun updateGrid(row: Int, guess: Int?) {
-        guess?.toString()?.padStart(3, '0')?.forEachIndexed { index, digit ->
-            val cellIndex = row * 3 + index
-            if (cellIndex in gridCells.indices) {
-                gridCells[cellIndex].text = digit.toString()
-            }
+    private fun updatePlayingState(state: GameState.Playing) {
+        attemptsProgress.progress = state.attempts
+        attemptsProgress.max = state.maxAttempts
+        animateScore(state.score)
+        
+        // Update hints text
+        state.hints.forEachIndexed { index, hint ->
+            if (index >= hintsContainer.childCount) return@forEachIndexed
+            
+            val hintRow = hintsContainer.getChildAt(index) as? ViewGroup ?: return@forEachIndexed
+            val hintText = hintRow.findViewById<TextView>(R.id.hintText) ?: return@forEachIndexed
+            hintText.text = hint
         }
-    }
+        
+        // Update colors for the last guess
+        state.lastGuess?.let { guess ->
+            if (state.attempts <= 0 || state.attempts > 3) return@let
+            
+            val guessStr = guess.toString().padStart(3, '0')
+            val targetStr = viewModel.targetNumber.toString().padStart(3, '0')
+            var correctCount = 0
+            var misplacedCount = 0
 
-    private fun clearGrid() {
-        gridCells.forEach { cell ->
-            cell.text = ""
-            cell.setBackgroundResource(R.drawable.grid_cell_background)
-        }
-    }
-
-    private fun formatHints(hints: List<String>) {
-        val builder = SpannableStringBuilder()
-        hints.forEachIndexed { index, hint ->
-            val parts = hint.split(" - ")
-            if (parts.size == 2) {
-                // Format the number part
-                val numberPart = SpannableString(parts[0])
-                numberPart.setSpan(
-                    ForegroundColorSpan(ContextCompat.getColor(this, R.color.colorText)),
-                    0,
-                    numberPart.length,
-                    0
-                )
-                
-                // Add the formatted parts
-                builder.append(numberPart)
-                builder.append(" - ${parts[1]}")
-                
-                // Add new line if not the last hint
-                if (index < hints.size - 1) {
-                    builder.append("\n\n")
+            // First count exact matches
+            guessStr.forEachIndexed { index, digit ->
+                if (digit == targetStr[index]) {
+                    correctCount++
                 }
             }
-        }
-        hintsContainer.text = builder
-    }
 
-    private fun onNumberClick(number: Int) {
-        if (currentGuess.length < 3) {
-            currentGuess.append(number)
-            updateGuessInput()
-        }
-    }
+            // Then count misplaced digits
+            guessStr.forEach { digit ->
+                when {
+                    targetStr.count { targetDigit -> targetDigit == digit } > 
+                        guessStr.filterIndexed { index, d -> 
+                            d == digit && guessStr[index] == targetStr[index] 
+                        }.count() -> misplacedCount++
+                }
+            }
 
-    private fun onBackspaceClick() {
-        if (currentGuess.isNotEmpty()) {
-            currentGuess.deleteCharAt(currentGuess.length - 1)
-            updateGuessInput()
+            // Update the guess colors
+            updateGuessColors(state.attempts - 1, correctCount, misplacedCount)
         }
-    }
-
-    private fun updateGuessInput() {
-        guessInput.setText(currentGuess.toString())
     }
 }

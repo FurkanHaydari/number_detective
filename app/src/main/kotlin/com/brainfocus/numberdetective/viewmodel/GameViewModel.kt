@@ -13,7 +13,10 @@ class GameViewModel(
     private val _gameState = MutableStateFlow<GameState>(GameState.Initial)
     val gameState: StateFlow<GameState> = _gameState
 
-    private var targetNumber = 0
+    private var _targetNumber = 0
+    val targetNumber: Int
+        get() = _targetNumber
+
     private var attempts = 0
     private var score = 0
     private val maxAttempts = 3
@@ -84,7 +87,7 @@ class GameViewModel(
         hundredDigit = numbers.random().also { numbers.remove(it) }
         tenDigit = numbers.random().also { numbers.remove(it) }
         oneDigit = numbers.random().also { numbers.remove(it) }
-        targetNumber = hundredDigit * 100 + tenDigit * 10 + oneDigit
+        _targetNumber = hundredDigit * 100 + tenDigit * 10 + oneDigit
     }
 
     private fun generateHintChoices() {
@@ -150,10 +153,10 @@ class GameViewModel(
             attempts++
             score -= 100
 
-            if (guess == targetNumber) {
+            if (guess == _targetNumber) {
                 _gameState.value = GameState.Won(score)
             } else if (attempts >= maxAttempts) {
-                _gameState.value = GameState.Lost(targetNumber)
+                _gameState.value = GameState.Lost(_targetNumber)
             } else {
                 updateGameState(guess)
             }
