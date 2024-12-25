@@ -16,7 +16,7 @@ class GameViewModel(
     private var targetNumber = 0
     private var attempts = 0
     private var score = 0
-    private val maxAttempts = 10
+    private val maxAttempts = 3
     private var hints = mutableListOf<String>()
 
     private val numbers = mutableListOf<Int>()
