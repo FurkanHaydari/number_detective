@@ -1,0 +1,31 @@
+<!-- Skor Göstergesi -->
+<CardView
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:elevation="8dp"
+    app:cardCornerRadius="16dp"
+    android:layout_margin="16dp">
+    
+    <TextView
+        android:id="@+id/scoreText"
+        android:text="Score: 1000"
+        android:textSize="24sp"
+        android:padding="12dp"
+        android:textColor="@color/white"/>
+</CardView>
+
+<!-- Sayı Kutuları için Grid -->
+<GridLayout
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:padding="16dp">
+    
+    <!-- Her bir sayı kutusu için -->
+    <TextView
+        android:layout_width="60dp"
+        android:layout_height="60dp"
+        android:background="@drawable/number_box_background"
+        android:textSize="24sp"
+        android:gravity="center"
+        android:elevation="4dp"/>
+</GridLayout> 

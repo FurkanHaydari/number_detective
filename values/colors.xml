@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="primary">#6200EE</color>
+    <color name="primary_dark">#3700B3</color>
+    <color name="neon_cyan">#00E5FF</color>
+    <color name="deep_purple">#311B92</color>
+    <color name="light_purple">#B39DDB</color>
+    <color name="gradient_start">#4A148C</color>
+    <color name="gradient_end">#311B92</color>
+</resources> 

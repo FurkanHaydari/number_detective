@@ -18,14 +18,6 @@ class MainActivity : AppCompatActivity() {
             startActivity(intent)
         }
 
-        findViewById<MaterialButton>(R.id.challengeButton).setOnClickListener {
-            // TODO: Implement multiplayer challenge screen
-        }
-
-        findViewById<MaterialButton>(R.id.leaderboardButton).setOnClickListener {
-            // TODO: Implement leaderboard screen
-        }
-
         // Handle back press
         onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
             override fun handleOnBackPressed() {

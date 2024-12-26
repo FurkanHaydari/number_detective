@@ -31,4 +31,12 @@
     <string name="error">Error</string>
     <string name="ok">OK</string>
     <string name="cancel">Cancel</string>
+
+    <string-array name="game_quotes">
+        <item>"Düşünmek en büyük eylemdir." - Blaise Pascal</item>
+        <item>"Zeka, değişime uyum sağlama yeteneğidir." - Stephen Hawking</item>
+        <item>"Her başarısızlık, yeni bir başlangıçtır." - Nikola Tesla</item>
+        <item>"Basitlik en üstün zerafettir." - Leonardo da Vinci</item>
+        <item>"Soru sormak, cevap vermekten daha önemlidir." - Albert Einstein</item>
+    </string-array>
 </resources>

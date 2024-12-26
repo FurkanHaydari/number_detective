@@ -1,23 +1,40 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="colorPrimary">#2C0B4A</color>
-    <color name="colorPrimaryDark">#1A0631</color>
-    <color name="colorAccent">#1A0631</color>
-    <color name="colorBackground">#2C0B4A</color>
-    <color name="colorSurface">#3D1066</color>
-    <color name="colorBorder">#4A1A66</color>
-    <color name="colorText">#FFFFFF</color>
-    <color name="colorTextSecondary">#B3FFFFFF</color>
-    <color name="colorSecondary">#666666</color>
-    <color name="button_text">#FFFFFF</color>
-    <color name="neonBlue">#00F2FF</color>
-    <color name="neonPurple">#B026FF</color>
-    <color name="neonGreen">#39FF14</color>
-    <color name="colorCorrect">#4CAF50</color>
-    <color name="colorMisplaced">#FFC107</color>
-    <color name="incorrect_number">#F44336</color>
+    <!-- Ana Renkler -->
+    <color name="colorPrimary">#007AFF</color>  <!-- iOS mavi -->
+    <color name="colorPrimaryDark">#0056B3</color>
+    <color name="colorAccent">#FF2D55</color>   <!-- iOS pembe -->
+    
+    <!-- Temel Renkler -->
+    <color name="black">#000000</color>
     <color name="white">#FFFFFF</color>
-    <color name="gradientStart">#1A0631</color>
-    <color name="gradientCenter">#2C0B4A</color>
-    <color name="gradientEnd">#3D1066</color>
+    
+    <!-- Arkaplan Renkleri -->
+    <color name="colorBackground">#F2F2F7</color>  <!-- iOS gri arkaplan -->
+    <color name="colorSurface">#FFFFFF</color>
+    <color name="colorCardBackground">#FFFFFF</color>
+    <color name="colorCardStroke">#E5E5EA</color>  <!-- iOS border rengi -->
+    
+    <!-- Metin Renkleri -->
+    <color name="colorText">#000000</color>
+    <color name="colorTextSecondary">#8E8E93</color>  <!-- iOS ikincil metin -->
+    
+    <!-- Oyun Renkleri -->
+    <color name="colorCorrect">#34C759</color>      <!-- iOS yeşil -->
+    <color name="colorMisplaced">#FF9500</color>    <!-- iOS turuncu -->
+    <color name="colorIncorrect">#FF3B30</color>    <!-- iOS kırmızı -->
+    
+    <!-- Buton Renkleri -->
+    <color name="primaryButton">#007AFF</color>
+    <color name="primaryButtonRipple">#0056B3</color>
+    
+    <!-- Gradient ve Border -->
+    <color name="gradientStart">#007AFF</color>
+    <color name="gradientMiddle">#5856D6</color>    <!-- iOS mor -->
+    <color name="gradientEnd">#FF2D55</color>
+    <color name="colorBorder">#E5E5EA</color>
+    
+    <!-- Neon Efektler -->
+    <color name="neonBlue">#007AFF</color>
+    <color name="neonCyan">#32ADE6</color>          <!-- iOS açık mavi -->
 </resources>

@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:gravity="center"
+    android:orientation="horizontal"
+    android:padding="16dp">
+
+    <!-- First Number -->
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+        
+        <ImageButton
+            android:id="@+id/upButton1"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:src="@drawable/ic_arrow_up"
+            android:background="@drawable/number_input_background"
+            app:tint="@color/colorPrimary"/>
+            
+        <TextView
+            android:id="@+id/numberText1"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:background="@drawable/number_input_background"
+            android:gravity="center"
+            android:textSize="24sp"
+            android:textColor="@color/colorText"
+            android:text="0"/>
+            
+        <ImageButton
+            android:id="@+id/downButton1"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:src="@drawable/ic_arrow_down"
+            android:background="@drawable/number_input_background"
+            app:tint="@color/colorPrimary"/>
+    </LinearLayout>
+
+    <Space android:layout_width="8dp" android:layout_height="0dp"/>
+
+    <!-- Second Number -->
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+        
+        <ImageButton
+            android:id="@+id/upButton2"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:src="@drawable/ic_arrow_up"
+            android:background="@drawable/number_input_background"
+            app:tint="@color/colorPrimary"/>
+            
+        <TextView
+            android:id="@+id/numberText2"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:background="@drawable/number_input_background"
+            android:gravity="center"
+            android:textSize="24sp"
+            android:textColor="@color/colorText"
+            android:text="0"/>
+            
+        <ImageButton
+            android:id="@+id/downButton2"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:src="@drawable/ic_arrow_down"
+            android:background="@drawable/number_input_background"
+            app:tint="@color/colorPrimary"/>
+    </LinearLayout>
+
+    <Space android:layout_width="8dp" android:layout_height="0dp"/>
+
+    <!-- Third Number -->
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+        
+        <ImageButton
+            android:id="@+id/upButton3"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:src="@drawable/ic_arrow_up"
+            android:background="@drawable/number_input_background"
+            app:tint="@color/colorPrimary"/>
+            
+        <TextView
+            android:id="@+id/numberText3"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:background="@drawable/number_input_background"
+            android:gravity="center"
+            android:textSize="24sp"
+            android:textColor="@color/colorText"
+            android:text="0"/>
+            
+        <ImageButton
+            android:id="@+id/downButton3"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:src="@drawable/ic_arrow_down"
+            android:background="@drawable/number_input_background"
+            app:tint="@color/colorPrimary"/>
+    </LinearLayout>
+</LinearLayout> 

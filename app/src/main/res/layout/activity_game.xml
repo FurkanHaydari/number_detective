@@ -3,95 +3,96 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@drawable/gradient_background"
     android:orientation="vertical"
+    android:background="@color/colorBackground"
     android:padding="16dp">
 
-    <TextView
-        android:id="@+id/scoreText"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center"
-        android:text="Score: 1000"
-        android:textColor="@color/neonGreen"
-        android:textSize="32sp"
-        android:fontFamily="sans-serif-medium"
-        android:shadowColor="@color/neonGreen"
-        android:shadowDx="0"
-        android:shadowDy="0"
-        android:shadowRadius="10"
-        android:layout_marginBottom="16dp"/>
-
-    <com.google.android.material.progressindicator.LinearProgressIndicator
-        android:id="@+id/attemptsProgress"
+    <!-- Skor Kartı -->
+    <androidx.cardview.widget.CardView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="24dp"
-        app:trackColor="@color/colorBorder"
-        app:indicatorColor="@color/neonBlue"/>
+        android:layout_marginBottom="16dp"
+        app:cardCornerRadius="12dp"
+        app:cardElevation="0dp"
+        app:cardBackgroundColor="@color/colorSurface">
 
+        <TextView
+            android:id="@+id/scoreText"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:padding="16dp"
+            android:gravity="center"
+            android:textSize="24sp"
+            android:textColor="@color/colorText"
+            android:text="1000" />
+    </androidx.cardview.widget.CardView>
+
+    <!-- İpuçları Container -->
     <LinearLayout
+        android:id="@+id/hintsContainer"
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1"
-        android:orientation="horizontal"
-        android:gravity="center"
-        android:layout_marginBottom="24dp">
+        android:orientation="vertical"
+        android:padding="8dp" />
 
-        <ImageButton
-            android:id="@+id/prevHintButton"
-            android:layout_width="48dp"
-            android:layout_height="48dp"
-            android:src="@android:drawable/ic_media_previous"
-            android:background="?attr/selectableItemBackgroundBorderless"
-            app:tint="@android:color/white"
-            android:padding="12dp"/>
-
-        <androidx.viewpager2.widget.ViewPager2
-            android:id="@+id/hintsViewPager"
-            android:layout_width="0dp"
-            android:layout_height="match_parent"
-            android:layout_weight="1"
-            android:orientation="horizontal" />
-
-        <ImageButton
-            android:id="@+id/nextHintButton"
-            android:layout_width="48dp"
-            android:layout_height="48dp"
-            android:src="@android:drawable/ic_media_next"
-            android:background="?attr/selectableItemBackgroundBorderless"
-            app:tint="@android:color/white"
-            android:padding="12dp"/>
-    </LinearLayout>
-
-    <com.google.android.material.tabs.TabLayout
-        android:id="@+id/hintTabLayout"
+    <!-- iOS Tarzı Sayı Girişi -->
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="@android:color/transparent"
-        app:tabBackground="@android:color/transparent"
-        app:tabIndicatorHeight="0dp"
-        app:tabGravity="center"
-        android:layout_marginBottom="16dp"/>
+        android:orientation="horizontal"
+        android:gravity="center"
+        android:layout_marginTop="16dp"
+        android:layout_marginBottom="16dp">
 
-    <GridLayout
-        android:id="@+id/guessGrid"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center"
-        android:columnCount="3"
-        android:rowCount="3"
-        android:layout_marginBottom="32dp"/>
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center">
 
-    <GridLayout
-        android:id="@+id/numpad"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center"
-        android:background="@color/colorSurface"
-        android:padding="16dp"
-        android:columnCount="3"
-        android:rowCount="4"
-        android:layout_marginBottom="16dp"/>
+            <TextView
+                android:id="@+id/numberText1"
+                android:layout_width="60dp"
+                android:layout_height="60dp"
+                android:layout_marginEnd="8dp"
+                android:background="@drawable/grid_cell_background"
+                android:gravity="center"
+                android:textSize="24sp"
+                android:textColor="@color/colorText"
+                android:text="0" />
+
+            <TextView
+                android:id="@+id/numberText2"
+                android:layout_width="60dp"
+                android:layout_height="60dp"
+                android:layout_marginEnd="8dp"
+                android:background="@drawable/grid_cell_background"
+                android:gravity="center"
+                android:textSize="24sp"
+                android:textColor="@color/colorText"
+                android:text="0" />
+
+            <TextView
+                android:id="@+id/numberText3"
+                android:layout_width="60dp"
+                android:layout_height="60dp"
+                android:background="@drawable/grid_cell_background"
+                android:gravity="center"
+                android:textSize="24sp"
+                android:textColor="@color/colorText"
+                android:text="0" />
+        </LinearLayout>
+
+        <Button
+            android:id="@+id/submitButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
+            android:text="Tahmin Et"
+            android:textAllCaps="false"
+            android:padding="16dp"
+            android:backgroundTint="@color/colorPrimary" />
+    </LinearLayout>
 
 </LinearLayout>

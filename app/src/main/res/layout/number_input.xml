@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<EditText xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="48dp"
+    android:layout_height="48dp"
+    android:background="@drawable/number_input_background"
+    android:gravity="center"
+    android:inputType="number"
+    android:maxLength="1"
+    android:textColor="@color/colorText"
+    android:textSize="24sp"
+    android:importantForAutofill="no"/> 

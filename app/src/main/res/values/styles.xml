@@ -1,8 +1,17 @@
 <resources>
-    <style name="Theme.NumberDetective" parent="Theme.MaterialComponents.Light.NoActionBar">
-        <!-- Customize your theme here -->
+    <!-- Base application theme -->
+    <style name="AppTheme" parent="Theme.MaterialComponents.DayNight.NoActionBar">
+        <!-- Tema özelliklerini AppTheme'a taşıyalım -->
         <item name="colorPrimary">@color/colorPrimary</item>
         <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
         <item name="colorAccent">@color/colorAccent</item>
+    </style>
+
+    <!-- Diğer stil tanımlamaları buraya -->
+
+    <style name="NumberPickerDialog" parent="Theme.MaterialComponents.Light.Dialog">
+        <item name="colorPrimary">@color/colorPrimary</item>
+        <item name="colorAccent">@color/colorPrimary</item>
+        <item name="android:windowBackground">@color/colorSurface</item>
     </style>
 </resources>
