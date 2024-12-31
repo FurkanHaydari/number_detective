@@ -89,11 +89,11 @@ class GameActivity : AppCompatActivity() {
                     when (state) {
                         is GameState.Won -> {
                             disableInput()
-                            navigateToResult(true, state.score)
+                            showGameResult(true, state.score)
                         }
                         is GameState.Lost -> {
                             disableInput()
-                            navigateToResult(false, 0)
+                            showGameResult(false, 0)
                         }
                         is GameState.Playing -> {
                             updateScore(state.score)
@@ -147,13 +147,15 @@ class GameActivity : AppCompatActivity() {
         scoreText.text = score.toString()
     }
 
-    private fun navigateToResult(isWin: Boolean, score: Int) {
+    private fun showGameResult(isWin: Boolean, score: Int) {
         val intent = Intent(this, GameResultActivity::class.java).apply {
-            putExtra("IS_WIN", isWin)
-            putExtra("SCORE", score)
-            putExtra("ATTEMPTS", viewModel.attempts)
+            flags = Intent.FLAG_ACTIVITY_CLEAR_TOP
+            putExtra("is_win", isWin)
+            putExtra("score", score)
+            putExtra("attempts", viewModel.getAttempts())
+            putExtra("time_seconds", viewModel.getGameTime())
         }
+        
         startActivity(intent)
-        finish()
     }
 }

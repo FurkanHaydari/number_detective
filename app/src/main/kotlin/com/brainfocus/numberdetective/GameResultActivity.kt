@@ -7,6 +7,10 @@ import androidx.appcompat.app.AppCompatActivity
 import com.airbnb.lottie.LottieAnimationView
 import com.google.android.material.button.MaterialButton
 import com.brainfocus.numberdetective.utils.SoundManager
+import androidx.activity.OnBackPressedCallback
+import android.util.Log
+import android.widget.Button
+import android.app.ActivityOptions
 
 class GameResultActivity : AppCompatActivity() {
     private lateinit var resultAnimation: LottieAnimationView
@@ -15,18 +19,16 @@ class GameResultActivity : AppCompatActivity() {
     private lateinit var attemptsText: TextView
     private lateinit var timeText: TextView
     private lateinit var bestScoreText: TextView
-    private lateinit var shareButton: MaterialButton
-    private lateinit var playAgainButton: MaterialButton
+    private lateinit var shareButton: Button
+    private lateinit var playAgainButton: Button
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_game_result)
-
-        supportActionBar?.setDisplayHomeAsUpEnabled(true)
-
+        
         initializeViews()
-        setupGameResult()
-        setupButtons()
+        setupListeners()
+        displayResults()
     }
 
     private fun initializeViews() {
@@ -40,57 +42,93 @@ class GameResultActivity : AppCompatActivity() {
         playAgainButton = findViewById(R.id.playAgainButton)
     }
 
-    private fun setupGameResult() {
-        val isWin = intent.getBooleanExtra("IS_WIN", false)
-        val score = intent.getIntExtra("SCORE", 0)
-        val attempts = intent.getIntExtra("ATTEMPTS", 0)
-        val timeSeconds = intent.getLongExtra("TIME_SECONDS", 0)
-        val bestScore = intent.getIntExtra("BEST_SCORE", 0)
-
-        // Animasyon ayarları
-        resultAnimation.setAnimation(
-            if (isWin) "win_animation.json" else "lose_animation.json"
-        )
-        resultAnimation.playAnimation()
-
-        // Metin ayarları
-        resultText.text = if (isWin) "Tebrikler!" else "Bir Dahaki Sefere!"
-        scoreText.text = "Skor: $score"
-        attemptsText.text = "${3 - attempts}"
-        timeText.text = "${timeSeconds}s"
-        bestScoreText.text = "$bestScore"
-
-        // Ses efekti çal
-        playSound(if (isWin) R.raw.win_sound else R.raw.lose_sound)
-    }
-
-    private fun setupButtons() {
+    private fun setupListeners() {
         shareButton.setOnClickListener {
-            val shareIntent = Intent().apply {
-                action = Intent.ACTION_SEND
-                type = "text/plain"
-                putExtra(Intent.EXTRA_TEXT, createShareMessage())
-            }
-            startActivity(Intent.createChooser(shareIntent, "Skoru Paylaş"))
+            shareScore()
         }
 
         playAgainButton.setOnClickListener {
-            startActivity(Intent(this, GameActivity::class.java))
-            finish()
+            startMainActivity()
+        }
+
+        onBackPressedDispatcher.addCallback(
+            this,
+            object : OnBackPressedCallback(true) {
+                override fun handleOnBackPressed() {
+                    startMainActivity()
+                }
+            }
+        )
+    }
+
+    private fun startMainActivity() {
+        try {
+            val intent = Intent(this, MainActivity::class.java)
+            intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+            startActivity(intent)
+            
+            // Geçiş animasyonunu kaldır
+            finishAfterTransition()
+        } catch (e: Exception) {
+            Log.e("GameResultActivity", "Error starting MainActivity", e)
+            finishAffinity()
         }
     }
 
-    private fun createShareMessage(): String {
+    private fun displayResults() {
+        val isWin = intent.getBooleanExtra("is_win", false)
+        val score = intent.getIntExtra("score", 0)
+        
+        // Animasyon ve metin güncelleme
+        if (isWin) {
+            resultAnimation.setAnimation(R.raw.win_animation)
+            resultText.text = "Tebrikler!"
+        } else {
+            resultAnimation.setAnimation(R.raw.lose_animation)
+            resultText.text = "Tekrar Dene!"
+        }
+        
+        resultAnimation.playAnimation()
+        scoreText.text = "Skor: $score"
+        
+        // Diğer sonuç bilgilerini göster
+        val attempts = intent.getIntExtra("attempts", 0)
+        val timeSeconds = intent.getLongExtra("time_seconds", 0)
+        
+        attemptsText.text = "Deneme: $attempts"
+        timeText.text = "Süre: ${timeSeconds}s"
+    }
+
+    private fun shareScore() {
         val score = intent.getIntExtra("SCORE", 0)
-        return "Brain Focus'ta yeni rekor! $score puan kazandım! 🧠✨ #BrainFocus #BeyniniDinçTut"
+        val shareIntent = Intent().apply {
+            action = Intent.ACTION_SEND
+            putExtra(Intent.EXTRA_TEXT, "Number Detective oyununda $score puan kazandım!")
+            type = "text/plain"
+        }
+        startActivity(Intent.createChooser(shareIntent, "Skoru Paylaş"))
     }
 
     private fun playSound(soundResourceId: Int) {
         SoundManager.getInstance(this).playSound(soundResourceId)
     }
 
-    override fun onSupportNavigateUp(): Boolean {
-        finish()
-        return true
+    override fun onPause() {
+        super.onPause()
+        resultAnimation.pauseAnimation()
+    }
+
+    override fun onDestroy() {
+        try {
+            resultAnimation.cancelAnimation()
+            super.onDestroy()
+        } catch (e: Exception) {
+            Log.e("GameResultActivity", "Error in onDestroy", e)
+        }
+    }
+
+    override fun onBackPressed() {
+        super.onBackPressed()
+        startMainActivity()
     }
 }
