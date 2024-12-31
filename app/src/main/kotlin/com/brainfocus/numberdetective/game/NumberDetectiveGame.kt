@@ -51,8 +51,8 @@ class NumberDetectiveGame {
         remainingAttempts = 3
         currentScore = 1000
         isGameWon = false
+        pathSelection = (1..3).random()
         generateHints()
-        makeReadableHints()
     }
     
     private fun generateSecretNumber() {
@@ -61,54 +61,58 @@ class NumberDetectiveGame {
     }
     
     private fun generateHints() {
+        val a = secretNumber[0]
+        val b = secretNumber[1]
+        val c = secretNumber[2]
+        
+        // x için kullanılabilecek rakamları hazırla (a, b ve c hariç)
+        val availableX = (0..9).map { it.toString()[0] }
+                              .filter { it != a && it != b && it != c }
+                              .toMutableList()
+        
+        fun replaceX(pattern: String): String {
+            val result = pattern.toCharArray()
+            for (i in result.indices) {
+                if (result[i] == 'x') {
+                    val randomX = availableX.random()
+                    availableX.remove(randomX)
+                    result[i] = randomX
+                } else if (result[i] == 'a') {
+                    result[i] = a
+                } else if (result[i] == 'b') {
+                    result[i] = b
+                } else if (result[i] == 'c') {
+                    result[i] = c
+                }
+            }
+            return String(result)
+        }
+
         val temp = Random.nextBoolean()
         
         when (pathSelection) {
             1 -> {
-                firstHint = firstAChoices.random()
-                secondHint = onlyAAndCorrectChoices.random()
-                thirdHint = if (temp) abFalse.random() else acFalse.random()
-                fourthHint = cbFalse.random()
-                fifthHint = if (temp) "cbx" else "bxc"
+                firstHint = replaceX(firstAChoices.random())
+                secondHint = replaceX(onlyAAndCorrectChoices.random())
+                thirdHint = replaceX(if (temp) abFalse.random() else acFalse.random())
+                fourthHint = replaceX(cbFalse.random())
+                fifthHint = replaceX(if (temp) "cbx" else "bxc")
             }
             2 -> {
-                firstHint = firstBChoices.random()
-                secondHint = onlyBAndCorrectChoices.random()
-                thirdHint = if (temp) abFalse.random() else cbFalse.random()
-                fourthHint = acFalse.random()
-                fifthHint = if (temp) "acx" else "xac"
+                firstHint = replaceX(firstBChoices.random())
+                secondHint = replaceX(onlyBAndCorrectChoices.random())
+                thirdHint = replaceX(if (temp) abFalse.random() else cbFalse.random())
+                fourthHint = replaceX(acFalse.random())
+                fifthHint = replaceX(if (temp) "acx" else "xac")
             }
             else -> {
-                firstHint = firstCChoices.random()
-                secondHint = onlyCAndCorrectChoices.random()
-                thirdHint = if (temp) acFalse.random() else cbFalse.random()
-                fourthHint = abFalse.random()
-                fifthHint = if (temp) "axb" else "xba"
+                firstHint = replaceX(firstCChoices.random())
+                secondHint = replaceX(onlyCAndCorrectChoices.random())
+                thirdHint = replaceX(if (temp) acFalse.random() else cbFalse.random())
+                fourthHint = replaceX(abFalse.random())
+                fifthHint = replaceX(if (temp) "axb" else "xba")
             }
         }
-    }
-    
-    private fun makeReadableHints() {
-        val numbers = (0..9).toMutableList()
-        val digits = secretNumber.map { it.toString().toInt() }
-        
-        firstHint = makeReadable(firstHint, numbers, digits)
-        secondHint = makeReadable(secondHint, numbers, digits)
-        thirdHint = makeReadable(thirdHint, numbers, digits)
-        fourthHint = makeReadable(fourthHint, numbers, digits)
-        fifthHint = makeReadable(fifthHint, numbers, digits)
-    }
-    
-    private fun makeReadable(hint: String, numbers: MutableList<Int>, digits: List<Int>): String {
-        return hint.map { char ->
-            when (char) {
-                'x' -> numbers.random().also { numbers.remove(it) }.toString()
-                'a' -> digits[0].toString()
-                'b' -> digits[1].toString()
-                'c' -> digits[2].toString()
-                else -> ""
-            }
-        }.joinToString("")
     }
     
     fun makeGuess(guess: String): Guess {
