@@ -25,8 +25,8 @@ class GameActivity : AppCompatActivity() {
     private lateinit var hintsContainer: LinearLayout
     private lateinit var scoreText: TextView
     private lateinit var submitButton: Button
-    private lateinit var numberTexts: List<TextView>
-    private var currentNumbers = mutableListOf(0, 0, 0)
+    private val currentNumbers = IntArray(3) { 0 }
+    private var numberPickers: List<NumberPicker> = listOf()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -34,7 +34,6 @@ class GameActivity : AppCompatActivity() {
         
         setupViews()
         observeViewModel()
-        viewModel.startNewGame()
     }
 
     private fun setupViews() {
@@ -42,17 +41,7 @@ class GameActivity : AppCompatActivity() {
         scoreText = findViewById(R.id.scoreText)
         submitButton = findViewById(R.id.submitButton)
         
-        numberTexts = listOf(
-            findViewById(R.id.numberText1),
-            findViewById(R.id.numberText2),
-            findViewById(R.id.numberText3)
-        )
-        
-        numberTexts.forEachIndexed { index, textView ->
-            textView.setOnClickListener {
-                showNumberPicker(index)
-            }
-        }
+        setupNumberPickers()
         
         submitButton.setOnClickListener {
             val guess = currentNumbers.joinToString("").toInt()
@@ -60,22 +49,33 @@ class GameActivity : AppCompatActivity() {
         }
     }
 
-    private fun showNumberPicker(index: Int) {
-        val builder = AlertDialog.Builder(this, R.style.NumberPickerDialog)
-        val numberPicker = NumberPicker(this).apply {
-            minValue = 0
-            maxValue = 9
-            value = currentNumbers[index]
-            wrapSelectorWheel = true
-        }
+    private fun setupNumberPickers() {
+        val pickerContainer = findViewById<LinearLayout>(R.id.numberPickerContainer)
         
-        builder.setView(numberPicker)
-            .setPositiveButton("Tamam") { _, _ ->
-                currentNumbers[index] = numberPicker.value
-                numberTexts[index].text = numberPicker.value.toString()
+        numberPickers = List(3) { index ->
+            NumberPicker(this).apply {
+                minValue = 0
+                maxValue = 9
+                wrapSelectorWheel = true
+                descendantFocusability = NumberPicker.FOCUS_BLOCK_DESCENDANTS
+                setOnValueChangedListener { _, _, newVal ->
+                    currentNumbers[index] = newVal
+                }
             }
-            .setNegativeButton("İptal", null)
-            .show()
+        }
+
+        val layoutParams = LinearLayout.LayoutParams(
+            0,
+            LinearLayout.LayoutParams.WRAP_CONTENT
+        ).apply {
+            weight = 1f
+            marginEnd = resources.getDimensionPixelSize(R.dimen.picker_margin)
+            marginStart = resources.getDimensionPixelSize(R.dimen.picker_margin)
+        }
+
+        numberPickers.forEach { picker ->
+            pickerContainer.addView(picker, layoutParams)
+        }
     }
 
     private fun observeViewModel() {
@@ -107,40 +107,21 @@ class GameActivity : AppCompatActivity() {
 
     private fun updateHints(hints: List<Hint>) {
         hintsContainer.removeAllViews()
-        
         hints.forEach { hint ->
-            val hintLayout = layoutInflater.inflate(R.layout.hint_item, hintsContainer, false)
+            val hintView = layoutInflater.inflate(R.layout.item_hint, hintsContainer, false)
+            val numberText = hintView.findViewById<TextView>(R.id.numberText)
+            val descriptionText = hintView.findViewById<TextView>(R.id.descriptionText)
             
-            val numbersContainer = hintLayout.findViewById<LinearLayout>(R.id.numbersContainer)
-            val hintDescription = hintLayout.findViewById<TextView>(R.id.hintDescription)
+            numberText.text = hint.numbers.joinToString("  ")
+            descriptionText.text = hint.description
             
-            hint.numbers.forEach { number ->
-                val numberBox = TextView(this).apply {
-                    text = number.toString()
-                    textSize = 24f
-                    typeface = Typeface.DEFAULT_BOLD
-                    setTextColor(getColor(R.color.colorText))
-                    gravity = Gravity.CENTER
-                    background = getDrawable(R.drawable.grid_cell_background)
-                    layoutParams = LinearLayout.LayoutParams(72, 72).apply {
-                        marginEnd = 20
-                    }
-                }
-                numbersContainer.addView(numberBox)
-            }
-            
-            hintDescription.apply {
-                text = hint.description
-                textSize = 16f
-                setTextColor(getColor(R.color.colorTextSecondary))
-            }
-            hintsContainer.addView(hintLayout)
+            hintsContainer.addView(hintView)
         }
     }
 
     private fun disableInput() {
         submitButton.isEnabled = false
-        numberTexts.forEach { it.isEnabled = false }
+        numberPickers.forEach { it.isEnabled = false }
     }
 
     private fun updateScore(score: Int) {
