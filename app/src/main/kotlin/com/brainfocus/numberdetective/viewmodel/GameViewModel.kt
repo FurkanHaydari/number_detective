@@ -64,7 +64,12 @@ class GameViewModel : ViewModel() {
     }
 
     private fun calculateScore(guess: NumberDetectiveGame.Guess): Int {
-        return _score - (50 * (3 - guess.correct)) - (25 * guess.misplaced)
+        val baseScore = 1000
+        val timeDeduction = (getGameTime() * 5).toInt()  // Her saniye 5 puan
+        val attemptDeduction = _attempts * 100  // Her deneme 100 puan
+        val correctBonus = guess.correct * 50   // Her doğru rakam 50 bonus puan
+        
+        return maxOf(0, baseScore - timeDeduction - attemptDeduction + correctBonus)
     }
 
     private fun updateGameState() {
