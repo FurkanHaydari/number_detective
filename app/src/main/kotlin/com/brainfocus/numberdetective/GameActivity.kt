@@ -27,6 +27,7 @@ class GameActivity : AppCompatActivity() {
     private lateinit var submitButton: Button
     private val currentNumbers = IntArray(3) { 0 }
     private var numberPickers: List<NumberPicker> = listOf()
+    private lateinit var remainingAttemptsText: TextView
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -40,6 +41,7 @@ class GameActivity : AppCompatActivity() {
         hintsContainer = findViewById(R.id.hintsContainer)
         scoreText = findViewById(R.id.scoreText)
         submitButton = findViewById(R.id.submitButton)
+        remainingAttemptsText = findViewById(R.id.remainingAttemptsText)
         
         setupNumberPickers()
         
@@ -47,6 +49,8 @@ class GameActivity : AppCompatActivity() {
             val guess = currentNumbers.joinToString("").toInt()
             viewModel.makeGuess(guess)
         }
+        
+        updateRemainingAttempts(3)
     }
 
     private fun setupNumberPickers() {
@@ -97,6 +101,10 @@ class GameActivity : AppCompatActivity() {
                         }
                         is GameState.Playing -> {
                             updateScore(state.score)
+                            updateRemainingAttempts(3 - viewModel.getAttempts())
+                            if (viewModel.getAttempts() > 0) {
+                                showWrongGuessDialog(3 - viewModel.getAttempts())
+                            }
                         }
                         else -> {}
                     }
@@ -138,5 +146,20 @@ class GameActivity : AppCompatActivity() {
         }
         
         startActivity(intent)
+    }
+
+    private fun updateRemainingAttempts(attempts: Int) {
+        remainingAttemptsText.text = "Kalan Hak: $attempts"
+    }
+
+    private fun showWrongGuessDialog(remainingAttempts: Int) {
+        AlertDialog.Builder(this)
+            .setTitle("Yanlış Tahmin!")
+            .setMessage("Maalesef doğru tahminde bulunamadın.\nKalan hakkın: $remainingAttempts")
+            .setPositiveButton("Tamam") { dialog, _ ->
+                dialog.dismiss()
+            }
+            .setCancelable(false)
+            .show()
     }
 }

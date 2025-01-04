@@ -46,6 +46,17 @@
         android:layout_marginTop="16dp"
         android:layout_marginBottom="16dp"/>
 
+    <!-- Tahmin Et Butonu üstünde kalan hak -->
+    <TextView
+        android:id="@+id/remainingAttemptsText"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:layout_marginBottom="8dp"
+        android:textSize="16sp"
+        android:textColor="@color/colorText"
+        android:text="Kalan Hak: 3" />
+
     <!-- Tahmin Et Butonu -->
     <androidx.cardview.widget.CardView
         android:layout_width="match_parent"
