@@ -52,4 +52,8 @@
     <color name="textShadow">#40000000</color>
     <color name="textOverlayDark">#99000000</color>
     <color name="buttonShadow">#26000000</color>
+    
+    <!-- Turuncu ton -->
+    <color name="warmOrange">#FF9500</color>  <!-- iOS style turuncu -->
+    <color name="warmOrangeNew">#FF5722</color>  <!-- Material Design deep orange -->
 </resources>

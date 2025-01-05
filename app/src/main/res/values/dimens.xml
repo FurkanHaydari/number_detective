@@ -1,8 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <dimen name="number_box_size">32dp</dimen>
-    <dimen name="number_box_margin">4dp</dimen>
-    <dimen name="picker_margin">8dp</dimen>
-    <dimen name="picker_width">100dp</dimen>
+    <!-- Text sizes -->
+    <dimen name="text_size_title">20sp</dimen>
+    <dimen name="text_size_body">15sp</dimen>
+    <dimen name="text_size_highlight">17sp</dimen>
+    
+    <!-- Margins -->
+    <dimen name="margin_horizontal">12dp</dimen>
+    <dimen name="margin_vertical">16dp</dimen>
+
+    <!-- Button margins -->
     <dimen name="button_margin_bottom">24dp</dimen>
+    
+    <!-- Picker margins -->
+    <dimen name="picker_margin">8dp</dimen>
 </resources>

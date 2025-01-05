@@ -188,73 +188,29 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:layout_marginHorizontal="24dp"
-        android:layout_marginTop="20dp"
+        android:layout_marginHorizontal="16dp"
+        android:layout_marginTop="16dp"
         android:gravity="center_horizontal"
         app:layout_constraintTop_toBottomOf="@id/featuresContainer">
 
         <TextView
-            android:id="@+id/sloganText"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="🧠 Beyin çürümesine karşı\ngünde 10 dakika!"
-            android:textColor="@color/neonCyan"
-            android:textSize="20sp"
-            android:fontFamily="@font/poppins_semibold"
-            android:lineSpacingMultiplier="1.2"
-            android:gravity="center"
-            android:layout_marginBottom="16dp"/>
-
-        <TextView
+            android:id="@+id/descriptionText"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Modern teknolojinin getirdiği\nkısa süreli içerikler,"
-            android:textColor="#F2FFFFFF"
-            android:textSize="15sp"
+            android:textSize="14sp"
             android:fontFamily="@font/poppins_light"
-            android:lineSpacingMultiplier="1.4"
-            android:letterSpacing="0.02"
+            android:lineSpacingMultiplier="1.3"
+            android:letterSpacing="0.01"
             android:gravity="center"
-            android:shadowColor="@color/textShadow"
-            android:shadowDx="0"
+            android:layout_marginHorizontal="16dp"
+            android:layout_marginTop="4dp"
+            android:layout_marginBottom="12dp"
+            android:paddingHorizontal="4dp"
+            android:shadowColor="#40000000"
+            android:shadowDx="1"
             android:shadowDy="1"
-            android:shadowRadius="4"
-            android:layout_marginHorizontal="20dp"/>
+            android:shadowRadius="3"/>
 
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="dikkat süremizi azaltıyor."
-            android:textColor="#F2FFFFFF"
-            android:textSize="15sp"
-            android:fontFamily="@font/poppins_light"
-            android:lineSpacingMultiplier="1.4"
-            android:letterSpacing="0.02"
-            android:gravity="center"
-            android:layout_marginTop="4dp"
-            android:layout_marginHorizontal="20dp"/>
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="10 dakikalık"
-            android:textColor="@color/neonCyan"
-            android:textSize="17sp"
-            android:fontFamily="@font/poppins_semibold"
-            android:layout_marginTop="16dp"/>
-
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="zihinsel egzersiz bile\nbeyin sağlığımızı korumada\netkili."
-            android:textColor="#F2FFFFFF"
-            android:textSize="15sp"
-            android:fontFamily="@font/poppins_light"
-            android:lineSpacingMultiplier="1.4"
-            android:letterSpacing="0.02"
-            android:gravity="center"
-            android:layout_marginTop="4dp"
-            android:layout_marginHorizontal="20dp"/>
     </LinearLayout>
 
     <com.google.android.material.button.MaterialButton
@@ -267,10 +223,10 @@
         android:padding="18dp"
         app:cornerRadius="28dp"
         android:backgroundTint="@color/white"
-        android:textColor="@color/gradientStartNew"
+        android:textColor="@color/warmOrangeNew"
         app:icon="@drawable/ic_play"
         app:iconSize="28dp"
-        app:iconTint="@color/gradientStartNew"
+        app:iconTint="@color/warmOrangeNew"
         app:iconGravity="textStart"
         app:iconPadding="12dp"
         android:elevation="8dp"

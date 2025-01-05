@@ -22,6 +22,13 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.FrameLayout
 import androidx.constraintlayout.widget.ConstraintLayout
+import android.text.SpannableStringBuilder
+import android.text.style.ImageSpan
+import android.text.style.StyleSpan
+import android.text.style.ForegroundColorSpan
+import android.graphics.Typeface
+import android.text.Spanned
+import android.graphics.Color
 
 class MainActivity : AppCompatActivity() {
     private lateinit var adView: AdView
@@ -34,6 +41,7 @@ class MainActivity : AppCompatActivity() {
         setupButtons()
         setupAnimation()
         setupQuoteOfDay()
+        setupDescription()
     }
 
     private fun setupAds() {
@@ -165,5 +173,31 @@ class MainActivity : AppCompatActivity() {
         
         findViewById<TextView>(R.id.quoteText).text = parts[0]
         findViewById<TextView>(R.id.quoteAuthor).text = "- ${parts[1]}"
+    }
+
+    private fun setupDescription() {
+        val descriptionText = findViewById<TextView>(R.id.descriptionText)
+        
+        val spannable = SpannableStringBuilder().apply {
+            // Başlık
+            append("🧠 Beyin çürümesine karşı\n", StyleSpan(Typeface.BOLD), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
+            append("günde 10 dakika!", ForegroundColorSpan(getColor(R.color.neonCyan)), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
+            
+            // Ana metin
+            append("\n\nModern teknolojinin getirdiği kısa\nsüreli içerikler, dikkat süremizi ve\nodaklanma yeteneğimizi azaltıyor.")
+            append("\n\nBilimsel araştırmalar, günde sadece ")
+            
+            // Vurgulu metin
+            append("10\ndakikalık", ForegroundColorSpan(getColor(R.color.neonCyan)), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
+            
+            // Son kısım
+            append(" zihinsel egzersiz bile beyin\nsağlığımızı korumada etkili olduğunu\ngösteriyor.")
+        }
+
+        descriptionText.apply {
+            text = spannable
+            setTextColor(Color.WHITE)
+            setShadowLayer(3f, 1f, 1f, Color.parseColor("#40000000"))
+        }
     }
 }
