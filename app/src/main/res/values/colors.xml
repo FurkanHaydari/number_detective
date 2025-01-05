@@ -29,9 +29,9 @@
     <color name="primaryButtonRipple">#0056B3</color>
     
     <!-- Gradient ve Border -->
-    <color name="gradientStart">#007AFF</color>
-    <color name="gradientMiddle">#5856D6</color>    <!-- iOS mor -->
-    <color name="gradientEnd">#FF2D55</color>
+    <color name="gradientStart">#FF2D55</color>    <!-- Daha canlı pembe -->
+    <color name="gradientMiddle">#7B68EE</color>   <!-- Daha parlak mor -->
+    <color name="gradientEnd">#007AFF</color>      <!-- iOS mavi -->
     <color name="colorBorder">#E5E5EA</color>
     
     <!-- Neon Efektler -->
