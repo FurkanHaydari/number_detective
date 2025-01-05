@@ -31,6 +31,8 @@ import android.view.Window
 import android.view.WindowInsets
 import android.view.WindowInsetsController
 import android.os.Build
+import android.widget.FrameLayout
+import android.view.animation.AnimationUtils
 
 class GameActivity : AppCompatActivity() {
     private val viewModel: GameViewModel by viewModel()
@@ -81,6 +83,7 @@ class GameActivity : AppCompatActivity() {
     }
 
     private fun setupViews() {
+        // Temel view'ları bul
         hintsContainer = findViewById(R.id.hintsContainer)
         scoreText = findViewById(R.id.scoreText)
         submitButton = findViewById(R.id.submitButton)
@@ -213,10 +216,8 @@ class GameActivity : AppCompatActivity() {
         
         adView = findViewById(R.id.adView)
         val adRequest = AdRequest.Builder().build()
-        
         adView.loadAd(adRequest)
         
-        // Reklam yükleme listener'ı ekleyelim
         adView.adListener = object : AdListener() {
             override fun onAdFailedToLoad(error: LoadAdError) {
                 Log.d("Ads", "Error loading ad: ${error.message}")

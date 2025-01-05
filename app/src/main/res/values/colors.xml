@@ -37,4 +37,19 @@
     <!-- Neon Efektler -->
     <color name="neonBlue">#007AFF</color>
     <color name="neonCyan">#32ADE6</color>          <!-- iOS açık mavi -->
+    
+    <!-- Gradient Renkler -->
+    <color name="gradientStartNew">#4568DC</color>    <!-- Daha koyu mavi -->
+    <color name="gradientMiddleNew">#B06AB3</color>   <!-- Orta mor -->
+    <color name="gradientEndNew">#D1437A</color>      <!-- Koyu pembe -->
+    
+    <!-- Container Renkler -->
+    <color name="containerBackground">#26FFFFFF</color>
+    <color name="containerStroke">#33FFFFFF</color>
+    <color name="containerShadow">#40000000</color>
+    
+    <!-- Metin Gölge ve Kontrast -->
+    <color name="textShadow">#40000000</color>
+    <color name="textOverlayDark">#99000000</color>
+    <color name="buttonShadow">#26000000</color>
 </resources>

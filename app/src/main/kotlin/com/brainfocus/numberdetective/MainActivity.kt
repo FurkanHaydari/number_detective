@@ -11,6 +11,17 @@ import com.google.android.gms.ads.AdView
 import com.google.android.gms.ads.MobileAds
 import com.google.android.gms.ads.LoadAdError
 import com.google.android.material.button.MaterialButton
+import com.airbnb.lottie.LottieAnimationView
+import java.util.Calendar
+import android.widget.TextView
+import android.view.animation.AnimationUtils
+import android.os.Handler
+import android.os.Looper
+import android.widget.LinearLayout
+import android.view.View
+import android.view.ViewGroup
+import android.widget.FrameLayout
+import androidx.constraintlayout.widget.ConstraintLayout
 
 class MainActivity : AppCompatActivity() {
     private lateinit var adView: AdView
@@ -21,6 +32,8 @@ class MainActivity : AppCompatActivity() {
         
         setupAds()
         setupButtons()
+        setupAnimation()
+        setupQuoteOfDay()
     }
 
     private fun setupAds() {
@@ -57,7 +70,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun setupButtons() {
-        findViewById<MaterialButton>(R.id.singlePlayerButton).setOnClickListener {
+        findViewById<MaterialButton>(R.id.beyniniKoruButton).setOnClickListener {
             val intent = Intent(this, GameActivity::class.java)
             intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
             startActivity(intent)
@@ -69,5 +82,88 @@ class MainActivity : AppCompatActivity() {
                 finishAffinity()
             }
         })
+    }
+
+    private fun setupAnimation() {
+        // Feature container'ları bul
+        val dikkatContainer = findViewById<LinearLayout>(R.id.dikkatContainer)
+        val hafizaContainer = findViewById<LinearLayout>(R.id.hafizaContainer) 
+        val mantikContainer = findViewById<LinearLayout>(R.id.mantikContainer)
+        
+        // Animasyonları yükle
+        val pulseAnimation = AnimationUtils.loadAnimation(this, R.anim.pulse_animation)
+        val glowAnimation = AnimationUtils.loadAnimation(this, R.anim.glow_animation)
+        
+        // Animasyonları başlat
+        dikkatContainer.startAnimation(pulseAnimation)
+        hafizaContainer.startAnimation(pulseAnimation)
+        mantikContainer.startAnimation(pulseAnimation)
+        
+        // Buton animasyonu
+        val startButton = findViewById<MaterialButton>(R.id.beyniniKoruButton)
+        
+        startButton.post {
+            // Butonun parent'ını bul
+            val parent = startButton.parent as ViewGroup
+            val buttonIndex = parent.indexOfChild(startButton)
+            
+            // FrameLayout oluştur ve constraint parametrelerini kopyala
+            val frameLayout = FrameLayout(this).apply {
+                layoutParams = ConstraintLayout.LayoutParams(
+                    startButton.width,
+                    startButton.height
+                ).apply {
+                    bottomToTop = R.id.adContainer
+                    leftToLeft = ConstraintLayout.LayoutParams.PARENT_ID
+                    rightToRight = ConstraintLayout.LayoutParams.PARENT_ID
+                    bottomMargin = resources.getDimensionPixelSize(R.dimen.button_margin_bottom)
+                }
+                clipChildren = true  // Çocuk view'ların dışarı taşmasını engelle
+                clipToOutline = true // Outline'a göre kırp
+            }
+            
+            // Butonu parent'ından kaldır ve frame'e ekle
+            parent.removeView(startButton)
+            frameLayout.addView(startButton, FrameLayout.LayoutParams(
+                FrameLayout.LayoutParams.MATCH_PARENT,
+                FrameLayout.LayoutParams.MATCH_PARENT
+            ))
+            
+            // Overlay view oluştur
+            val overlayView = View(this).apply {
+                layoutParams = FrameLayout.LayoutParams(
+                    (startButton.width * 0.2).toInt(), // Buton genişliğinin %20'si
+                    startButton.height - 16 // Kenarlardan biraz içeride
+                ).apply {
+                    gravity = android.view.Gravity.CENTER
+                    setMargins(8, 8, 8, 8) // Kenarlardan margin
+                }
+                background = getDrawable(R.drawable.button_glow_overlay)
+                elevation = startButton.elevation - 1f
+            }
+            
+            // Overlay'i frame'e ekle
+            frameLayout.addView(overlayView)
+            
+            // Frame'i orijinal pozisyona ekle
+            parent.addView(frameLayout, buttonIndex)
+            
+            // Animasyonu başlat
+            overlayView.startAnimation(glowAnimation)
+        }
+        
+        startButton.setOnClickListener {
+            val intent = Intent(this, GameActivity::class.java)
+            startActivity(intent)
+        }
+    }
+
+    private fun setupQuoteOfDay() {
+        val quotes = resources.getStringArray(R.array.game_quotes)
+        val randomQuote = quotes.random()
+        val parts = randomQuote.split(" - ")
+        
+        findViewById<TextView>(R.id.quoteText).text = parts[0]
+        findViewById<TextView>(R.id.quoteAuthor).text = "- ${parts[1]}"
     }
 }
