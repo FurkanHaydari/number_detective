@@ -6,7 +6,9 @@
     android:layout_height="match_parent"
     android:orientation="vertical"
     android:background="@color/colorBackground"
-    android:padding="16dp">
+    android:padding="16dp"
+    android:fitsSystemWindows="false"
+    android:layoutDirection="ltr">
 
     <!-- AdMob Banner -->
     <com.google.android.gms.ads.AdView
