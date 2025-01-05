@@ -1,31 +1,28 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:ads="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
     android:background="@color/colorBackground"
     android:padding="16dp">
 
-    <!-- Skor Kartı -->
-    <androidx.cardview.widget.CardView
+    <!-- AdMob Banner -->
+    <com.google.android.gms.ads.AdView
+        android:id="@+id/adView"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginBottom="16dp"
-        app:cardCornerRadius="12dp"
-        app:cardElevation="0dp"
-        app:cardBackgroundColor="@color/colorSurface">
+        ads:adSize="BANNER"
+        ads:adUnitId="ca-app-pub-3940256099942544/6300978111"/>
 
-        <TextView
-            android:id="@+id/scoreText"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:padding="16dp"
-            android:gravity="center"
-            android:textSize="24sp"
-            android:textColor="@color/colorText"
-            android:text="1000" />
-    </androidx.cardview.widget.CardView>
+    <!-- Gizli Score Text -->
+    <TextView
+        android:id="@+id/scoreText"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:visibility="gone"/>
 
     <!-- İpuçları Container -->
     <LinearLayout

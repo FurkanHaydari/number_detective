@@ -19,6 +19,12 @@ import android.widget.LinearLayout
 import kotlinx.coroutines.flow.combine
 import android.graphics.Typeface
 import android.content.Intent
+import com.google.android.gms.ads.AdRequest
+import com.google.android.gms.ads.AdView
+import com.google.android.gms.ads.MobileAds
+import android.util.Log
+import com.google.android.gms.ads.AdListener
+import com.google.android.gms.ads.LoadAdError
 
 class GameActivity : AppCompatActivity() {
     private val viewModel: GameViewModel by viewModel()
@@ -28,12 +34,17 @@ class GameActivity : AppCompatActivity() {
     private val currentNumbers = IntArray(3) { 0 }
     private var numberPickers: List<NumberPicker> = listOf()
     private lateinit var remainingAttemptsText: TextView
+    private lateinit var adView: AdView
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_game)
         
+        // Initialize AdMob
+        MobileAds.initialize(this)
+        
         setupViews()
+        setupAds()
         observeViewModel()
     }
 
@@ -161,5 +172,42 @@ class GameActivity : AppCompatActivity() {
             }
             .setCancelable(false)
             .show()
+    }
+
+    private fun setupAds() {
+        MobileAds.initialize(this) {
+            // Initialization completed
+        }
+        
+        adView = findViewById(R.id.adView)
+        val adRequest = AdRequest.Builder().build()
+        
+        adView.loadAd(adRequest)
+        
+        // Reklam yükleme listener'ı ekleyelim
+        adView.adListener = object : AdListener() {
+            override fun onAdFailedToLoad(error: LoadAdError) {
+                Log.d("Ads", "Error loading ad: ${error.message}")
+            }
+            
+            override fun onAdLoaded() {
+                Log.d("Ads", "Ad loaded successfully")
+            }
+        }
+    }
+
+    override fun onPause() {
+        adView.pause()
+        super.onPause()
+    }
+
+    override fun onResume() {
+        super.onResume()
+        adView.resume()
+    }
+
+    override fun onDestroy() {
+        adView.destroy()
+        super.onDestroy()
     }
 }
