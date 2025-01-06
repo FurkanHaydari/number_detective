@@ -1,9 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
-<set xmlns:android="http://schemas.android.com/apk/res/android">
+<set xmlns:android="http://schemas.android.com/apk/res/android"
+    android:interpolator="@android:anim/cycle_interpolator"
+    android:repeatCount="infinite"
+    android:repeatMode="restart">
+    
     <translate
-        android:duration="50"
-        android:fromXDelta="-3%"
-        android:repeatCount="3"
-        android:repeatMode="reverse"
-        android:toXDelta="3%" />
+        android:duration="200"
+        android:fromXDelta="-5%"
+        android:toXDelta="5%"/>
+        
+    <alpha
+        android:duration="400"
+        android:fromAlpha="1.0"
+        android:toAlpha="0.6"
+        android:repeatMode="reverse"/>
 </set> 

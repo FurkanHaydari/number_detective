@@ -58,13 +58,32 @@ class MainActivity : AppCompatActivity() {
     private fun setupAds() {
         MobileAds.initialize(this)
         
+        val adContainer = findViewById<FrameLayout>(R.id.adContainer)
         adView = findViewById(R.id.adView)
-        val adRequest = AdRequest.Builder().build()
         
+        // Container ve AdView'ı başlangıçta görünmez yap
+        adContainer.alpha = 0f
+        adView.alpha = 0f
+        
+        val adRequest = AdRequest.Builder().build()
         adView.loadAd(adRequest)
+        
         adView.adListener = object : AdListener() {
             override fun onAdLoaded() {
                 Log.d("Ads", "Main activity ad loaded successfully")
+                
+                // Önce container'ı fade in yap
+                adContainer.animate()
+                    .alpha(1f)
+                    .setDuration(500)
+                    .withEndAction {
+                        // Sonra AdView'ı fade in yap
+                        adView.animate()
+                            .alpha(1f)
+                            .setDuration(300)
+                            .start()
+                    }
+                    .start()
             }
             
             override fun onAdFailedToLoad(error: LoadAdError) {

@@ -9,6 +9,7 @@ import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import com.brainfocus.numberdetective.viewmodel.GameState
 import com.brainfocus.numberdetective.viewmodel.GameViewModel
+import com.brainfocus.numberdetective.model.GuessResult
 import kotlinx.coroutines.launch
 import org.koin.androidx.viewmodel.ext.android.viewModel
 import com.brainfocus.numberdetective.viewmodel.Hint
@@ -33,6 +34,19 @@ import android.view.WindowInsetsController
 import android.os.Build
 import android.widget.FrameLayout
 import android.view.animation.AnimationUtils
+import android.graphics.Color
+import androidx.core.content.ContextCompat
+import android.graphics.Paint
+import android.view.animation.OvershootInterpolator
+import android.graphics.drawable.ColorDrawable
+import android.view.MotionEvent
+import android.animation.AnimatorInflater
+import android.animation.StateListAnimator
+import com.google.android.gms.ads.AdSize
+import android.view.animation.AccelerateDecelerateInterpolator
+import android.widget.ImageView
+import android.graphics.drawable.GradientDrawable
+import android.view.HapticFeedbackConstants
 
 class GameActivity : AppCompatActivity() {
     private val viewModel: GameViewModel by viewModel()
@@ -90,11 +104,7 @@ class GameActivity : AppCompatActivity() {
         remainingAttemptsText = findViewById(R.id.remainingAttemptsText)
         
         setupNumberPickers()
-        
-        submitButton.setOnClickListener {
-            val guess = currentNumbers.joinToString("").toInt()
-            viewModel.makeGuess(guess)
-        }
+        setupSubmitButton()
         
         updateRemainingAttempts(3)
     }
@@ -108,24 +118,102 @@ class GameActivity : AppCompatActivity() {
                 maxValue = 9
                 wrapSelectorWheel = true
                 descendantFocusability = NumberPicker.FOCUS_BLOCK_DESCENDANTS
-                setOnValueChangedListener { _, _, newVal ->
+                setOnLongPressUpdateInterval(100) // Hızlı scroll için
+                
+                // Picker boyutunu ayarla
+                val params = LinearLayout.LayoutParams(
+                    dpToPx(80),  // Genişliği azalttık
+                    dpToPx(120)  // Yüksekliği azalttık
+                ).apply {
+                    weight = 1f
+                    marginStart = if (index > 0) dpToPx(16) else 0
+                }
+                layoutParams = params
+                
+                // Yazı stilini ayarla
+                try {
+                    val wheelPaint = NumberPicker::class.java
+                        .getDeclaredField("mSelectorWheelPaint")
+                    wheelPaint.isAccessible = true
+                    (wheelPaint.get(this) as Paint).apply {
+                        textSize = dpToPx(32).toFloat()
+                        typeface = Typeface.create("sans-serif-medium", Typeface.BOLD)
+                        color = Color.WHITE
+                    }
+                    
+                    // Seçili değer çizgilerini ayarla
+                    val selectionDivider = NumberPicker::class.java
+                        .getDeclaredField("mSelectionDivider")
+                    selectionDivider.isAccessible = true
+                    val dividerDrawable = GradientDrawable().apply {
+                        shape = GradientDrawable.RECTANGLE
+                        setColor(Color.parseColor("#4DFFFFFF"))
+                        setSize(dpToPx(80), dpToPx(2))
+                    }
+                    selectionDivider.set(this, dividerDrawable)
+                    
+                    // Arka plan efekti
+                    background = GradientDrawable().apply {
+                        shape = GradientDrawable.RECTANGLE
+                        cornerRadius = dpToPx(12).toFloat()
+                        setColor(Color.parseColor("#26FFFFFF"))
+                        setStroke(dpToPx(1), Color.parseColor("#33FFFFFF"))
+                    }
+                    
+                } catch (e: Exception) {
+                    e.printStackTrace()
+                }
+                
+                // Hover ve tıklama efektleri
+                setOnTouchListener { v, event ->
+                    when (event.action) {
+                        MotionEvent.ACTION_DOWN -> {
+                            v.animate()
+                                .scaleX(0.95f)
+                                .scaleY(0.95f)
+                                .alpha(0.8f)
+                                .setDuration(100)
+                                .start()
+                            performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY)
+                        }
+                        MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> {
+                            v.animate()
+                                .scaleX(1f)
+                                .scaleY(1f)
+                                .alpha(1f)
+                                .setDuration(150)
+                                .start()
+                        }
+                    }
+                    false
+                }
+                
+                // Değer değişim efekti
+                setOnValueChangedListener { _, oldVal, newVal ->
                     currentNumbers[index] = newVal
+                    animate()
+                        .scaleX(1.05f)
+                        .scaleY(1.05f)
+                        .setDuration(100)
+                        .withEndAction {
+                            animate()
+                                .scaleX(1f)
+                                .scaleY(1f)
+                                .setDuration(100)
+                                .start()
+                        }
+                        .start()
                 }
             }
         }
-
-        val layoutParams = LinearLayout.LayoutParams(
-            0,
-            LinearLayout.LayoutParams.WRAP_CONTENT
-        ).apply {
-            weight = 1f
-            marginEnd = resources.getDimensionPixelSize(R.dimen.picker_margin)
-            marginStart = resources.getDimensionPixelSize(R.dimen.picker_margin)
-        }
-
+        
         numberPickers.forEach { picker ->
-            pickerContainer.addView(picker, layoutParams)
+            pickerContainer.addView(picker)
         }
+    }
+
+    private fun dpToPx(dp: Int): Int {
+        return (dp * resources.displayMetrics.density).toInt()
     }
 
     private fun observeViewModel() {
@@ -195,37 +283,82 @@ class GameActivity : AppCompatActivity() {
     }
 
     private fun updateRemainingAttempts(attempts: Int) {
-        remainingAttemptsText.text = "Kalan Hak: $attempts"
+        remainingAttemptsText.apply {
+            text = "Kalan Hak: $attempts"
+            
+            // Renk geçişi için renkler
+            val color = when (attempts) {
+                3 -> getColor(R.color.colorCorrect)    // Yeşil
+                2 -> getColor(R.color.colorMisplaced)  // Turuncu  
+                else -> getColor(R.color.colorIncorrect) // Kırmızı
+            }
+            
+            setTextColor(color)
+            
+            // Gölge efekti
+            setShadowLayer(4f, 0f, 2f, Color.parseColor("#40000000"))
+            
+            // Son hak için titreme animasyonu
+            if (attempts == 1) {
+                val shakeAnimation = AnimationUtils.loadAnimation(context, R.anim.shake_animation)
+                startAnimation(shakeAnimation)
+            } else {
+                // Normal durumlarda pulse animasyonu
+                alpha = 0f
+                scaleX = 0.8f
+                scaleY = 0.8f
+                animate()
+                    .alpha(1f)
+                    .scaleX(1f)
+                    .scaleY(1f)
+                    .setDuration(300)
+                    .setInterpolator(OvershootInterpolator())
+                    .start()
+            }
+        }
     }
 
     private fun showWrongGuessDialog(remainingAttempts: Int) {
-        AlertDialog.Builder(this)
-            .setTitle("Yanlış Tahmin!")
-            .setMessage("Maalesef doğru tahminde bulunamadın.\nKalan hakkın: $remainingAttempts")
-            .setPositiveButton("Tamam") { dialog, _ ->
-                dialog.dismiss()
-            }
-            .setCancelable(false)
-            .show()
+        showErrorDialog("Maalesef doğru tahminde bulunamadın.\nKalan hakkın: $remainingAttempts")
     }
 
     private fun setupAds() {
-        MobileAds.initialize(this) {
-            // Initialization completed
-        }
-        
-        adView = findViewById(R.id.adView)
-        val adRequest = AdRequest.Builder().build()
-        adView.loadAd(adRequest)
-        
-        adView.adListener = object : AdListener() {
-            override fun onAdFailedToLoad(error: LoadAdError) {
-                Log.d("Ads", "Error loading ad: ${error.message}")
+        try {
+            MobileAds.initialize(this) {
+                Log.d("Ads", "MobileAds initialized successfully")
             }
             
-            override fun onAdLoaded() {
-                Log.d("Ads", "Ad loaded successfully")
+            // AdView'ı sınıf seviyesinde initialize et
+            adView = AdView(this).apply {
+                setAdSize(AdSize.BANNER)
+                adUnitId = getString(R.string.ad_unit_id)
+                alpha = 0f
+                
+                adListener = object : AdListener() {
+                    override fun onAdLoaded() {
+                        animate()
+                            .alpha(1f)
+                            .setDuration(500)
+                            .start()
+                    }
+                    
+                    override fun onAdFailedToLoad(error: LoadAdError) {
+                        Log.e("Ads", "Ad failed to load: ${error.message}")
+                    }
+                }
             }
+            
+            // Layout'tan container'ı bul
+            val adContainer = findViewById<FrameLayout>(R.id.adContainer)
+            if (adContainer != null) {
+                adContainer.addView(adView)
+                adView.loadAd(AdRequest.Builder().build())
+            } else {
+                Log.e("Ads", "Ad container not found in layout")
+            }
+            
+        } catch (e: Exception) {
+            Log.e("Ads", "Error setting up ads", e)
         }
     }
 
@@ -268,5 +401,99 @@ class GameActivity : AppCompatActivity() {
                 or View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
             )
         }
+    }
+
+    private fun addHint(guess: Int, result: GuessResult) {
+        val hintView = layoutInflater.inflate(R.layout.hint_item, hintsContainer, false)
+        
+        hintView.findViewById<TextView>(R.id.guessNumberText).text = guess.toString()
+        
+        val hintText = hintView.findViewById<TextView>(R.id.hintText)
+        val hintIcon = hintView.findViewById<ImageView>(R.id.hintIcon)
+        
+        when (result) {
+            GuessResult.Correct -> {
+                hintText.text = "Tebrikler! Doğru tahmin!"
+                hintIcon.setImageResource(R.drawable.ic_correct)
+                hintView.setBackgroundResource(R.drawable.hint_box_correct_background)
+            }
+            is GuessResult.Partial -> {
+                hintText.text = "${result.correctCount} rakam doğru, ${result.misplacedCount} rakam yanlış yerde"
+                hintIcon.setImageResource(R.drawable.ic_partial)
+                hintView.setBackgroundResource(R.drawable.hint_box_partial_background)
+            }
+            GuessResult.Wrong -> {
+                hintText.text = "Hiç eşleşme yok"
+                hintIcon.setImageResource(R.drawable.ic_wrong)
+                hintView.setBackgroundResource(R.drawable.hint_box_wrong_background)
+            }
+        }
+        
+        // Animasyonlu ekleme
+        hintView.alpha = 0f
+        hintView.translationX = -100f
+        
+        hintsContainer.addView(hintView, 0)
+        
+        hintView.animate()
+            .alpha(1f)
+            .translationX(0f)
+            .setDuration(300)
+            .setInterpolator(OvershootInterpolator())
+            .start()
+    }
+
+    private fun setupSubmitButton() {
+        submitButton.apply {
+            // Gölge efekti
+            elevation = dpToPx(12).toFloat()
+            
+            // StateListAnimator yerine doğrudan click listener kullanacağız
+            setOnClickListener {
+                // Tıklama animasyonu
+                animate()
+                    .scaleX(0.95f)
+                    .scaleY(0.95f)
+                    .translationZ(dpToPx(4).toFloat())
+                    .setDuration(100)
+                    .withEndAction {
+                        animate()
+                            .scaleX(1f)
+                            .scaleY(1f)
+                            .translationZ(dpToPx(8).toFloat())
+                            .setDuration(100)
+                            .start()
+                        
+                        // Tahmin işlemi
+                        val guess = currentNumbers.joinToString("").toInt()
+                        viewModel.makeGuess(guess)
+                    }
+                    .start()
+            }
+        }
+    }
+
+    private fun showErrorDialog(message: String) {
+        val dialogView = layoutInflater.inflate(R.layout.dialog_error, null)
+        val messageText = dialogView.findViewById<TextView>(R.id.messageText)
+        val okButton = dialogView.findViewById<Button>(R.id.okButton)
+        
+        messageText.text = message
+        
+        val dialog = AlertDialog.Builder(this, R.style.CustomAlertDialog)
+            .setView(dialogView)
+            .setCancelable(true)
+            .create()
+        
+        dialog.window?.apply {
+            setBackgroundDrawableResource(android.R.color.transparent)
+            attributes?.windowAnimations = R.style.DialogAnimation
+        }
+        
+        okButton.setOnClickListener {
+            dialog.dismiss()
+        }
+        
+        dialog.show()
     }
 }
