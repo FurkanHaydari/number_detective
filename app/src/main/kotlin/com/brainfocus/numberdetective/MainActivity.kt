@@ -30,12 +30,20 @@ import android.graphics.Typeface
 import android.text.Spanned
 import android.graphics.Color
 import android.widget.ImageView
+import android.view.WindowManager
 
 class MainActivity : AppCompatActivity() {
     private lateinit var adView: AdView
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        
+        // Tam ekran modu
+        window.setFlags(
+            WindowManager.LayoutParams.FLAG_FULLSCREEN,
+            WindowManager.LayoutParams.FLAG_FULLSCREEN
+        )
+        
         setContentView(R.layout.activity_main)
         
         setupAds()
