@@ -31,6 +31,7 @@ import android.text.Spanned
 import android.graphics.Color
 import android.widget.ImageView
 import android.view.WindowManager
+import android.text.style.RelativeSizeSpan
 
 class MainActivity : AppCompatActivity() {
     private lateinit var adView: AdView
@@ -198,6 +199,27 @@ class MainActivity : AppCompatActivity() {
         
         // Alıntı stili
         quoteText.apply {
+            val quoteSpannable = SpannableStringBuilder().apply {
+                // Tırnak işareti
+                append("❝   ", StyleSpan(Typeface.BOLD), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
+                setSpan(
+                    RelativeSizeSpan(1.4f), // Tırnak işaretini %40 daha büyük yap
+                    0,
+                    1,
+                    Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
+                )
+                setSpan(
+                    ForegroundColorSpan(getColor(R.color.quoteTextColor)),
+                    0,
+                    1,
+                    Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
+                )
+                
+                // Alıntı metni
+                append(text)
+            }
+            
+            text = quoteSpannable
             setTextColor(getColor(R.color.quoteTextColor))
             setShadowLayer(2f, 0f, 1f, Color.parseColor("#40000000"))
         }
