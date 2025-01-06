@@ -207,8 +207,26 @@ class MainActivity : AppCompatActivity() {
             append("\n\nModern teknolojinin getirdiği kısa\nsüreli içerikler, dikkat süremizi ve\nodaklanma yeteneğimizi azaltıyor.")
             append("\n\nBilimsel araştırmalar, günde sadece ")
             
-            // Vurgulu metin (daha parlak)
-            append("10\ndakikalık", ForegroundColorSpan(getColor(R.color.neonCyan)), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
+            // Vurgulu metin (daha parlak ve farklı renk)
+            val highlightedText = "10 dakikalık"
+            val start = length
+            append(highlightedText)
+            val end = length
+            
+            // Renk ve stil efektleri
+            setSpan(
+                ForegroundColorSpan(Color.parseColor("#FFE500")), // Parlak sarı
+                start,
+                end,
+                Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
+            )
+            
+            setSpan(
+                StyleSpan(Typeface.BOLD),
+                start,
+                end,
+                Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
+            )
             
             // Son kısım
             append(" zihinsel egzersiz bile beyin\nsağlığımızı korumada etkili olduğunu\ngösteriyor.")
