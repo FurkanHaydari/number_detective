@@ -56,4 +56,10 @@
     <!-- Turuncu ton -->
     <color name="warmOrange">#FF9500</color>  <!-- iOS style turuncu -->
     <color name="warmOrangeNew">#FF5722</color>  <!-- Material Design deep orange -->
+    
+    <!-- Metin Renkleri (Yeni) -->
+    <color name="titleTextColor">#FFFFFF</color>      <!-- Başlık beyaz -->
+    <color name="subtitleTextColor">#E6FFFFFF</color> <!-- Alt başlık %90 beyaz -->
+    <color name="quoteTextColor">#CCFFFFFF</color>    <!-- Alıntı %80 beyaz -->
+    <color name="bodyTextColor">#F2FFFFFF</color>     <!-- Gövde %95 beyaz -->
 </resources>

@@ -29,6 +29,7 @@ import android.text.style.ForegroundColorSpan
 import android.graphics.Typeface
 import android.text.Spanned
 import android.graphics.Color
+import android.widget.ImageView
 
 class MainActivity : AppCompatActivity() {
     private lateinit var adView: AdView
@@ -42,6 +43,7 @@ class MainActivity : AppCompatActivity() {
         setupAnimation()
         setupQuoteOfDay()
         setupDescription()
+        setupFeatures()
     }
 
     private fun setupAds() {
@@ -94,18 +96,18 @@ class MainActivity : AppCompatActivity() {
 
     private fun setupAnimation() {
         // Feature container'ları bul
-        val dikkatContainer = findViewById<LinearLayout>(R.id.dikkatContainer)
-        val hafizaContainer = findViewById<LinearLayout>(R.id.hafizaContainer) 
-        val mantikContainer = findViewById<LinearLayout>(R.id.mantikContainer)
+        val dikkatFeature = findViewById<ViewGroup>(R.id.dikkatFeature)
+        val hafizaFeature = findViewById<ViewGroup>(R.id.hafizaFeature)
+        val mantikFeature = findViewById<ViewGroup>(R.id.mantikFeature)
         
         // Animasyonları yükle
         val pulseAnimation = AnimationUtils.loadAnimation(this, R.anim.pulse_animation)
         val glowAnimation = AnimationUtils.loadAnimation(this, R.anim.glow_animation)
         
         // Animasyonları başlat
-        dikkatContainer.startAnimation(pulseAnimation)
-        hafizaContainer.startAnimation(pulseAnimation)
-        mantikContainer.startAnimation(pulseAnimation)
+        dikkatFeature.startAnimation(pulseAnimation)
+        hafizaFeature.startAnimation(pulseAnimation)
+        mantikFeature.startAnimation(pulseAnimation)
         
         // Buton animasyonu
         val startButton = findViewById<MaterialButton>(R.id.beyniniKoruButton)
@@ -177,17 +179,27 @@ class MainActivity : AppCompatActivity() {
 
     private fun setupDescription() {
         val descriptionText = findViewById<TextView>(R.id.descriptionText)
+        val titleText = findViewById<TextView>(R.id.titleText)
+        val quoteText = findViewById<TextView>(R.id.quoteText)
+        
+        // Başlık stili
+        titleText.apply {
+            setTextColor(getColor(R.color.titleTextColor))
+            setShadowLayer(4f, 0f, 2f, Color.parseColor("#40000000"))
+        }
+        
+        // Alıntı stili
+        quoteText.apply {
+            setTextColor(getColor(R.color.quoteTextColor))
+            setShadowLayer(2f, 0f, 1f, Color.parseColor("#40000000"))
+        }
         
         val spannable = SpannableStringBuilder().apply {
-            // Başlık
-            append("🧠 Beyin çürümesine karşı\n", StyleSpan(Typeface.BOLD), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
-            append("günde 10 dakika!", ForegroundColorSpan(getColor(R.color.neonCyan)), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
-            
             // Ana metin
             append("\n\nModern teknolojinin getirdiği kısa\nsüreli içerikler, dikkat süremizi ve\nodaklanma yeteneğimizi azaltıyor.")
             append("\n\nBilimsel araştırmalar, günde sadece ")
             
-            // Vurgulu metin
+            // Vurgulu metin (daha parlak)
             append("10\ndakikalık", ForegroundColorSpan(getColor(R.color.neonCyan)), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
             
             // Son kısım
@@ -196,8 +208,22 @@ class MainActivity : AppCompatActivity() {
 
         descriptionText.apply {
             text = spannable
-            setTextColor(Color.WHITE)
+            setTextColor(getColor(R.color.bodyTextColor))
             setShadowLayer(3f, 1f, 1f, Color.parseColor("#40000000"))
+        }
+    }
+
+    private fun setupFeatures() {
+        val features = listOf(
+            Triple("dikkatFeature", R.drawable.dikkat, "Dikkat"),
+            Triple("hafizaFeature", R.drawable.hafiza, "Hafıza"),
+            Triple("mantikFeature", R.drawable.mantik, "Mantık")
+        )
+        
+        features.forEach { (id, iconRes, title) ->
+            val featureView = findViewById<ViewGroup>(resources.getIdentifier(id, "id", packageName))
+            featureView.findViewById<ImageView>(R.id.featureIcon).setImageResource(iconRes)
+            featureView.findViewById<TextView>(R.id.featureTitle).text = title
         }
     }
 }
