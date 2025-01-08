@@ -67,6 +67,7 @@ class GameActivity : AppCompatActivity() {
     private var numberPickers: List<NumberPicker> = listOf()
     private lateinit var remainingAttemptsText: TextView
     private lateinit var adView: AdView
+    private val attemptsList = ArrayList<String>()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -174,7 +175,9 @@ class GameActivity : AppCompatActivity() {
                 
                 alpha = 0.9f
                 
+                // Update currentNumbers array when value changes
                 setOnValueChangedListener { _, oldVal, newVal ->
+                    currentNumbers[index] = newVal
                     animateValueChange(this, oldVal, newVal)
                 }
             }
@@ -227,12 +230,10 @@ class GameActivity : AppCompatActivity() {
                     
                     when (state) {
                         is GameState.Won -> {
-                            disableInput()
-                            showGameResult(true, state.score)
+                            handleGameState(state)
                         }
                         is GameState.Lost -> {
-                            disableInput()
-                            showGameResult(false, 0)
+                            handleGameState(state)
                         }
                         is GameState.Playing -> {
                             updateScore(state.score)
@@ -244,6 +245,38 @@ class GameActivity : AppCompatActivity() {
                         else -> {}
                     }
                 }
+            }
+        }
+    }
+
+    private fun handleGameState(state: GameState) {
+        when (state) {
+            is GameState.Won -> {
+                val intent = Intent(this, GameResultActivity::class.java).apply {
+                    putExtra("is_win", true)
+                    putExtra("score", state.score)
+                    putExtra("attempts", viewModel.getAttempts())
+                    putExtra("time_seconds", viewModel.getGameTime())
+                    putExtra("correct_answer", viewModel.getCorrectAnswer())
+                    putStringArrayListExtra("attempts_list", attemptsList)
+                }
+                startActivity(intent)
+                finish()
+            }
+            is GameState.Lost -> {
+                val intent = Intent(this, GameResultActivity::class.java).apply {
+                    putExtra("is_win", false)
+                    putExtra("score", 0)
+                    putExtra("attempts", viewModel.getAttempts())
+                    putExtra("time_seconds", viewModel.getGameTime())
+                    putExtra("correct_answer", viewModel.getCorrectAnswer())
+                    putStringArrayListExtra("attempts_list", attemptsList)
+                }
+                startActivity(intent)
+                finish()
+            }
+            else -> {
+                // Handle other states
             }
         }
     }
@@ -466,8 +499,9 @@ class GameActivity : AppCompatActivity() {
                             .setDuration(50)
                             .start()
                         
-                        val guess = currentNumbers.joinToString("").toInt()
-                        viewModel.makeGuess(guess)
+                        val guess = currentNumbers.joinToString("")
+                        attemptsList.add(guess)
+                        viewModel.makeGuess(guess.toInt())
                     }
                     .start()
             }

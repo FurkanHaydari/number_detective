@@ -2,9 +2,18 @@ package com.brainfocus.numberdetective
 
 import android.content.Intent
 import android.os.Bundle
+import android.view.View
+import android.view.Window
+import android.view.WindowManager
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import com.airbnb.lottie.LottieAnimationView
+import com.google.android.gms.ads.AdRequest
+import com.google.android.gms.ads.LoadAdError
+import com.google.android.gms.ads.MobileAds
+import com.google.android.gms.ads.interstitial.InterstitialAd
+import com.google.android.gms.ads.interstitial.InterstitialAdLoadCallback
+import com.google.android.gms.ads.FullScreenContentCallback
 import com.google.android.material.button.MaterialButton
 import androidx.activity.OnBackPressedCallback
 import android.util.Log
@@ -12,8 +21,8 @@ import android.widget.Button
 import android.app.ActivityOptions
 import android.view.WindowInsets
 import android.view.WindowInsetsController
-import android.view.View
 import android.os.Build
+import android.widget.Toast
 
 class GameResultActivity : AppCompatActivity() {
     private lateinit var resultAnimation: LottieAnimationView
@@ -24,15 +33,29 @@ class GameResultActivity : AppCompatActivity() {
     private lateinit var bestScoreText: TextView
     private lateinit var shareButton: Button
     private lateinit var playAgainButton: Button
+    private lateinit var correctAnswerText: TextView
+    private lateinit var attemptsListText: TextView
+    private var mInterstitialAd: InterstitialAd? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         
-        // Önce setContentView çağrılmalı
+        // Önce tam ekran ayarları yapılmalı
+        requestWindowFeature(Window.FEATURE_NO_TITLE)
+        window.setFlags(
+            WindowManager.LayoutParams.FLAG_FULLSCREEN,
+            WindowManager.LayoutParams.FLAG_FULLSCREEN
+        )
+        
+        // Sonra setContentView çağrılmalı
         setContentView(R.layout.activity_game_result)
         
-        // Sonra tam ekran ayarları yapılmalı
         setupFullscreen()
+        
+        // Initialize MobileAds before loading the ad
+        MobileAds.initialize(this) {
+            loadInterstitialAd()
+        }
         
         initializeViews()
         setupListeners()
@@ -75,6 +98,8 @@ class GameResultActivity : AppCompatActivity() {
         bestScoreText = findViewById(R.id.bestScoreText)
         shareButton = findViewById(R.id.shareButton)
         playAgainButton = findViewById(R.id.playAgainButton)
+        correctAnswerText = findViewById(R.id.correctAnswerText)
+        attemptsListText = findViewById(R.id.attemptsListText)
     }
 
     private fun setupListeners() {
@@ -113,6 +138,18 @@ class GameResultActivity : AppCompatActivity() {
     private fun displayResults() {
         val isWin = intent.getBooleanExtra("is_win", false)
         val score = intent.getIntExtra("score", 0)
+        val correctAnswer = intent.getStringExtra("correct_answer") ?: ""
+        val attemptsList = intent.getStringArrayListExtra("attempts_list") ?: arrayListOf()
+        
+        // Doğru cevabı göster
+        correctAnswerText.text = "Doğru Cevap: $correctAnswer"
+        
+        // Denemeleri göster
+        val attemptsBuilder = StringBuilder()
+        attemptsList.forEachIndexed { index, attempt ->
+            attemptsBuilder.append("${index + 1}. Deneme: $attempt\n")
+        }
+        attemptsListText.text = attemptsBuilder.toString()
         
         // Animasyon ve metin güncelleme
         if (isWin) {
@@ -157,5 +194,77 @@ class GameResultActivity : AppCompatActivity() {
     override fun onBackPressed() {
         super.onBackPressed()
         startMainActivity()
+    }
+
+    private fun loadInterstitialAd() {
+        val adRequest = AdRequest.Builder()
+            .build()
+        
+        InterstitialAd.load(this, getString(R.string.interstitial_ad_unit_id), adRequest,
+            object : InterstitialAdLoadCallback() {
+                override fun onAdLoaded(interstitialAd: InterstitialAd) {
+                    Log.d("Ads", "Interstitial ad loaded successfully")
+                    mInterstitialAd = interstitialAd
+                    setupInterstitialCallbacks()
+                    // Ensure the activity is in immersive mode before showing the ad
+                    window.decorView.systemUiVisibility = (View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+                            or View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
+                            or View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+                            or View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
+                            or View.SYSTEM_UI_FLAG_FULLSCREEN
+                            or View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY)
+                    showInterstitialAd()
+                }
+
+                override fun onAdFailedToLoad(loadAdError: LoadAdError) {
+                    Log.e("Ads", "Interstitial ad failed to load: ${loadAdError.message}")
+                    mInterstitialAd = null
+                }
+            }
+        )
+    }
+
+    private fun setupInterstitialCallbacks() {
+        mInterstitialAd?.fullScreenContentCallback = object : FullScreenContentCallback() {
+            override fun onAdDismissedFullScreenContent() {
+                Log.d("Ads", "Interstitial ad was dismissed")
+                mInterstitialAd = null
+                // Restore immersive mode after ad is dismissed
+                setupFullscreen()
+            }
+
+            override fun onAdFailedToShowFullScreenContent(adError: com.google.android.gms.ads.AdError) {
+                Log.e("Ads", "Interstitial ad failed to show: ${adError.message}")
+                mInterstitialAd = null
+                setupFullscreen()
+            }
+
+            override fun onAdShowedFullScreenContent() {
+                Log.d("Ads", "Interstitial ad showed fullscreen content")
+            }
+
+            override fun onAdImpression() {
+                Log.d("Ads", "Interstitial ad recorded an impression")
+            }
+
+            override fun onAdClicked() {
+                Log.d("Ads", "Interstitial ad was clicked")
+            }
+        }
+    }
+
+    private fun showInterstitialAd() {
+        if (mInterstitialAd != null) {
+            // Ensure we're in immersive mode
+            window.decorView.systemUiVisibility = (View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+                    or View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
+                    or View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+                    or View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
+                    or View.SYSTEM_UI_FLAG_FULLSCREEN
+                    or View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY)
+            mInterstitialAd?.show(this)
+        } else {
+            Log.d("Ads", "The interstitial ad wasn't ready yet.")
+        }
     }
 }

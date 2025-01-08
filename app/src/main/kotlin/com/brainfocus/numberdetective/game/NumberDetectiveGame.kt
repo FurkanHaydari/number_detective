@@ -35,6 +35,8 @@ class NumberDetectiveGame {
     
     fun getCurrentScore(): Int = currentScore
     
+    fun getCorrectAnswer(): String = secretNumber
+    
     fun isGameWon(guess: String? = null): Boolean {
         if (guess != null) {
             return guess == secretNumber

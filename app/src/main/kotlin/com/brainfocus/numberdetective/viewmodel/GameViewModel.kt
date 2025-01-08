@@ -79,6 +79,8 @@ class GameViewModel : ViewModel() {
     fun getAttempts(): Int = _attempts
 
     fun getGameTime(): Long = (System.currentTimeMillis() - startTime) / 1000
+
+    fun getCorrectAnswer(): String = game.getCorrectAnswer()
 }
 
 sealed class GameState {

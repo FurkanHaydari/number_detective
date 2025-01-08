@@ -53,8 +53,11 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main)
         setupFullscreen()
         
-        // Reklam yüklemesini main thread'de yapalım
-        setupAds()
+        // Initialize MobileAds first
+        MobileAds.initialize(this) {
+            // Then setup ads after initialization
+            setupAds()
+        }
         
         // UI işlemlerini sırayla yapalım
         mainScope.launch {
