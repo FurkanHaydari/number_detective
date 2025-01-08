@@ -36,57 +36,64 @@ import android.view.Window
 import android.view.WindowInsets
 import android.view.WindowInsetsController
 import android.os.Build
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.*
 
 class MainActivity : AppCompatActivity() {
+    private var _adView: AdView? = null
     private lateinit var adView: AdView
+    
+    private val mainScope = CoroutineScope(Dispatchers.Main + Job())
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        
-        // Önce setContentView çağrılmalı
         setContentView(R.layout.activity_main)
-        
-        // Sonra tam ekran ayarları yapılmalı
         setupFullscreen()
         
+        // Reklam yüklemesini main thread'de yapalım
         setupAds()
-        setupButtons()
-        setupAnimation()
-        setupQuoteOfDay()
-        setupDescription()
-        setupFeatures()
+        
+        // UI işlemlerini sırayla yapalım
+        mainScope.launch {
+            setupButtons()
+            setupFeatures()
+            
+            coroutineScope {
+                delay(100)
+                setupAnimation()
+                setupQuoteOfDay()
+                setupDescription()
+            }
+        }
     }
 
     private fun setupFullscreen() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
             window.setDecorFitsSystemWindows(false)
             window.insetsController?.let { controller ->
-                controller.hide(WindowInsets.Type.systemBars())
+                controller.hide(WindowInsets.Type.statusBars() or WindowInsets.Type.navigationBars())
                 controller.systemBarsBehavior = WindowInsetsController.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
             }
         } else {
             @Suppress("DEPRECATION")
-            window.decorView.systemUiVisibility = (
-                View.SYSTEM_UI_FLAG_FULLSCREEN
-                or View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
-                or View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
-                or View.SYSTEM_UI_FLAG_LAYOUT_STABLE
-                or View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
-                or View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
-            )
+            window.decorView.systemUiVisibility = (View.SYSTEM_UI_FLAG_FULLSCREEN
+                    or View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
+                    or View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY)
         }
     }
 
     private fun setupAds() {
-        MobileAds.initialize(this)
-        
         val adContainer = findViewById<FrameLayout>(R.id.adContainer)
         adView = findViewById(R.id.adView)
+        _adView = adView
         
         // Container ve AdView'ı başlangıçta görünmez yap
         adContainer.alpha = 0f
         adView.alpha = 0f
         
+        // Reklam yüklemesini main thread'de yapıyoruz
         val adRequest = AdRequest.Builder().build()
         adView.loadAd(adRequest)
         
@@ -109,23 +116,25 @@ class MainActivity : AppCompatActivity() {
             }
             
             override fun onAdFailedToLoad(error: LoadAdError) {
-                Log.d("Ads", "Main activity ad failed to load: ${error.message}")
+                Log.e("Ads", "Ad failed to load: ${error.message}")
             }
         }
     }
 
     override fun onPause() {
-        adView.pause()
+        _adView?.pause()
         super.onPause()
     }
 
     override fun onResume() {
         super.onResume()
-        adView.resume()
+        _adView?.resume()
     }
 
     override fun onDestroy() {
-        adView.destroy()
+        mainScope.cancel() // Coroutine'leri temizle
+        _adView?.destroy()
+        _adView = null
         super.onDestroy()
     }
 
@@ -303,16 +312,18 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun setupFeatures() {
+        data class Feature(val viewId: Int, val iconRes: Int, val title: String)
+        
         val features = listOf(
-            Triple("dikkatFeature", R.drawable.dikkat, "Dikkat"),
-            Triple("hafizaFeature", R.drawable.hafiza, "Hafıza"),
-            Triple("mantikFeature", R.drawable.mantik, "Mantık")
+            Feature(R.id.dikkatFeature, R.drawable.dikkat, "Dikkat"),
+            Feature(R.id.hafizaFeature, R.drawable.hafiza, "Hafıza"),
+            Feature(R.id.mantikFeature, R.drawable.mantik, "Mantık")
         )
         
-        features.forEach { (id, iconRes, title) ->
-            val featureView = findViewById<ViewGroup>(resources.getIdentifier(id, "id", packageName))
-            featureView.findViewById<ImageView>(R.id.featureIcon).setImageResource(iconRes)
-            featureView.findViewById<TextView>(R.id.featureTitle).text = title
+        features.forEach { feature ->
+            val featureView = findViewById<ViewGroup>(feature.viewId)
+            featureView.findViewById<ImageView>(R.id.featureIcon).setImageResource(feature.iconRes)
+            featureView.findViewById<TextView>(R.id.featureTitle).text = feature.title
         }
     }
 
