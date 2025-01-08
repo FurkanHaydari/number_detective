@@ -64,4 +64,7 @@
     <color name="bodyTextColor">#F2FFFFFF</color>     <!-- Gövde %95 beyaz -->
     
     <color name="numberPickerTextColor">@android:color/white</color>
+    
+    <color name="colorDivider">#CCCCCC</color>
+    <color name="colorDividerDark">#666666</color>
 </resources>

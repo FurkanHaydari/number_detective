@@ -121,6 +121,11 @@ class GameActivity : AppCompatActivity() {
     private fun setupNumberPickers() {
         val pickerContainer = findViewById<LinearLayout>(R.id.numberPickerContainer)
         
+        // Karanlık mod kontrolü
+        val isDarkMode = resources.configuration.uiMode and 
+            android.content.res.Configuration.UI_MODE_NIGHT_MASK == 
+            android.content.res.Configuration.UI_MODE_NIGHT_YES
+        
         numberPickers = List(3) { index ->
             NumberPicker(this).apply {
                 minValue = 0
@@ -137,16 +142,27 @@ class GameActivity : AppCompatActivity() {
                 }
                 layoutParams = params
 
-                // Özel NumberPicker stili
-                setFormatter { value ->
+                // Karanlık mod için özel stiller
+                if (isDarkMode) {
+                    setBackgroundResource(R.drawable.number_picker_background_dark)
+                    setDividerColor(ContextCompat.getColor(context, R.color.colorDividerDark))
+                } else {
+                    setBackgroundResource(R.drawable.number_picker_background)
+                    setDividerColor(ContextCompat.getColor(context, R.color.colorDivider))
+                }
+
+                // Sayı formatı
+                setFormatter { value -> 
                     SpannableStringBuilder().apply {
                         append(value.toString())
                         setSpan(
                             StyleSpan(Typeface.BOLD),
                             0, length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
                         )
+                        // Karanlık modda metin rengi
+                        val textColor = if (isDarkMode) Color.WHITE else Color.BLACK
                         setSpan(
-                            ForegroundColorSpan(Color.WHITE),
+                            ForegroundColorSpan(textColor),
                             0, length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
                         )
                         setSpan(
@@ -156,11 +172,8 @@ class GameActivity : AppCompatActivity() {
                     }.toString()
                 }
                 
-                // Saydam arka plan
-                setBackgroundResource(R.drawable.number_picker_background)
                 alpha = 0.9f
                 
-                // Seçili değer değiştiğinde animasyon
                 setOnValueChangedListener { _, oldVal, newVal ->
                     animateValueChange(this, oldVal, newVal)
                 }
