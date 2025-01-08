@@ -3,27 +3,30 @@
     <string name="app_name">Number Detective</string>
 
     <!-- Game Activity -->
-    <string name="score_text">Score: %1$d</string>
-    <string name="attempts_text">Attempts Left: %1$d</string>
-    <string name="victory_title">Congratulations!</string>
-    <string name="victory_message">You won with a score of %1$d!</string>
-    <string name="game_over_title">Game Over</string>
-    <string name="game_over_message">The number was %1$s. Try again!</string>
-    <string name="submit">Submit</string>
-    <string name="hint_enter_number">Enter a 4-digit number</string>
+    <string name="guess_button">TAHMİN ET</string>
+    <string name="remaining_attempts">Kalan Hak: %1$d</string>
+    <string name="hint_correct">Tebrikler! Doğru tahmin!</string>
+    <string name="hint_partial">%1$d rakam doğru, %2$d rakam yanlış yerde</string>
+    <string name="hint_wrong">Hiç eşleşme yok</string>
 
-    <!-- Leaderboard Activity -->
-    <string name="leaderboard">Leaderboard</string>
-    <string name="sort_by_score">Score</string>
-    <string name="sort_by_wins">Wins</string>
-    <string name="no_scores">No scores yet</string>
+    <!-- Game Result Activity -->
+    <string name="result_congrats">Tebrikler!</string>
+    <string name="result_try_again">Tekrar Dene!</string>
+    <string name="score_text">Skor: %1$d</string>
+    <string name="attempts_text">Deneme: %1$d</string>
+    <string name="time_text">Süre: %1$ds</string>
+    <string name="share_button">Paylaş</string>
+    <string name="play_again_button">Tekrar Oyna</string>
+    <string name="share_score_text">Number Detective oyununda %1$d puan kazandım!</string>
 
-    <!-- Missions Activity -->
-    <string name="missions">Daily Missions</string>
-    <string name="no_missions">No missions available</string>
-    <string name="mission_completed">Mission Completed!</string>
-    <string name="mission_reward">+%1$d points</string>
-    <string name="next_missions">Next missions in: %1$s</string>
+    <!-- Main Activity -->
+    <string name="app_title">Brain Focus</string>
+    <string name="start_button">BEYNİNİ KORU!</string>
+    <string name="quote_author">- %1$s</string>
+
+    <!-- Dialog -->
+    <string name="dialog_ok">TAMAM</string>
+    <string name="number_zero">0</string>
 
     <!-- Common -->
     <string name="refresh">Refresh</string>
@@ -48,4 +51,8 @@
 
     <!-- AdMob -->
     <string name="ad_unit_id">ca-app-pub-3940256099942544/6300978111</string>
+
+    <string name="hint_icon_description">İpucu ikonu</string>
+    <string name="number_up_button">Sayıyı artır</string>
+    <string name="number_down_button">Sayıyı azalt</string>
 </resources>

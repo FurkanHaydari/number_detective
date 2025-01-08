@@ -285,7 +285,7 @@ class GameActivity : AppCompatActivity() {
 
     private fun updateRemainingAttempts(attempts: Int) {
         remainingAttemptsText.apply {
-            text = "Kalan Hak: $attempts"
+            text = getString(R.string.remaining_attempts, attempts)
             
             // Renk geçişi için renkler
             val color = when (attempts) {
@@ -388,17 +388,19 @@ class GameActivity : AppCompatActivity() {
         
         when (result) {
             GuessResult.Correct -> {
-                hintText.text = "Tebrikler! Doğru tahmin!"
+                hintText.text = getString(R.string.hint_correct)
                 hintIcon.setImageResource(R.drawable.ic_correct)
                 hintView.setBackgroundResource(R.drawable.hint_box_correct_background)
             }
             is GuessResult.Partial -> {
-                hintText.text = "${result.correctCount} rakam doğru, ${result.misplacedCount} rakam yanlış yerde"
+                hintText.text = getString(R.string.hint_partial, 
+                    result.correctCount, 
+                    result.misplacedCount)
                 hintIcon.setImageResource(R.drawable.ic_partial)
                 hintView.setBackgroundResource(R.drawable.hint_box_partial_background)
             }
             GuessResult.Wrong -> {
-                hintText.text = "Hiç eşleşme yok"
+                hintText.text = getString(R.string.hint_wrong)
                 hintIcon.setImageResource(R.drawable.ic_wrong)
                 hintView.setBackgroundResource(R.drawable.hint_box_wrong_background)
             }

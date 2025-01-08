@@ -9,7 +9,7 @@ import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.RecyclerView
 
 class HintPagerAdapter : RecyclerView.Adapter<HintPagerAdapter.HintViewHolder>() {
-    private val hints = mutableListOf<HintItem>()
+    private var hints = mutableListOf<HintItem>()
 
     data class HintItem(
         var description: String,

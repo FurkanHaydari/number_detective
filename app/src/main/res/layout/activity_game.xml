@@ -53,7 +53,7 @@
         android:id="@+id/submitButton"
         android:layout_width="match_parent"
         android:layout_height="60dp"
-        android:text="TAHMİN ET"
+        android:text="@string/guess_button"
         android:textSize="20sp"
         android:textStyle="bold"
         android:textColor="#FFFFFF"

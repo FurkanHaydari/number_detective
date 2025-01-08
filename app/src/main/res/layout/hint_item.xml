@@ -29,8 +29,9 @@
 
     <ImageView
         android:id="@+id/hintIcon"
-        android:layout_width="28dp"
-        android:layout_height="28dp"
+        android:layout_width="24dp"
+        android:layout_height="24dp"
         android:layout_gravity="center_vertical"
-        android:layout_marginStart="12dp"/>
+        android:layout_marginStart="12dp"
+        android:contentDescription="@string/hint_icon_description"/>
 </LinearLayout> 

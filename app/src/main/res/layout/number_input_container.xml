@@ -19,7 +19,8 @@
             android:layout_height="48dp"
             android:src="@drawable/ic_arrow_up"
             android:background="@drawable/number_input_background"
-            app:tint="@color/colorPrimary"/>
+            app:tint="@color/colorPrimary"
+            android:contentDescription="@string/number_up_button"/>
             
         <TextView
             android:id="@+id/numberText1"
@@ -37,7 +38,8 @@
             android:layout_height="48dp"
             android:src="@drawable/ic_arrow_down"
             android:background="@drawable/number_input_background"
-            app:tint="@color/colorPrimary"/>
+            app:tint="@color/colorPrimary"
+            android:contentDescription="@string/number_down_button"/>
     </LinearLayout>
 
     <Space android:layout_width="8dp" android:layout_height="0dp"/>
@@ -54,7 +56,8 @@
             android:layout_height="48dp"
             android:src="@drawable/ic_arrow_up"
             android:background="@drawable/number_input_background"
-            app:tint="@color/colorPrimary"/>
+            app:tint="@color/colorPrimary"
+            android:contentDescription="@string/number_up_button"/>
             
         <TextView
             android:id="@+id/numberText2"
@@ -72,7 +75,8 @@
             android:layout_height="48dp"
             android:src="@drawable/ic_arrow_down"
             android:background="@drawable/number_input_background"
-            app:tint="@color/colorPrimary"/>
+            app:tint="@color/colorPrimary"
+            android:contentDescription="@string/number_down_button"/>
     </LinearLayout>
 
     <Space android:layout_width="8dp" android:layout_height="0dp"/>
@@ -89,7 +93,8 @@
             android:layout_height="48dp"
             android:src="@drawable/ic_arrow_up"
             android:background="@drawable/number_input_background"
-            app:tint="@color/colorPrimary"/>
+            app:tint="@color/colorPrimary"
+            android:contentDescription="@string/number_up_button"/>
             
         <TextView
             android:id="@+id/numberText3"
@@ -107,6 +112,7 @@
             android:layout_height="48dp"
             android:src="@drawable/ic_arrow_down"
             android:background="@drawable/number_input_background"
-            app:tint="@color/colorPrimary"/>
+            app:tint="@color/colorPrimary"
+            android:contentDescription="@string/number_down_button"/>
     </LinearLayout>
 </LinearLayout> 

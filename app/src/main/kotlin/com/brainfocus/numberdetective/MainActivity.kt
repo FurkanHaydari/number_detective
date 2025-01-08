@@ -40,6 +40,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.*
+import androidx.appcompat.content.res.AppCompatResources
 
 class MainActivity : AppCompatActivity() {
     private var _adView: AdView? = null
@@ -207,7 +208,7 @@ class MainActivity : AppCompatActivity() {
                     gravity = android.view.Gravity.CENTER
                     setMargins(8, 8, 8, 8) // Kenarlardan margin
                 }
-                background = getDrawable(R.drawable.button_glow_overlay)
+                background = AppCompatResources.getDrawable(context, R.drawable.button_glow_overlay)
                 elevation = startButton.elevation - 1f
             }
             

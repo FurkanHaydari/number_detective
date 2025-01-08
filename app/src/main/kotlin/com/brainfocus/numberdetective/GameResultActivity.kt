@@ -117,28 +117,28 @@ class GameResultActivity : AppCompatActivity() {
         // Animasyon ve metin güncelleme
         if (isWin) {
             resultAnimation.setAnimation(R.raw.win_animation)
-            resultText.text = "Tebrikler!"
+            resultText.text = getString(R.string.result_congrats)
         } else {
             resultAnimation.setAnimation(R.raw.lose_animation)
-            resultText.text = "Tekrar Dene!"
+            resultText.text = getString(R.string.result_try_again)
         }
         
         resultAnimation.playAnimation()
-        scoreText.text = "Skor: $score"
+        scoreText.text = getString(R.string.score_text, score)
         
         // Diğer sonuç bilgilerini göster
         val attempts = intent.getIntExtra("attempts", 0)
         val timeSeconds = intent.getLongExtra("time_seconds", 0)
         
-        attemptsText.text = "Deneme: $attempts"
-        timeText.text = "Süre: ${timeSeconds}s"
+        attemptsText.text = getString(R.string.attempts_text, attempts)
+        timeText.text = getString(R.string.time_text, timeSeconds)
     }
 
     private fun shareScore() {
         val score = intent.getIntExtra("SCORE", 0)
         val shareIntent = Intent().apply {
             action = Intent.ACTION_SEND
-            putExtra(Intent.EXTRA_TEXT, "Number Detective oyununda $score puan kazandım!")
+            putExtra(Intent.EXTRA_TEXT, getString(R.string.share_score_text, score))
             type = "text/plain"
         }
         startActivity(Intent.createChooser(shareIntent, "Skoru Paylaş"))
