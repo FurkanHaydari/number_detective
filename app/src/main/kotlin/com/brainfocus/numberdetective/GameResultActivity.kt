@@ -6,7 +6,6 @@ import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import com.airbnb.lottie.LottieAnimationView
 import com.google.android.material.button.MaterialButton
-import com.brainfocus.numberdetective.utils.SoundManager
 import androidx.activity.OnBackPressedCallback
 import android.util.Log
 import android.widget.Button
@@ -145,22 +144,14 @@ class GameResultActivity : AppCompatActivity() {
         startActivity(Intent.createChooser(shareIntent, "Skoru Paylaş"))
     }
 
-    private fun playSound(soundResourceId: Int) {
-        SoundManager.getInstance(this).playSound(soundResourceId)
-    }
-
     override fun onPause() {
         super.onPause()
         resultAnimation.pauseAnimation()
     }
 
     override fun onDestroy() {
-        try {
-            resultAnimation.cancelAnimation()
-            super.onDestroy()
-        } catch (e: Exception) {
-            Log.e("GameResultActivity", "Error in onDestroy", e)
-        }
+        resultAnimation.cancelAnimation()
+        super.onDestroy()
     }
 
     override fun onBackPressed() {

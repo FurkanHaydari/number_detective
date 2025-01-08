@@ -6,9 +6,6 @@ Brain Focus, mantık ve strateji becerilerinizi geliştirirken eğlenceli vakit 
 
 ✨ Özellikler:
 • Tek oyunculu mod
-• Çok oyunculu rekabet
-• Günlük görevler ve ödüller
-• Liderlik tablosu
 • Başarım sistemi
 • Ses efektleri ve animasyonlar
 
@@ -17,11 +14,6 @@ Brain Focus, mantık ve strateji becerilerinizi geliştirirken eğlenceli vakit 
 2. Her tahmininizden sonra ipuçları alın
 3. İpuçlarını kullanarak doğru sayıya ulaşın
 4. Ne kadar az denemede bulursanız, o kadar çok puan kazanın!
-
-🏆 Rekabet:
-• Arkadaşlarınızla yarışın
-• Küresel liderlik tablosunda yerinizi alın
-• Günlük görevleri tamamlayarak ekstra puanlar kazanın
 
 📱 Özellikler:
 • Temiz ve modern arayüz
