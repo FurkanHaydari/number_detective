@@ -62,4 +62,6 @@
     <color name="subtitleTextColor">#E6FFFFFF</color> <!-- Alt başlık %90 beyaz -->
     <color name="quoteTextColor">#CCFFFFFF</color>    <!-- Alıntı %80 beyaz -->
     <color name="bodyTextColor">#F2FFFFFF</color>     <!-- Gövde %95 beyaz -->
+    
+    <color name="numberPickerTextColor">@android:color/white</color>
 </resources>

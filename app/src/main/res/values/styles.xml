@@ -25,4 +25,20 @@
         <item name="android:windowEnterAnimation">@anim/dialog_enter</item>
         <item name="android:windowExitAnimation">@anim/dialog_exit</item>
     </style>
+
+    <style name="CustomNumberPicker">
+        <item name="android:textSize">22sp</item>
+        <item name="android:textColorPrimary">@color/black</item>
+        <item name="android:colorControlNormal">#4D000000</item>
+        <item name="android:layout_margin">4dp</item>
+        <item name="android:divider">@android:color/transparent</item>
+    </style>
+
+    <style name="NumberPickerStyle">
+        <item name="android:textSize">24sp</item>
+        <item name="android:textColorPrimary">@color/black</item>
+        <item name="android:colorControlNormal">@android:color/transparent</item>
+        <item name="android:paddingStart">8dp</item>
+        <item name="android:paddingEnd">8dp</item>
+    </style>
 </resources>

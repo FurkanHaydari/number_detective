@@ -8,35 +8,7 @@
     android:background="@drawable/game_background"
     android:padding="16dp">
 
-    <TextView
-        android:id="@+id/scoreText"
-        android:layout_width="0dp"
-        android:layout_height="0dp"
-        android:visibility="gone"/>
-
-    <!-- İpuçları Container -->
-    <LinearLayout
-        android:id="@+id/hintsContainer"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:background="@drawable/hints_container_background"
-        android:padding="16dp"
-        android:layout_marginBottom="16dp"
-        android:elevation="8dp"/>
-
-    <!-- Tahmin Bölümü -->
-    <LinearLayout
-        android:id="@+id/numberPickerContainer"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:gravity="center"
-        android:background="@drawable/picker_container_background"
-        android:padding="12dp"
-        android:layout_marginBottom="12dp"
-        android:elevation="8dp"/>
-
+    <!-- Kalan Hak -->
     <TextView
         android:id="@+id/remainingAttemptsText"
         android:layout_width="wrap_content"
@@ -49,35 +21,70 @@
         android:layout_marginBottom="16dp"
         android:layout_gravity="center_horizontal"/>
 
+    <!-- İpuçları Container -->
+    <LinearLayout
+        android:id="@+id/hintsContainer"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:orientation="vertical"
+        android:background="@drawable/hints_container_background"
+        android:padding="16dp"
+        android:layout_marginBottom="16dp"
+        android:divider="@android:drawable/divider_horizontal_bright"
+        android:showDividers="middle"
+        android:dividerPadding="12dp"
+        android:elevation="8dp"/>
+
+    <!-- Tahmin Bölümü -->
+    <LinearLayout
+        android:id="@+id/numberPickerContainer"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center"
+        android:background="@drawable/picker_container_background"
+        android:padding="16dp"
+        android:layout_marginBottom="16dp"
+        android:elevation="8dp"/>
+
+    <!-- Tahmin Butonu -->
     <Button
         android:id="@+id/submitButton"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="60dp"
         android:text="TAHMİN ET"
         android:textSize="20sp"
         android:textStyle="bold"
-        android:padding="18dp"
-        android:textColor="@color/white"
-        android:background="@drawable/submit_button_background"
-        android:layout_marginBottom="16dp"
-        android:layout_marginHorizontal="24dp"
-        android:elevation="8dp"/>
+        android:textColor="#FFFFFF"
+        style="@null"
+        android:background="@drawable/red_button_background"
+        android:layout_marginBottom="12dp"
+        android:layout_marginHorizontal="0dp"
+        android:elevation="0dp"/>
 
-    <!-- Boşluk için weight kullan -->
-    <Space
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="1"/>
-
-    <!-- AdMob Banner Container -->
+    <!-- Reklam -->
     <FrameLayout
         android:id="@+id/adContainer"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="24dp"
-        android:layout_marginHorizontal="16dp"
-        android:layout_marginBottom="8dp"
         android:background="@drawable/ad_container_background"
-        android:padding="8dp"
-        android:elevation="8dp"/>
+        android:padding="8dp">
+
+        <com.google.android.gms.ads.AdView
+            android:id="@+id/adView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            ads:adSize="BANNER"
+            ads:adUnitId="@string/banner_ad_unit_id"/>
+    </FrameLayout>
+
+    <!-- Gizli skor text -->
+    <TextView
+        android:id="@+id/scoreText"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:visibility="gone"/>
+
 </LinearLayout>

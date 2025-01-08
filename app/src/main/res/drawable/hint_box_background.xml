@@ -3,9 +3,9 @@
     <!-- Gölge -->
     <item>
         <shape android:shape="rectangle">
-            <solid android:color="#40000000"/>
+            <solid android:color="#50000000"/>
             <corners android:radius="16dp"/>
-            <padding android:bottom="2dp"/>
+            <padding android:bottom="3dp"/>
         </shape>
     </item>
     
