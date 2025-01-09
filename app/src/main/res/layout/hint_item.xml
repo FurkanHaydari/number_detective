@@ -1,37 +1,49 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:orientation="horizontal"
-    android:padding="18dp"
-    android:layout_marginBottom="16dp"
-    android:layout_marginHorizontal="8dp"
-    android:background="@drawable/hint_box_background"
-    android:elevation="4dp">
+    app:cardCornerRadius="24dp"
+    app:cardElevation="0dp"
+    app:cardBackgroundColor="#26FFFFFF"
+    app:strokeColor="#33FFFFFF"
+    app:strokeWidth="0dp"
+    android:alpha="0.95">
 
-    <TextView
-        android:id="@+id/guessNumberText"
-        android:layout_width="wrap_content"
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:textSize="20sp"
-        android:textStyle="bold"
-        android:textColor="@color/white"
-        android:layout_marginEnd="16dp"/>
+        android:minHeight="70dp"
+        android:padding="12dp">
 
-    <TextView
-        android:id="@+id/hintText"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_weight="1"
-        android:textSize="16sp"
-        android:textColor="#E0FFFFFF"/>
+        <TextView
+            android:id="@+id/text_guess_number"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="24sp"
+            android:letterSpacing="0.1"
+            android:textStyle="bold"
+            android:textColor="#FFFFFF"
+            android:fontFamily="@font/poppins_medium"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"/>
 
-    <ImageView
-        android:id="@+id/hintIcon"
-        android:layout_width="24dp"
-        android:layout_height="24dp"
-        android:layout_gravity="center_vertical"
-        android:layout_marginStart="12dp"
-        android:contentDescription="@string/hint_icon_description"/>
-</LinearLayout> 
+        <TextView
+            android:id="@+id/text_hint"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="15sp"
+            android:textColor="#FFFFFF"
+            android:alpha="0.85"
+            android:gravity="center"
+            android:fontFamily="@font/poppins_regular"
+            android:layout_marginTop="2dp"
+            app:layout_constraintTop_toBottomOf="@id/text_guess_number"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"/>
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+</com.google.android.material.card.MaterialCardView>

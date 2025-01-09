@@ -15,7 +15,8 @@
             android:id="@+id/toolbar"
             android:layout_width="match_parent"
             android:layout_height="?attr/actionBarSize"
-            android:background="@android:color/transparent">
+            android:background="@android:color/transparent"
+            android:tooltipText="">
 
             <TextView
                 android:layout_width="wrap_content"
@@ -46,6 +47,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="16dp"
+                android:tooltipText=""
                 app:cardBackgroundColor="@color/card_background"
                 app:cardCornerRadius="12dp"
                 app:cardElevation="4dp">
@@ -62,14 +64,16 @@
                         android:layout_height="wrap_content"
                         android:textColor="@color/text_primary"
                         android:textSize="18sp"
-                        android:textStyle="bold" />
+                        android:textStyle="bold"
+                        android:tooltipText="" />
 
                     <TextView
                         android:id="@+id/playerLocationText"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="4dp"
-                        android:textColor="@color/text_secondary" />
+                        android:textColor="@color/text_secondary"
+                        android:tooltipText="" />
 
                     <LinearLayout
                         android:layout_width="match_parent"
@@ -89,13 +93,15 @@
                                 android:layout_height="wrap_content"
                                 android:textColor="@color/score_color"
                                 android:textSize="24sp"
-                                android:textStyle="bold" />
+                                android:textStyle="bold"
+                                android:tooltipText="" />
 
                             <TextView
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:text="@string/high_score"
-                                android:textColor="@color/text_secondary" />
+                                android:textColor="@color/text_secondary"
+                                android:tooltipText="" />
 
                         </LinearLayout>
 
@@ -111,13 +117,15 @@
                                 android:layout_height="wrap_content"
                                 android:textColor="@color/text_primary"
                                 android:textSize="24sp"
-                                android:textStyle="bold" />
+                                android:textStyle="bold"
+                                android:tooltipText="" />
 
                             <TextView
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:text="@string/total_games"
-                                android:textColor="@color/text_secondary" />
+                                android:textColor="@color/text_secondary"
+                                android:tooltipText="" />
 
                         </LinearLayout>
 
@@ -134,7 +142,8 @@
                 android:text="@string/top_players"
                 android:textColor="@color/text_primary"
                 android:textSize="18sp"
-                android:textStyle="bold" />
+                android:textStyle="bold"
+                android:tooltipText="" />
 
             <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/leaderboardRecyclerView"
@@ -142,7 +151,8 @@
                 android:layout_height="wrap_content"
                 android:clipToPadding="false"
                 android:nestedScrollingEnabled="false"
-                android:overScrollMode="never" />
+                android:overScrollMode="never"
+                android:tooltipText="" />
 
             <ProgressBar
                 android:id="@+id/loadingProgress"
@@ -150,6 +160,7 @@
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
                 android:layout_marginTop="32dp"
+                android:tooltipText=""
                 android:visibility="gone" />
 
             <TextView
@@ -160,6 +171,7 @@
                 android:layout_marginTop="32dp"
                 android:text="@string/no_leaderboard_data"
                 android:textColor="@color/text_secondary"
+                android:tooltipText=""
                 android:visibility="gone" />
 
         </LinearLayout>

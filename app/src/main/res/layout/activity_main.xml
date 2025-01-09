@@ -148,6 +148,7 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
+            android:visibility="gone"
             android:text="@string/refresh"
             style="@style/Widget.MaterialComponents.Button.OutlinedButton" />
 
@@ -156,6 +157,7 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
+            android:visibility="gone"
             android:text="@string/leaderboard_title"
             android:layout_marginStart="8dp"
             style="@style/Widget.MaterialComponents.Button.OutlinedButton" />

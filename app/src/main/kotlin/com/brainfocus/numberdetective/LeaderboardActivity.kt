@@ -67,6 +67,16 @@ class LeaderboardActivity : AppCompatActivity() {
         playerLocationText = findViewById(R.id.playerLocationText)
         playerHighScoreText = findViewById(R.id.playerHighScoreText)
         playerTotalGamesText = findViewById(R.id.playerTotalGamesText)
+
+        // Disable hover tooltips for all views to prevent window leaks
+        val views = listOf(
+            loadingProgress, emptyStateText, leaderboardRecyclerView,
+            playerNameText, playerLocationText, playerHighScoreText, playerTotalGamesText
+        )
+        views.forEach { 
+            it.setOnLongClickListener { true } // Prevent long click tooltips
+            it.setOnHoverListener { _, _ -> true } // Prevent hover tooltips
+        }
     }
 
     private fun setupToolbar() {
@@ -197,5 +207,11 @@ class LeaderboardActivity : AppCompatActivity() {
             return true
         }
         return super.onOptionsItemSelected(item)
+    }
+
+    override fun onDestroy() {
+        // Dismiss any tooltips by clearing focus
+        currentFocus?.clearFocus()
+        super.onDestroy()
     }
 }

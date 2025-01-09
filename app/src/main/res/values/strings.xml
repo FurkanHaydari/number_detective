@@ -44,7 +44,24 @@
         <item>"Beyin bir kas gibidir, kullandıkça güçlenir." - Thomas Edison</item>
         <item>"Düşünmeden öğrenmek faydasız, öğrenmeden düşünmek tehlikelidir." - Konfüçyus</item>
         <item>"En büyük zafer, insanın kendini yenmesidir." - Platon</item>
+        <item>"Bilgi, insanı kuşkudan; erdem, insanı korkudan kurtarır." - Konfüçyus</item>
+        <item>"Büyük işler başarmak için yalnızca harekete geçmek yeterli değildir; ne yapılması gerektiğini de düşünmeliyiz." - Aristoteles</item>
+        <item>"Zihin, bir kez yeni bir fikri kabul ettiğinde asla eski boyutlarına dönemez." - Oliver Wendell Holmes</item>
+        <item>"Düşünen insanlar, dünyayı değiştiren insanlardır." - Mahatma Gandhi</item>
+        <item>"Problemlere odaklanırsanız, daha fazla problem görürsünüz. Çözümlere odaklanırsanız, daha fazla fırsat görürsünüz." - Albert Einstein</item>
+        <item>"Merak, bilginin kıvılcımıdır." - Neil deGrasse Tyson</item>
+        <item>"Ne kadar çok bilirsen, o kadar çok hayal edebilirsin." - Albert Einstein</item>
+        <item>"Sorunun kendisi, çözümün ilk adımıdır." - Carl Jung</item>
+        <item>"Düşünmek, insanı güçlü kılar; merak, insanı ileriye taşır." - Marie Curie</item>
+        <item>"Sınırlarımızı sadece kendi zihnimiz belirler." - Napoleon Hill</item>
+        <item>"Bilgi, uygulamaya dökülmedikçe güçsüzdür." - Peter Drucker</item>
+        <item>"Bir şeyin imkansız olduğunu düşünürseniz, o şeyin imkansız olmasını sağlarsınız." - Bruce Lee</item>
+        <item>"Eğer hiçbir hata yapmıyorsanız, yeni bir şey denemiyorsunuz demektir." - Albert Einstein</item>
+        <item>"Doğru soruyu sormak, bir problemin yarısını çözmektir." - Charles Kettering</item>
+        <item>"Beyin, en büyük laboratuvardır. Onu keşfetmekten korkmayın." - Carl Sagan</item>
+        <item>"Hayal gücü, bilginin çok ötesindedir." - Albert Einstein</item>
     </string-array>
+
 
     <!-- Reklam ID'leri -->
     <string name="banner_ad_unit_id">ca-app-pub-3940256099942544/6300978111</string>

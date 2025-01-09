@@ -10,7 +10,10 @@ import androidx.lifecycle.repeatOnLifecycle
 import com.brainfocus.numberdetective.viewmodel.GameState
 import com.brainfocus.numberdetective.viewmodel.GameViewModel
 import com.brainfocus.numberdetective.model.GuessResult
+import com.brainfocus.numberdetective.adapter.HintAdapter
+import com.brainfocus.numberdetective.decoration.HintItemDecoration
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.delay
 import org.koin.androidx.viewmodel.ext.android.viewModel
 import com.brainfocus.numberdetective.viewmodel.Hint
 import android.view.Gravity
@@ -57,10 +60,16 @@ import android.text.style.RelativeSizeSpan
 import android.text.style.StyleSpan
 import android.text.Spanned
 import androidx.core.content.res.ResourcesCompat
+import androidx.recyclerview.widget.RecyclerView
+import com.google.android.gms.ads.interstitial.InterstitialAd
+import com.google.android.gms.ads.interstitial.InterstitialAdLoadCallback
+import com.google.android.gms.ads.FullScreenContentCallback
+import com.google.android.gms.ads.AdError
 
 class GameActivity : AppCompatActivity() {
     private val viewModel: GameViewModel by viewModel()
-    private lateinit var hintsContainer: LinearLayout
+    private lateinit var hintsContainer: RecyclerView
+    private lateinit var hintsAdapter: HintAdapter
     private lateinit var scoreText: TextView
     private lateinit var submitButton: Button
     private val currentNumbers = IntArray(3) { 0 }
@@ -68,22 +77,22 @@ class GameActivity : AppCompatActivity() {
     private lateinit var remainingAttemptsText: TextView
     private lateinit var adView: AdView
     private val attemptsList = ArrayList<String>()
+    private var mInterstitialAd: InterstitialAd? = null
+    private var pendingGameResult: Intent? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         
-        // Önce setContentView çağrılmalı
         setContentView(R.layout.activity_game)
         
-        // Sonra tam ekran ayarları yapılmalı
         setupFullscreen()
         
-        // Initialize AdView first
         adView = findViewById(R.id.adView)
         
         setupViews()
-        setupAds()
         observeViewModel()
+        startScoreTimer()
+        loadInterstitialAd()
     }
 
     private fun setupFullscreen() {
@@ -107,14 +116,21 @@ class GameActivity : AppCompatActivity() {
     }
 
     private fun setupViews() {
-        // Temel view'ları bul
+        setupFullscreen()
+        
         hintsContainer = findViewById(R.id.hintsContainer)
         scoreText = findViewById(R.id.scoreText)
         submitButton = findViewById(R.id.submitButton)
         remainingAttemptsText = findViewById(R.id.remainingAttemptsText)
+        adView = findViewById(R.id.adView)
         
         setupNumberPickers()
         setupSubmitButton()
+        setupAds()
+        
+        hintsAdapter = HintAdapter()
+        hintsContainer.adapter = hintsAdapter
+        hintsContainer.addItemDecoration(HintItemDecoration(dpToPx(8)))
         
         updateRemainingAttempts(3)
     }
@@ -122,7 +138,6 @@ class GameActivity : AppCompatActivity() {
     private fun setupNumberPickers() {
         val pickerContainer = findViewById<LinearLayout>(R.id.numberPickerContainer)
         
-        // Karanlık mod kontrolü
         val isDarkMode = resources.configuration.uiMode and 
             android.content.res.Configuration.UI_MODE_NIGHT_MASK == 
             android.content.res.Configuration.UI_MODE_NIGHT_YES
@@ -143,7 +158,6 @@ class GameActivity : AppCompatActivity() {
                 }
                 layoutParams = params
 
-                // Karanlık mod için özel stiller
                 if (isDarkMode) {
                     setBackgroundResource(R.drawable.number_picker_background_dark)
                     setDividerColor(ContextCompat.getColor(context, R.color.colorDividerDark))
@@ -152,7 +166,6 @@ class GameActivity : AppCompatActivity() {
                     setDividerColor(ContextCompat.getColor(context, R.color.colorDivider))
                 }
 
-                // Sayı formatı
                 setFormatter { value -> 
                     SpannableStringBuilder().apply {
                         append(value.toString())
@@ -160,7 +173,6 @@ class GameActivity : AppCompatActivity() {
                             StyleSpan(Typeface.BOLD),
                             0, length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
                         )
-                        // Karanlık modda metin rengi
                         val textColor = if (isDarkMode) Color.WHITE else Color.BLACK
                         setSpan(
                             ForegroundColorSpan(textColor),
@@ -173,9 +185,8 @@ class GameActivity : AppCompatActivity() {
                     }.toString()
                 }
                 
-                alpha = 0.9f
+                alpha = 0.7f
                 
-                // Update currentNumbers array when value changes
                 setOnValueChangedListener { _, oldVal, newVal ->
                     currentNumbers[index] = newVal
                     animateValueChange(this, oldVal, newVal)
@@ -253,27 +264,25 @@ class GameActivity : AppCompatActivity() {
         when (state) {
             is GameState.Won -> {
                 val intent = Intent(this, GameResultActivity::class.java).apply {
-                    putExtra("is_win", true)
-                    putExtra("score", state.score)
-                    putExtra("attempts", viewModel.getAttempts())
-                    putExtra("time_seconds", viewModel.getGameTime())
-                    putExtra("correct_answer", viewModel.getCorrectAnswer())
+                    putExtra(GameResultActivity.EXTRA_SUCCESS, true)
+                    putExtra(GameResultActivity.EXTRA_SCORE, state.score)
+                    putExtra(GameResultActivity.EXTRA_ATTEMPTS, viewModel.getAttempts())
+                    putExtra(GameResultActivity.EXTRA_TIME, viewModel.getGameTime().toLong())
+                    putExtra(GameResultActivity.EXTRA_CORRECT_ANSWER, viewModel.getCorrectAnswer())
                     putStringArrayListExtra("attempts_list", attemptsList)
                 }
-                startActivity(intent)
-                finish()
+                showGameResultWithAd(intent)
             }
             is GameState.Lost -> {
                 val intent = Intent(this, GameResultActivity::class.java).apply {
-                    putExtra("is_win", false)
-                    putExtra("score", 0)
-                    putExtra("attempts", viewModel.getAttempts())
-                    putExtra("time_seconds", viewModel.getGameTime())
-                    putExtra("correct_answer", viewModel.getCorrectAnswer())
+                    putExtra(GameResultActivity.EXTRA_SUCCESS, false)
+                    putExtra(GameResultActivity.EXTRA_SCORE, 0)
+                    putExtra(GameResultActivity.EXTRA_ATTEMPTS, viewModel.getAttempts())
+                    putExtra(GameResultActivity.EXTRA_TIME, viewModel.getGameTime().toLong())
+                    putExtra(GameResultActivity.EXTRA_CORRECT_ANSWER, viewModel.getCorrectAnswer())
                     putStringArrayListExtra("attempts_list", attemptsList)
                 }
-                startActivity(intent)
-                finish()
+                showGameResultWithAd(intent)
             }
             else -> {
                 // Handle other states
@@ -282,17 +291,7 @@ class GameActivity : AppCompatActivity() {
     }
 
     private fun updateHints(hints: List<Hint>) {
-        hintsContainer.removeAllViews()
-        hints.forEach { hint ->
-            val hintView = layoutInflater.inflate(R.layout.item_hint, hintsContainer, false)
-            val numberText = hintView.findViewById<TextView>(R.id.numberText)
-            val descriptionText = hintView.findViewById<TextView>(R.id.descriptionText)
-            
-            numberText.text = hint.numbers.joinToString("  ")
-            descriptionText.text = hint.description
-            
-            hintsContainer.addView(hintView)
-        }
+        hintsAdapter.updateHints(hints)
     }
 
     private fun disableInput() {
@@ -301,26 +300,34 @@ class GameActivity : AppCompatActivity() {
     }
 
     private fun updateScore(score: Int) {
-        scoreText.text = score.toString()
-    }
-
-    private fun showGameResult(isWin: Boolean, score: Int) {
-        val intent = Intent(this, GameResultActivity::class.java).apply {
-            flags = Intent.FLAG_ACTIVITY_CLEAR_TOP
-            putExtra("is_win", isWin)
-            putExtra("score", score)
-            putExtra("attempts", viewModel.getAttempts())
-            putExtra("time_seconds", viewModel.getGameTime())
+        val oldScore = scoreText.text.toString().replace("Score: ", "").toIntOrNull() ?: 0
+        val animator = ValueAnimator.ofInt(oldScore, score)
+        animator.duration = 1000 // 1 saniye
+        animator.interpolator = OvershootInterpolator(1.5f)
+        
+        animator.addUpdateListener { animation ->
+            val animatedValue = animation.animatedValue as Int
+            scoreText.text = "Score: $animatedValue"
         }
         
-        startActivity(intent)
+        animator.start()
+    }
+
+    private fun showGameResultWithAd(intent: Intent) {
+        pendingGameResult = intent
+        if (mInterstitialAd != null) {
+            mInterstitialAd?.show(this)
+        } else {
+            // If no ad is available, just show the result
+            startActivity(intent)
+            finish()
+        }
     }
 
     private fun updateRemainingAttempts(attempts: Int) {
         remainingAttemptsText.apply {
             text = getString(R.string.remaining_attempts, attempts)
             
-            // Renk geçişi için renkler
             val color = when (attempts) {
                 3 -> getColor(R.color.colorCorrect)    // Yeşil
                 2 -> getColor(R.color.colorMisplaced)  // Turuncu  
@@ -329,15 +336,12 @@ class GameActivity : AppCompatActivity() {
             
             setTextColor(color)
             
-            // Gölge efekti
             setShadowLayer(4f, 0f, 2f, Color.parseColor("#40000000"))
             
-            // Son hak için titreme animasyonu
             if (attempts == 1) {
                 val shakeAnimation = AnimationUtils.loadAnimation(context, R.anim.shake_animation)
                 startAnimation(shakeAnimation)
             } else {
-                // Normal durumlarda pulse animasyonu
                 alpha = 0f
                 scaleX = 0.8f
                 scaleY = 0.8f
@@ -376,6 +380,48 @@ class GameActivity : AppCompatActivity() {
         }
     }
 
+    private fun loadInterstitialAd() {
+        val adRequest = AdRequest.Builder().build()
+        InterstitialAd.load(this, getString(R.string.interstitial_ad_unit_id), adRequest,
+            object : InterstitialAdLoadCallback() {
+                override fun onAdLoaded(interstitialAd: InterstitialAd) {
+                    mInterstitialAd = interstitialAd
+                    setupInterstitialCallbacks()
+                }
+
+                override fun onAdFailedToLoad(loadAdError: LoadAdError) {
+                    mInterstitialAd = null
+                    // If ad fails to load, proceed with showing game result
+                    pendingGameResult?.let {
+                        startActivity(it)
+                        finish()
+                    }
+                }
+            })
+    }
+
+    private fun setupInterstitialCallbacks() {
+        mInterstitialAd?.fullScreenContentCallback = object : FullScreenContentCallback() {
+            override fun onAdDismissedFullScreenContent() {
+                mInterstitialAd = null
+                // When ad is dismissed, show the game result
+                pendingGameResult?.let {
+                    startActivity(it)
+                    finish()
+                }
+            }
+
+            override fun onAdFailedToShowFullScreenContent(adError: AdError) {
+                mInterstitialAd = null
+                // If ad fails to show, proceed with showing game result
+                pendingGameResult?.let {
+                    startActivity(it)
+                    finish()
+                }
+            }
+        }
+    }
+
     override fun onPause() {
         adView.pause()
         super.onPause()
@@ -399,58 +445,16 @@ class GameActivity : AppCompatActivity() {
     }
 
     private fun addHint(guess: Int, result: GuessResult) {
-        val hintView = layoutInflater.inflate(R.layout.hint_item, hintsContainer, false)
-        
-        // Margin ekle
-        val params = LinearLayout.LayoutParams(
-            LinearLayout.LayoutParams.MATCH_PARENT,
-            LinearLayout.LayoutParams.WRAP_CONTENT
-        ).apply {
-            setMargins(0, 0, 0, dpToPx(8)) // 8dp bottom margin
-        }
-        hintView.layoutParams = params
-        
-        // Gölge ve elevation ekle
-        hintView.elevation = dpToPx(4).toFloat()
-        hintView.setBackgroundResource(R.drawable.hint_card_background)
-        
-        hintView.findViewById<TextView>(R.id.guessNumberText).text = guess.toString()
-        
-        val hintText = hintView.findViewById<TextView>(R.id.hintText)
-        val hintIcon = hintView.findViewById<ImageView>(R.id.hintIcon)
-        
-        when (result) {
-            GuessResult.Correct -> {
-                hintText.text = getString(R.string.hint_correct)
-                hintIcon.setImageResource(R.drawable.ic_correct)
-                hintView.setBackgroundResource(R.drawable.hint_box_correct_background)
+        val hint = Hint(
+            numbers = listOf(guess),
+            description = when (result) {
+                GuessResult.Correct -> getString(R.string.hint_correct)
+                is GuessResult.Partial -> getString(R.string.hint_partial, result.correctCount, result.misplacedCount)
+                GuessResult.Wrong -> getString(R.string.hint_wrong)
             }
-            is GuessResult.Partial -> {
-                hintText.text = getString(R.string.hint_partial, 
-                    result.correctCount, 
-                    result.misplacedCount)
-                hintIcon.setImageResource(R.drawable.ic_partial)
-                hintView.setBackgroundResource(R.drawable.hint_box_partial_background)
-            }
-            GuessResult.Wrong -> {
-                hintText.text = getString(R.string.hint_wrong)
-                hintIcon.setImageResource(R.drawable.ic_wrong)
-                hintView.setBackgroundResource(R.drawable.hint_box_wrong_background)
-            }
-        }
-        
-        // Animasyonlu ekleme
-        hintView.alpha = 0f
-        hintView.translationX = -100f
-        
-        hintsContainer.addView(hintView, 0)
-        
-        hintView.animate()
-            .alpha(1f)
-            .translationX(0f)
-            .setDuration(300)
-            .setInterpolator(OvershootInterpolator())
-            .start()
+        )
+        val currentHints = (hintsAdapter.getCurrentHints() + hint).reversed()
+        hintsAdapter.updateHints(currentHints)
     }
 
     private fun setupSubmitButton() {
@@ -463,7 +467,6 @@ class GameActivity : AppCompatActivity() {
             outlineProvider = null
             backgroundTintList = null
             
-            // Hover efekti
             setOnTouchListener { v, event ->
                 when (event.action) {
                     MotionEvent.ACTION_DOWN -> {
@@ -530,6 +533,17 @@ class GameActivity : AppCompatActivity() {
         }
         
         dialog.show()
+    }
+
+    private fun startScoreTimer() {
+        lifecycleScope.launch {
+            repeatOnLifecycle(Lifecycle.State.STARTED) {
+                while(true) {
+                    delay(1000) // Her saniye
+                    viewModel.updateScore()
+                }
+            }
+        }
     }
 
     companion object {

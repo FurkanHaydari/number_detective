@@ -15,8 +15,8 @@ class GameViewModel : ViewModel() {
     private val _hints = MutableStateFlow<List<Hint>>(emptyList())
     val hints: StateFlow<List<Hint>> = _hints
     
-    private var _score = 1000
-    val score: Int get() = _score
+    private val _score = MutableStateFlow(1000)
+    val score: StateFlow<Int> = _score
 
     init {
         startNewGame()
@@ -24,7 +24,7 @@ class GameViewModel : ViewModel() {
 
     fun startNewGame() {
         _attempts = 0
-        _score = 1000
+        _score.value = 1000
         game.startNewGame()
         
         val gameHints = listOf(
@@ -41,6 +41,7 @@ class GameViewModel : ViewModel() {
         )
         _hints.value = gameHints
         updateGameState()
+        updateScore()
     }
 
     fun makeGuess(guess: Int) {
@@ -51,29 +52,20 @@ class GameViewModel : ViewModel() {
         try {
             _attempts++
             val result = game.makeGuess(guess.toString())
-            _score = calculateScore(result)
             
             when {
-                result.correct == 3 -> _gameState.value = GameState.Won(_score)
+                result.correct == 3 -> _gameState.value = GameState.Won(_score.value)
                 _attempts >= 3 -> _gameState.value = GameState.Lost
-                else -> _gameState.value = GameState.Playing(_score)
+                else -> _gameState.value = GameState.Playing(_score.value)
             }
         } catch (e: IllegalStateException) {
             _gameState.value = GameState.Error(e.message ?: "Bilinmeyen hata")
         }
-    }
-
-    private fun calculateScore(guess: NumberDetectiveGame.Guess): Int {
-        val baseScore = 1000
-        val timeDeduction = (getGameTime() * 5).toInt()  // Her saniye 5 puan
-        val attemptDeduction = _attempts * 100  // Her deneme 100 puan
-        val correctBonus = guess.correct * 50   // Her doğru rakam 50 bonus puan
-        
-        return maxOf(0, baseScore - timeDeduction - attemptDeduction + correctBonus)
+        updateScore()
     }
 
     private fun updateGameState() {
-        _gameState.value = GameState.Playing(_score)
+        _gameState.value = GameState.Playing(_score.value)
     }
 
     fun getAttempts(): Int = _attempts
@@ -81,6 +73,15 @@ class GameViewModel : ViewModel() {
     fun getGameTime(): Long = (System.currentTimeMillis() - startTime) / 1000
 
     fun getCorrectAnswer(): String = game.getCorrectAnswer()
+
+    fun updateScore() {
+        val currentTime = System.currentTimeMillis()
+        val elapsedSeconds = (currentTime - startTime) / 1000
+        val timeBasedScore = maxOf(1000 - (elapsedSeconds * 2).toInt(), 0)
+        val hintsBasedScore = maxOf(500 - (_hints.value.size * 100), 0)
+        
+        _score.value = timeBasedScore + hintsBasedScore
+    }
 }
 
 sealed class GameState {
