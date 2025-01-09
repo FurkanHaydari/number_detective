@@ -46,16 +46,13 @@ class AdManager private constructor(private val context: Context) {
         activity: Activity,
         adUnitId: String,
         onAdLoaded: () -> Unit = {},
-        onAdDismissed: () -> Unit = {},
-        onAdFailedToLoad: () -> Unit = {},
-        onAdFailedToShow: () -> Unit = {}
+        onAdFailedToLoad: () -> Unit = {}
     ) {
         val adRequest = AdRequest.Builder().build()
         InterstitialAd.load(activity, adUnitId, adRequest,
             object : InterstitialAdLoadCallback() {
                 override fun onAdLoaded(interstitialAd: InterstitialAd) {
                     mInterstitialAd = interstitialAd
-                    setupInterstitialCallbacks(onAdDismissed, onAdFailedToShow)
                     onAdLoaded()
                 }
 
@@ -66,26 +63,23 @@ class AdManager private constructor(private val context: Context) {
             })
     }
 
-    private fun setupInterstitialCallbacks(
-        onAdDismissed: () -> Unit,
-        onAdFailedToShow: () -> Unit
-    ) {
-        mInterstitialAd?.fullScreenContentCallback = object : FullScreenContentCallback() {
-            override fun onAdDismissedFullScreenContent() {
-                mInterstitialAd = null
-                onAdDismissed()
-            }
+    fun showInterstitialAd(activity: Activity, onAdDismissed: () -> Unit) {
+        val ad = mInterstitialAd
+        if (ad != null) {
+            ad.fullScreenContentCallback = object : FullScreenContentCallback() {
+                override fun onAdDismissedFullScreenContent() {
+                    mInterstitialAd = null
+                    onAdDismissed()
+                }
 
-            override fun onAdFailedToShowFullScreenContent(adError: AdError) {
-                mInterstitialAd = null
-                onAdFailedToShow()
+                override fun onAdFailedToShowFullScreenContent(adError: AdError) {
+                    mInterstitialAd = null
+                    onAdDismissed()
+                }
             }
-        }
-    }
-
-    fun showInterstitialAd(activity: Activity) {
-        if (mInterstitialAd != null) {
-            mInterstitialAd?.show(activity)
+            ad.show(activity)
+        } else {
+            onAdDismissed()
         }
     }
 

@@ -51,12 +51,8 @@ class GameResultActivity : AppCompatActivity() {
     companion object {
         private const val TAG = "GameResultActivity"
         const val EXTRA_SCORE = "score"
-        const val EXTRA_IS_HIGH_SCORE = "isHighScore"
-        const val EXTRA_IS_WIN = "isWin"
-        const val EXTRA_ATTEMPTS = "attempts"
-        const val EXTRA_TIME = "time"
+        const val EXTRA_RESULT = "result"
         const val EXTRA_CORRECT_ANSWER = "correctAnswer"
-        const val EXTRA_GUESSES = "guesses"
         private const val MAX_RETRY_ATTEMPTS = 3
     }
 
@@ -71,55 +67,45 @@ class GameResultActivity : AppCompatActivity() {
         database = FirebaseDatabase.getInstance().reference
         
         val score = intent.getIntExtra(EXTRA_SCORE, 0)
-        val isHighScore = intent.getBooleanExtra(EXTRA_IS_HIGH_SCORE, false)
-        val isWin = intent.getBooleanExtra(EXTRA_IS_WIN, false)
-        val attempts = intent.getIntExtra(EXTRA_ATTEMPTS, 0)
-        val time = intent.getLongExtra(EXTRA_TIME, 0L)
+        val result = intent.getStringExtra(EXTRA_RESULT) ?: ""
         val correctAnswer = intent.getStringExtra(EXTRA_CORRECT_ANSWER) ?: ""
-        val guesses = intent.getStringArrayListExtra(EXTRA_GUESSES) ?: arrayListOf()
 
-        setupViews(score, isWin, attempts, time, correctAnswer, guesses)
-        playSound(isWin)
+        setupViews(score, result == "win", correctAnswer)
+        playResultSound(result)
         updateLeaderboardScore()
         initializeAds()
         
         // Save score with Firebase auth check
         FirebaseAuth.getInstance().currentUser?.let { user ->
-            saveScore(score, attempts, time)
+            saveScore(score)
         } ?: run {
             Log.w(TAG, "User not authenticated, attempting anonymous sign-in")
             FirebaseAuth.getInstance().signInAnonymously()
                 .addOnSuccessListener {
-                    saveScore(score, attempts, time)
+                    saveScore(score)
                 }
                 .addOnFailureListener { e ->
                     Log.e(TAG, "Failed to sign in anonymously: ${e.message}")
-                    saveScoreLocally(score, attempts, time)
+                    saveScoreLocally(score)
                 }
         }
     }
 
-    private fun setupViews(score: Int, isWin: Boolean, attempts: Int, time: Long, correctAnswer: String, guesses: ArrayList<String>) {
+    private fun setupViews(score: Int, isWin: Boolean, correctAnswer: String) {
         // Find all views
         val scoreText = findViewById<TextView>(R.id.scoreText)
         val resultText = findViewById<TextView>(R.id.resultText)
         val correctAnswerText = findViewById<TextView>(R.id.correctAnswerText)
-        val incorrectGuessesText = findViewById<TextView>(R.id.incorrectGuessesText)
         val motivationText = findViewById<TextView>(R.id.motivationText)
         val playAgainButton = findViewById<Button>(R.id.playAgainButton)
         val leaderboardButton = findViewById<Button>(R.id.leaderboardButton)
-        val timeText = findViewById<TextView>(R.id.timeText)
         val shareButton = findViewById<Button>(R.id.shareButton)
         val backButton = findViewById<Button>(R.id.backButton)
-        val attemptsText = findViewById<TextView>(R.id.attemptsText)
 
         // Set text values
         scoreText.text = "Skorunuz: $score"
         resultText.text = if (isWin) "Tebrikler!" else "Oyun Bitti!"
         correctAnswerText.text = "$correctAnswer"
-        incorrectGuessesText.text = if (guesses.isEmpty()) "-" else guesses.joinToString(", ")
-        timeText.text = formatTime(time)
-        attemptsText.text = attempts.toString()
 
         // Set motivation text based on game result
         motivationText.text = if (isWin) {
@@ -160,7 +146,7 @@ class GameResultActivity : AppCompatActivity() {
         }
 
         shareButton.setOnClickListener {
-            shareResult(score, attempts, time, isWin, guesses)
+            shareResult(score, isWin)
         }
 
         backButton.setOnClickListener {
@@ -168,15 +154,12 @@ class GameResultActivity : AppCompatActivity() {
         }
     }
 
-    private fun shareResult(score: Int, attempts: Int, time: Long, isWin: Boolean, guesses: ArrayList<String>) {
+    private fun shareResult(score: Int, isWin: Boolean) {
         val emoji = if (isWin) "🎉" else "🎮"
         val message = """
             $emoji Number Detective Oyun Sonucu $emoji
             ${if (isWin) "Kazandım!" else "Oyun Bitti!"}
             Skor: $score
-            Deneme: $attempts
-            Süre: ${formatTime(time)}
-            Tahminler: ${guesses.joinToString(", ")}
             
             Sen de oyna: https://play.google.com/store/apps/details?id=$packageName
         """.trimIndent()
@@ -214,11 +197,11 @@ class GameResultActivity : AppCompatActivity() {
         }
     }
 
-    private fun formatTime(timeInMillis: Long): String {
-        val totalSeconds = (timeInMillis / 1000).toInt()
-        val minutes = totalSeconds / 60
-        val seconds = totalSeconds % 60
-        return String.format("%02d:%02d", minutes, seconds)
+    private fun playResultSound(result: String) {
+        val soundResId = if (result == "win") R.raw.victory else R.raw.game_over
+        mediaPlayer?.release()
+        mediaPlayer = MediaPlayer.create(this, soundResId)
+        mediaPlayer?.start()
     }
 
     private fun setupFullscreen() {
@@ -260,21 +243,6 @@ class GameResultActivity : AppCompatActivity() {
         )
     }
 
-    private fun playSound(isWin: Boolean) {
-        try {
-            val soundResId = if (isWin) R.raw.victory else R.raw.game_over
-            mediaPlayer = MediaPlayer.create(this, soundResId)
-            mediaPlayer?.apply {
-                setOnCompletionListener { release() }
-                start()
-            } ?: run {
-                Log.e(TAG, "Failed to create MediaPlayer")
-            }
-        } catch (e: Exception) {
-            Log.e(TAG, "Error playing sound: ${e.message}")
-        }
-    }
-
     private fun initializeAds() {
         try {
             val adView = findViewById<com.google.android.gms.ads.AdView>(R.id.adView)
@@ -285,20 +253,20 @@ class GameResultActivity : AppCompatActivity() {
         }
     }
 
-    private fun saveScore(score: Int, attempts: Int, timeSpent: Long) {
+    private fun saveScore(score: Int) {
         val user = FirebaseAuth.getInstance().currentUser
         if (user != null) {
-            saveScoreToDatabase(score, attempts, timeSpent, user.uid)
+            saveScoreToDatabase(score, user.uid)
         } else {
             Log.e(TAG, "No user found, saving score locally")
-            saveScoreLocally(score, attempts, timeSpent)
+            saveScoreLocally(score)
         }
     }
 
-    private fun saveScoreToDatabase(score: Int, attempts: Int, timeSpent: Long, userId: String?, retryCount: Int = MAX_RETRY_ATTEMPTS) {
+    private fun saveScoreToDatabase(score: Int, userId: String?, retryCount: Int = MAX_RETRY_ATTEMPTS) {
         if (userId == null) {
             Log.e(TAG, "Cannot save score: no user ID")
-            saveScoreLocally(score, attempts, timeSpent)
+            saveScoreLocally(score)
             return
         }
 
@@ -317,8 +285,6 @@ class GameResultActivity : AppCompatActivity() {
         val scoreData: Map<String, Any?> = mapOf(
             "score" to score,
             "timestamp" to ServerValue.TIMESTAMP,
-            "attempts" to attempts,
-            "timeSpent" to timeSpent,
             "location" to location,
             "deviceInfo" to deviceInfo
         )
@@ -337,17 +303,17 @@ class GameResultActivity : AppCompatActivity() {
                     Log.d(TAG, "Retrying save... ($retryCount attempts remaining)")
                     // Retry with exponential backoff
                     Handler(Looper.getMainLooper()).postDelayed({
-                        saveScoreToDatabase(score, attempts, timeSpent, userId, retryCount - 1)
+                        saveScoreToDatabase(score, userId, retryCount - 1)
                     }, (MAX_RETRY_ATTEMPTS - retryCount + 1) * 1000L)
                 } else {
                     // Store score locally if all retries failed
-                    saveScoreLocally(score, attempts, timeSpent)
+                    saveScoreLocally(score)
                     Toast.makeText(this, "Score saved locally for later sync", Toast.LENGTH_SHORT).show()
                 }
             }
     }
 
-    private fun saveScoreLocally(score: Int, attempts: Int, timeSpent: Long) {
+    private fun saveScoreLocally(score: Int) {
         try {
             val prefs = getSharedPreferences("pending_scores", Context.MODE_PRIVATE)
             val pendingScores = prefs.getString("scores", "[]")
@@ -373,8 +339,6 @@ class GameResultActivity : AppCompatActivity() {
             
             val scoreObject = JSONObject().apply {
                 put("score", score)
-                put("attempts", attempts)
-                put("timeSpent", timeSpent)
                 put("timestamp", System.currentTimeMillis())
                 put("location", location)
                 put("deviceInfo", deviceInfo)
@@ -432,14 +396,6 @@ class GameResultActivity : AppCompatActivity() {
         } catch (e: Exception) {
             Log.e(TAG, "Error clearing local scores: ${e.message}")
         }
-    }
-
-    private fun calculateScore(score: Int, attempts: Int, timeSpent: Long): Int {
-        // Score calculation based on attempts and time spent
-        val baseScore = 1000
-        val attemptPenalty = attempts * 50
-        val timePenalty = ((timeSpent / 1000).toInt() * 10)  // Convert Long to Int after division
-        return maxOf(0, baseScore - attemptPenalty - timePenalty)
     }
 
     override fun onBackPressed() {

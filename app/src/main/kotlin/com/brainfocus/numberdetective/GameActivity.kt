@@ -1,68 +1,46 @@
 package com.brainfocus.numberdetective
 
+import android.animation.ObjectAnimator
+import android.animation.ValueAnimator
+import android.content.Intent
+import android.graphics.Color
+import android.graphics.drawable.ColorDrawable
 import android.os.Bundle
-import android.widget.TextView
+import android.os.Handler
+import android.os.Looper
+import android.view.HapticFeedbackConstants
+import android.view.MotionEvent
+import android.view.View
+import android.view.WindowInsets
+import android.view.WindowInsetsController
+import android.view.animation.AccelerateDecelerateInterpolator
+import android.view.animation.AnimationUtils
+import android.view.animation.OvershootInterpolator
 import android.widget.Button
+import android.widget.LinearLayout
+import android.widget.NumberPicker
+import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.app.AlertDialog
+import androidx.core.content.ContextCompat
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
-import com.brainfocus.numberdetective.viewmodel.GameState
-import com.brainfocus.numberdetective.viewmodel.GameViewModel
-import com.brainfocus.numberdetective.model.GuessResult
+import androidx.recyclerview.widget.RecyclerView
 import com.brainfocus.numberdetective.adapter.HintAdapter
 import com.brainfocus.numberdetective.decoration.HintItemDecoration
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.delay
-import org.koin.androidx.viewmodel.ext.android.viewModel
-import com.brainfocus.numberdetective.viewmodel.Hint
-import android.view.Gravity
-import androidx.appcompat.app.AlertDialog
-import android.widget.NumberPicker
-import android.widget.LinearLayout
-import kotlinx.coroutines.flow.combine
-import android.graphics.Typeface
-import android.content.Intent
-import com.google.android.gms.ads.AdRequest
-import com.google.android.gms.ads.AdView
-import com.google.android.gms.ads.MobileAds
-import android.util.Log
-import com.google.android.gms.ads.AdListener
-import com.google.android.gms.ads.LoadAdError
-import android.view.WindowManager
-import android.view.View
-import android.view.Window
-import android.view.WindowInsets
-import android.view.WindowInsetsController
-import android.os.Build
-import android.widget.FrameLayout
-import android.view.animation.AnimationUtils
-import android.graphics.Color
-import androidx.core.content.ContextCompat
-import android.graphics.Paint
-import android.view.animation.OvershootInterpolator
-import android.graphics.drawable.ColorDrawable
-import android.view.MotionEvent
-import android.animation.AnimatorInflater
-import android.animation.StateListAnimator
-import com.google.android.gms.ads.AdSize
-import android.view.animation.AccelerateDecelerateInterpolator
-import android.widget.ImageView
-import android.graphics.drawable.GradientDrawable
-import android.view.HapticFeedbackConstants
-import android.widget.EditText
-import android.graphics.Rect
-import android.graphics.drawable.LayerDrawable
-import android.animation.ValueAnimator
-import android.text.SpannableStringBuilder
-import android.text.style.ForegroundColorSpan
-import android.text.style.RelativeSizeSpan
-import android.text.style.StyleSpan
-import android.text.Spanned
-import androidx.core.content.res.ResourcesCompat
-import androidx.recyclerview.widget.RecyclerView
+import com.brainfocus.numberdetective.model.GuessResult
 import com.brainfocus.numberdetective.sound.SoundManager
-import com.brainfocus.numberdetective.ads.AdManager
+import com.brainfocus.numberdetective.viewmodel.GameState
+import com.brainfocus.numberdetective.viewmodel.GameViewModel
+import com.brainfocus.numberdetective.viewmodel.Hint
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
+import org.koin.androidx.viewmodel.ext.android.viewModel
+
+import android.os.Build
+import android.util.Log
+import android.media.MediaPlayer
 
 class GameActivity : AppCompatActivity() {
     private val viewModel: GameViewModel by viewModel()
@@ -70,30 +48,26 @@ class GameActivity : AppCompatActivity() {
     private lateinit var hintsAdapter: HintAdapter
     private lateinit var scoreText: TextView
     private lateinit var submitButton: Button
-    private val currentNumbers = IntArray(3) { 0 }
     private var numberPickers: List<NumberPicker> = listOf()
     private lateinit var remainingAttemptsText: TextView
-    private lateinit var adView: AdView
-    private val attemptsList = ArrayList<String>()
-    private var pendingGameResult: Intent? = null
     private lateinit var soundManager: SoundManager
-    private lateinit var adManager: AdManager
+    private var pendingGameResult: Intent? = null
+    private var attemptsList: MutableList<String> = mutableListOf()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        
         setContentView(R.layout.activity_game)
-        
         setupFullscreen()
         
-        adView = findViewById(R.id.adView)
         soundManager = SoundManager(this)
-        adManager = AdManager.getInstance(this)
+        // Load sound after a short delay to ensure resources are ready
+        Handler(Looper.getMainLooper()).postDelayed({
+            soundManager.loadSound(R.raw.tick_sound)
+        }, 500)
         
         setupViews()
         observeViewModel()
         startScoreTimer()
-        loadAds()
     }
 
     private fun setupFullscreen() {
@@ -117,21 +91,14 @@ class GameActivity : AppCompatActivity() {
     }
 
     private fun setupViews() {
-        setupFullscreen()
-        
         hintsContainer = findViewById(R.id.hintsContainer)
         scoreText = findViewById(R.id.scoreText)
         submitButton = findViewById(R.id.submitButton)
         remainingAttemptsText = findViewById(R.id.remainingAttemptsText)
-        adView = findViewById(R.id.adView)
         
         setupNumberPickers()
         
-        submitButton.setOnClickListener {
-            val guess = currentNumbers.joinToString("")
-            attemptsList.add(guess)  // Store the guess when it's made
-            viewModel.makeGuess(guess.toInt())
-        }
+        setupSubmitButton()
         
         hintsAdapter = HintAdapter()
         hintsContainer.adapter = hintsAdapter
@@ -151,6 +118,7 @@ class GameActivity : AppCompatActivity() {
             NumberPicker(this).apply {
                 minValue = 0
                 maxValue = 9
+                value = 0  // Başlangıç değeri
                 wrapSelectorWheel = true
                 descendantFocusability = NumberPicker.FOCUS_BLOCK_DESCENDANTS
                 
@@ -170,31 +138,34 @@ class GameActivity : AppCompatActivity() {
                     setBackgroundResource(R.drawable.number_picker_background)
                     setDividerColor(ContextCompat.getColor(context, R.color.colorDivider))
                 }
-
-                setFormatter { value -> 
-                    SpannableStringBuilder().apply {
-                        append(value.toString())
-                        setSpan(
-                            StyleSpan(Typeface.BOLD),
-                            0, length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
-                        )
-                        val textColor = if (isDarkMode) Color.WHITE else Color.BLACK
-                        setSpan(
-                            ForegroundColorSpan(textColor),
-                            0, length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
-                        )
-                        setSpan(
-                            RelativeSizeSpan(1.2f),
-                            0, length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
-                        )
-                    }.toString()
-                }
                 
                 alpha = 0.7f
                 
+                var lastPlayTime = 0L
+                val MIN_SOUND_INTERVAL = 50L // Minimum 50ms between sounds
+                
+                setOnScrollListener(object : NumberPicker.OnScrollListener {
+                    override fun onScrollStateChange(view: NumberPicker?, scrollState: Int) {
+                        when (scrollState) {
+                            NumberPicker.OnScrollListener.SCROLL_STATE_FLING -> {
+                                // Play initial fling sound
+                                val currentTime = System.currentTimeMillis()
+                                if (currentTime - lastPlayTime >= MIN_SOUND_INTERVAL) {
+                                    soundManager.playSound(R.raw.tick_sound)
+                                    lastPlayTime = currentTime
+                                }
+                            }
+                        }
+                    }
+                })
+                
                 setOnValueChangedListener { _, oldVal, newVal ->
-                    currentNumbers[index] = newVal
                     animateValueChange(this, oldVal, newVal)
+                    val currentTime = System.currentTimeMillis()
+                    if (currentTime - lastPlayTime >= MIN_SOUND_INTERVAL) {
+                        soundManager.playSound(R.raw.tick_sound)
+                        lastPlayTime = currentTime
+                    }
                 }
             }
         }
@@ -221,15 +192,14 @@ class GameActivity : AppCompatActivity() {
     private fun animateValueChange(picker: NumberPicker, oldVal: Int, newVal: Int) {
         val animator = ValueAnimator.ofFloat(0f, 1f)
         animator.duration = 150
-        animator.interpolator = OvershootInterpolator(1.2f)
+        animator.interpolator = AccelerateDecelerateInterpolator()
         
         animator.addUpdateListener { animation ->
-            picker.alpha = 0.7f + (animation.animatedValue as Float) * 0.2f
-            picker.scaleX = 0.95f + (animation.animatedValue as Float) * 0.05f
-            picker.scaleY = 0.95f + (animation.animatedValue as Float) * 0.05f
+            picker.alpha = 0.7f + (animation.animatedValue as Float) * 0.3f
         }
         
         animator.start()
+        picker.performHapticFeedback(HapticFeedbackConstants.KEYBOARD_TAP)
     }
 
     private fun dpToPx(dp: Int): Int {
@@ -239,12 +209,24 @@ class GameActivity : AppCompatActivity() {
     private fun observeViewModel() {
         lifecycleScope.launch {
             repeatOnLifecycle(Lifecycle.State.STARTED) {
-                viewModel.hints.combine(viewModel.gameState) { hints, state ->
-                    Pair(hints, state)
-                }.collect { (hints, state) ->
-                    updateHints(hints)
-                    
+                viewModel.gameState.collect { state ->
                     handleGameState(state)
+                }
+            }
+        }
+
+        lifecycleScope.launch {
+            repeatOnLifecycle(Lifecycle.State.STARTED) {
+                viewModel.hints.collect { hints ->
+                    updateHints(hints)
+                }
+            }
+        }
+
+        lifecycleScope.launch {
+            repeatOnLifecycle(Lifecycle.State.STARTED) {
+                viewModel.score.collect { score ->
+                    updateScore(score)
                 }
             }
         }
@@ -253,189 +235,46 @@ class GameActivity : AppCompatActivity() {
     private fun handleGameState(state: GameState) {
         when (state) {
             is GameState.Won -> {
+                soundManager.playSound(R.raw.win_sound)
+                disableInput()
                 val intent = Intent(this, GameResultActivity::class.java).apply {
-                    putExtra(GameResultActivity.EXTRA_SCORE, state.score)
-                    putExtra(GameResultActivity.EXTRA_IS_HIGH_SCORE, false)
-                    putExtra(GameResultActivity.EXTRA_IS_WIN, true)
-                    putExtra(GameResultActivity.EXTRA_ATTEMPTS, viewModel.getAttempts())
-                    putExtra(GameResultActivity.EXTRA_TIME, viewModel.getGameTime().toLong())
-                    putExtra(GameResultActivity.EXTRA_CORRECT_ANSWER, viewModel.getCorrectAnswer())
-                    putStringArrayListExtra(GameResultActivity.EXTRA_GUESSES, attemptsList)
+                    putExtra("score", state.score)
+                    putExtra("result", "win")
+                    putExtra("correctAnswer", viewModel.getCorrectAnswer())
+                    putExtra("attempts", viewModel.getAttempts())
+                    putExtra("gameTime", viewModel.getGameTime())
+                    putStringArrayListExtra("attemptsList", ArrayList(attemptsList))
                 }
-                showGameResultWithAd(intent)
+                startActivity(intent)
+                finish()
             }
             is GameState.Lost -> {
+                soundManager.playSound(R.raw.lose_sound)
+                disableInput()
                 val intent = Intent(this, GameResultActivity::class.java).apply {
-                    putExtra(GameResultActivity.EXTRA_SCORE, 0)
-                    putExtra(GameResultActivity.EXTRA_IS_HIGH_SCORE, false)
-                    putExtra(GameResultActivity.EXTRA_IS_WIN, false)
-                    putExtra(GameResultActivity.EXTRA_ATTEMPTS, viewModel.getAttempts())
-                    putExtra(GameResultActivity.EXTRA_TIME, viewModel.getGameTime().toLong())
-                    putExtra(GameResultActivity.EXTRA_CORRECT_ANSWER, viewModel.getCorrectAnswer())
-                    putStringArrayListExtra(GameResultActivity.EXTRA_GUESSES, attemptsList)
+                    putExtra("score", viewModel.score.value)
+                    putExtra("result", "lose")
+                    putExtra("correctAnswer", viewModel.getCorrectAnswer())
+                    putExtra("attempts", viewModel.getAttempts())
+                    putExtra("gameTime", viewModel.getGameTime())
+                    putStringArrayListExtra("attemptsList", ArrayList(attemptsList))
                 }
-                showGameResultWithAd(intent)
+                startActivity(intent)
+                finish()
             }
             is GameState.Playing -> {
-                updateScore(state.score)
-                val remainingAttempts = 3 - viewModel.getAttempts()
-                updateRemainingAttempts(remainingAttempts)
-                if (viewModel.getAttempts() > 0) {
-                    showWrongGuessDialog(remainingAttempts)
-                }
+                soundManager.playSound(R.raw.wrong_guess)
+                submitButton.startAnimation(AnimationUtils.loadAnimation(this, R.anim.shake))
+                showErrorDialog("Üzgünüm, bu doğru tahmin değil. Tekrar deneyin! 🎯")
+                updateRemainingAttempts(3 - viewModel.getAttempts())
             }
             is GameState.Error -> {
                 showErrorDialog(state.message)
             }
-            else -> {
-                // Handle other states
+            GameState.Initial -> {
+                // Initial state, no action needed
             }
         }
-    }
-
-    private fun updateHints(hints: List<Hint>) {
-        hintsAdapter.updateHints(hints)
-    }
-
-    private fun disableInput() {
-        submitButton.isEnabled = false
-        numberPickers.forEach { it.isEnabled = false }
-    }
-
-    private fun updateScore(score: Int) {
-        val oldScore = scoreText.text.toString().replace("Score: ", "").toIntOrNull() ?: 0
-        val animator = ValueAnimator.ofInt(oldScore, score)
-        animator.duration = 1000 // 1 saniye
-        animator.interpolator = OvershootInterpolator(1.5f)
-        
-        animator.addUpdateListener { animation ->
-            val animatedValue = animation.animatedValue as Int
-            scoreText.text = "Score: $animatedValue"
-        }
-        
-        animator.start()
-    }
-
-    private fun showGameResultWithAd(intent: Intent) {
-        pendingGameResult = intent
-        if (adManager.hasLoadedInterstitialAd()) {
-            adManager.showInterstitialAd(this)
-        } else {
-            startActivity(intent)
-            finish()
-        }
-    }
-
-    private fun updateRemainingAttempts(attempts: Int) {
-        remainingAttemptsText.apply {
-            text = getString(R.string.remaining_attempts, attempts)
-            
-            val color = when (attempts) {
-                3 -> getColor(R.color.colorCorrect)    // Yeşil
-                2 -> getColor(R.color.colorMisplaced)  // Turuncu  
-                else -> getColor(R.color.colorIncorrect) // Kırmızı
-            }
-            
-            setTextColor(color)
-            
-            setShadowLayer(4f, 0f, 2f, Color.parseColor("#40000000"))
-            
-            if (attempts == 1) {
-                val shakeAnimation = AnimationUtils.loadAnimation(context, R.anim.shake_animation)
-                startAnimation(shakeAnimation)
-            } else {
-                alpha = 0f
-                scaleX = 0.8f
-                scaleY = 0.8f
-                animate()
-                    .alpha(1f)
-                    .scaleX(1f)
-                    .scaleY(1f)
-                    .setDuration(300)
-                    .setInterpolator(OvershootInterpolator())
-                    .start()
-            }
-        }
-    }
-
-    private fun showWrongGuessDialog(remainingAttempts: Int) {
-        val message = when (remainingAttempts) {
-            2 -> "Yanlış tahmin! 2 hakkınız kaldı."
-            1 -> "Yanlış tahmin! Son hakkınız!"
-            else -> "Yanlış tahmin!"
-        }
-        
-        AlertDialog.Builder(this)
-            .setTitle("Tekrar Deneyin")
-            .setMessage(message)
-            .setPositiveButton("Tamam", null)
-            .show()
-    }
-
-    private fun loadAds() {
-        adManager.initialize {
-            adManager.loadBannerAd(adView)
-            adManager.loadInterstitialAd(
-                activity = this,
-                adUnitId = getString(R.string.interstitial_ad_unit_id),
-                onAdLoaded = {},
-                onAdDismissed = {
-                    pendingGameResult?.let {
-                        startActivity(it)
-                        finish()
-                    }
-                },
-                onAdFailedToLoad = {
-                    pendingGameResult?.let {
-                        startActivity(it)
-                        finish()
-                    }
-                },
-                onAdFailedToShow = {
-                    pendingGameResult?.let {
-                        startActivity(it)
-                        finish()
-                    }
-                }
-            )
-        }
-    }
-
-    override fun onPause() {
-        adView.pause()
-        soundManager.releaseMediaPlayer()
-        super.onPause()
-    }
-
-    override fun onResume() {
-        super.onResume()
-        adView.resume()
-    }
-
-    override fun onDestroy() {
-        adView.destroy()
-        soundManager.releaseMediaPlayer()
-        super.onDestroy()
-    }
-
-    override fun onWindowFocusChanged(hasFocus: Boolean) {
-        super.onWindowFocusChanged(hasFocus)
-        if (hasFocus) {
-            setupFullscreen()
-        }
-    }
-
-    private fun addHint(guess: Int, result: GuessResult) {
-        val hint = Hint(
-            numbers = listOf(guess),
-            description = when (result) {
-                GuessResult.Correct -> getString(R.string.hint_correct)
-                is GuessResult.Partial -> getString(R.string.hint_partial, result.correctCount, result.misplacedCount)
-                GuessResult.Wrong -> getString(R.string.hint_wrong)
-            }
-        )
-        val currentHints = (hintsAdapter.getCurrentHints() + hint).reversed()
-        hintsAdapter.updateHints(currentHints)
     }
 
     private fun setupSubmitButton() {
@@ -471,6 +310,7 @@ class GameActivity : AppCompatActivity() {
             }
             
             setOnClickListener {
+                soundManager.playSound(R.raw.button_click)
                 performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY)
                 animate()
                     .scaleX(0.95f)
@@ -483,37 +323,40 @@ class GameActivity : AppCompatActivity() {
                             .setDuration(50)
                             .start()
                         
-                        val guess = currentNumbers.joinToString("")
-                        attemptsList.add(guess)
-                        viewModel.makeGuess(guess.toInt())
+                        val guessNumber = numberPickers.joinToString("") { it.value.toString() }
+                        if (guessNumber.length == 3) {
+                            attemptsList.add(guessNumber)
+                            viewModel.makeGuess(guessNumber.toInt())
+                        } else {
+                            showErrorDialog("Lütfen 3 basamaklı bir sayı girin")
+                        }
                     }
                     .start()
             }
         }
     }
 
-    private fun showErrorDialog(message: String) {
-        val dialogView = layoutInflater.inflate(R.layout.dialog_error, null)
-        val messageText = dialogView.findViewById<TextView>(R.id.messageText)
-        val okButton = dialogView.findViewById<Button>(R.id.okButton)
+    private fun updateHints(hints: List<Hint>) {
+        hintsAdapter.updateHints(hints)
+    }
+
+    private fun disableInput() {
+        submitButton.isEnabled = false
+        numberPickers.forEach { it.isEnabled = false }
+    }
+
+    private fun updateScore(score: Int) {
+        val oldScore = scoreText.text.toString().replace("Score: ", "").toIntOrNull() ?: 0
+        val animator = ValueAnimator.ofInt(oldScore, score)
+        animator.duration = 1000
+        animator.interpolator = OvershootInterpolator(1.5f)
         
-        messageText.text = message
-        
-        val dialog = AlertDialog.Builder(this, R.style.CustomAlertDialog)
-            .setView(dialogView)
-            .setCancelable(true)
-            .create()
-        
-        dialog.window?.apply {
-            setBackgroundDrawableResource(android.R.color.transparent)
-            attributes?.windowAnimations = R.style.DialogAnimation
+        animator.addUpdateListener { animation ->
+            val animatedValue = animation.animatedValue as Int
+            scoreText.text = "Score: $animatedValue"
         }
         
-        okButton.setOnClickListener {
-            dialog.dismiss()
-        }
-        
-        dialog.show()
+        animator.start()
     }
 
     private fun startScoreTimer() {
@@ -527,10 +370,81 @@ class GameActivity : AppCompatActivity() {
         }
     }
 
+    private fun updateRemainingAttempts(attempts: Int) {
+        remainingAttemptsText.apply {
+            text = getString(R.string.remaining_attempts, attempts)
+            
+            val color = when (attempts) {
+                3 -> getColor(R.color.colorCorrect)    // Yeşil
+                2 -> getColor(R.color.colorMisplaced)  // Turuncu  
+                else -> getColor(R.color.colorIncorrect) // Kırmızı
+            }
+            
+            setTextColor(color)
+            setShadowLayer(4f, 0f, 2f, Color.parseColor("#40000000"))
+            
+            if (attempts == 1) {
+                val shakeAnimation = AnimationUtils.loadAnimation(context, R.anim.shake_animation)
+                startAnimation(shakeAnimation)
+            } else {
+                alpha = 0f
+                scaleX = 0.8f
+                scaleY = 0.8f
+                animate()
+                    .alpha(1f)
+                    .scaleX(1f)
+                    .scaleY(1f)
+                    .setDuration(300)
+                    .setInterpolator(OvershootInterpolator())
+                    .start()
+            }
+        }
+    }
+
+    private fun addHint(guess: Int, result: GuessResult) {
+        val hint = Hint(
+            numbers = listOf(guess),
+            description = when (result) {
+                GuessResult.Correct -> getString(R.string.hint_correct)
+                is GuessResult.Partial -> getString(R.string.hint_partial, result.correctCount, result.misplacedCount)
+                GuessResult.Wrong -> getString(R.string.hint_wrong)
+            }
+        )
+        val currentHints = hintsAdapter.getCurrentHints().toMutableList()
+        currentHints.add(0, hint)
+        hintsAdapter.updateHints(currentHints)
+    }
+
+    private fun showErrorDialog(message: String) {
+        val dialog = AlertDialog.Builder(this)
+            .setMessage(message)
+            .setPositiveButton("Tamam") { _, _ -> }
+            .create()
+        dialog.show()
+    }
+
+    override fun onPause() {
+        soundManager.release()
+        super.onPause()
+    }
+
+    override fun onResume() {
+        super.onResume()
+    }
+
+    override fun onDestroy() {
+        soundManager.release()
+        super.onDestroy()
+    }
+
+    override fun onWindowFocusChanged(hasFocus: Boolean) {
+        super.onWindowFocusChanged(hasFocus)
+        if (hasFocus) {
+            setupFullscreen()
+        }
+    }
+
     companion object {
         private const val TAG = "GameActivity"
-        const val EXTRA_ATTEMPTS = "attempts"
-        const val EXTRA_TIME = "time"
-        const val EXTRA_CORRECT_ANSWER = "correctAnswer"
     }
 }

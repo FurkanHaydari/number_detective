@@ -52,7 +52,8 @@ class GameViewModel : ViewModel() {
 
         try {
             _attempts++
-            val result = game.makeGuess(guess.toString())
+            val guessStr = guess.toString().padStart(3, '0')  
+            val result = game.makeGuess(guessStr)
             
             when {
                 result.correct == 3 -> _gameState.value = GameState.Won(_score.value)

@@ -117,35 +117,44 @@ class NumberDetectiveGame {
         }
     }
     
-    fun makeGuess(guess: String): Guess {
-        if (isGameOver()) {
-            throw IllegalStateException("Game is over. Cannot make more guesses.")
+    fun makeGuess(guess: String): GuessResult {
+        if (guess.length != 3) {
+            throw IllegalArgumentException("Tahmin 3 basamaklı olmalıdır")
         }
 
+        remainingAttempts--
+        
         var correct = 0
         var misplaced = 0
-
-        // Check correct positions
-        for (i in guess.indices) {
-            if (guess[i] == secretNumber[i]) {
+        
+        val secretDigits = secretNumber.map { it.toString() }
+        val guessDigits = guess.map { it.toString() }
+        
+        // Doğru yerdeki rakamları kontrol et
+        for (i in secretDigits.indices) {
+            if (secretDigits[i] == guessDigits[i]) {
                 correct++
             }
         }
-
-        // Check misplaced numbers
-        val guessDigits = guess.toSet()
-        val secretDigits = secretNumber.toSet()
-        misplaced = (guessDigits intersect secretDigits).size - correct
-
-        remainingAttempts--
-        currentScore -= 100
-
+        
+        // Yanlış yerdeki rakamları kontrol et
+        val secretCount = secretDigits.groupBy { it }.mapValues { it.value.size }.toMutableMap()
+        val guessCount = guessDigits.groupBy { it }.mapValues { it.value.size }
+        
+        for ((digit, count) in guessCount) {
+            val secretDigitCount = secretCount[digit] ?: 0
+            misplaced += minOf(count, secretDigitCount)
+        }
+        
+        // Doğru yerdeki rakamları çıkar
+        misplaced -= correct
+        
         if (correct == 3) {
             isGameWon = true
         }
-
-        return Guess(correct, misplaced)
+        
+        return GuessResult(correct, misplaced)
     }
     
-    data class Guess(val correct: Int, val misplaced: Int)
+    data class GuessResult(val correct: Int, val misplaced: Int)
 }

@@ -70,4 +70,5 @@
     <color name="colorDivider">#BDBDBD</color>
     <color name="colorDividerDark">#666666</color>
     <color name="numberPickerTextColor">@android:color/white</color>
+    <color name="colorError">#F44336</color>
 </resources>

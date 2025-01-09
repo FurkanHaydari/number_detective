@@ -13,6 +13,7 @@ import com.google.firebase.auth.FirebaseUser
 import com.google.android.gms.ads.MobileAds
 import com.brainfocus.numberdetective.di.viewModelModule
 import android.util.Log
+import com.google.firebase.FirebaseApp
 
 class NumberDetectiveApp : Application() {
     companion object {
@@ -32,6 +33,9 @@ class NumberDetectiveApp : Application() {
 
         // Initialize Firebase components
         try {
+            // Initialize Firebase first
+            FirebaseApp.initializeApp(this)
+            
             // Firebase Database initialization with correct region URL
             Firebase.database(DATABASE_URL).apply {
                 setLogLevel(Logger.Level.DEBUG)
@@ -64,4 +68,4 @@ class NumberDetectiveApp : Application() {
         // Initialize AdMob
         MobileAds.initialize(this)
     }
-} 
+}
