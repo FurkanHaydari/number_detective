@@ -31,7 +31,7 @@ class LeaderboardActivity : AppCompatActivity() {
     private lateinit var playerNameText: TextView
     private lateinit var playerLocationText: TextView
     private lateinit var playerHighScoreText: TextView
-    private lateinit var playerTotalGamesText: TextView
+    private lateinit var gamesPlayedText: TextView
 
     private val locationPermissionRequest = registerForActivityResult(
         ActivityResultContracts.RequestPermission()
@@ -66,12 +66,12 @@ class LeaderboardActivity : AppCompatActivity() {
         playerNameText = findViewById(R.id.playerNameText)
         playerLocationText = findViewById(R.id.playerLocationText)
         playerHighScoreText = findViewById(R.id.playerHighScoreText)
-        playerTotalGamesText = findViewById(R.id.playerTotalGamesText)
+        gamesPlayedText = findViewById(R.id.gamesPlayedText)
 
         // Disable hover tooltips for all views to prevent window leaks
         val views = listOf(
             loadingProgress, emptyStateText, leaderboardRecyclerView,
-            playerNameText, playerLocationText, playerHighScoreText, playerTotalGamesText
+            playerNameText, playerLocationText, playerHighScoreText, gamesPlayedText
         )
         views.forEach { 
             it.setOnLongClickListener { true } // Prevent long click tooltips
@@ -151,7 +151,7 @@ class LeaderboardActivity : AppCompatActivity() {
                     playerNameText.text = it.displayName
                     playerLocationText.text = it.location
                     playerHighScoreText.text = it.highScore.toString()
-                    playerTotalGamesText.text = it.totalGames.toString()
+                    gamesPlayedText.text = it.totalGames.toString()
                 }
             }
         }
@@ -209,9 +209,17 @@ class LeaderboardActivity : AppCompatActivity() {
         return super.onOptionsItemSelected(item)
     }
 
+    override fun onPause() {
+        // Clear any tooltips and popups
+        window.decorView.clearFocus()
+        super.onPause()
+    }
+
     override fun onDestroy() {
-        // Dismiss any tooltips by clearing focus
-        currentFocus?.clearFocus()
+        // Cancel any coroutines
+        viewModel.clearCoroutines()
+        // Clear any tooltips
+        window.decorView.clearFocus()
         super.onDestroy()
     }
 }

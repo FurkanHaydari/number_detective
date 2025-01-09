@@ -17,29 +17,29 @@ class LeaderboardRepository(
 ) {
     companion object {
         private const val TAG = "LeaderboardRepository"
-        private const val DEFAULT_CITY = "unknown"
+        private const val DEFAULT_LOCATION = "Bilinmiyor"
     }
 
     suspend fun updatePlayerScore(account: GoogleSignInAccount, score: Int) {
         try {
-            val city = locationManager.getCurrentCity() ?: DEFAULT_CITY
+            val district = locationManager.getCurrentDistrict() ?: DEFAULT_LOCATION
             
             // Mevcut profili al veya yeni oluştur
-            val existingProfile = database.getPlayerProfile(city, account.id!!)
+            val existingProfile = database.getPlayerProfile(district, account.id!!)
             val updatedProfile = existingProfile?.copy(
                 highScore = maxOf(existingProfile.highScore, score),
                 totalGames = existingProfile.totalGames + 1,
                 lastPlayed = System.currentTimeMillis()
             ) ?: PlayerProfile(
                 playerId = account.id!!,
-                displayName = account.displayName ?: "Anonymous",
-                location = city,
+                displayName = account.displayName ?: "Anonim",
+                location = district,
                 highScore = score,
                 totalGames = 1,
                 lastPlayed = System.currentTimeMillis()
             )
 
-            database.updatePlayerScore(city, updatedProfile)
+            database.updatePlayerScore(district, updatedProfile)
             Log.d(TAG, "Player score updated successfully")
         } catch (e: Exception) {
             Log.e(TAG, "Error updating player score: ${e.message}")
@@ -49,8 +49,8 @@ class LeaderboardRepository(
 
     fun getTopPlayers(): Flow<List<PlayerProfile>> = flow {
         try {
-            val city = locationManager.getCurrentCity() ?: DEFAULT_CITY
-            database.getTopPlayers(city).collect { players ->
+            val district = locationManager.getCurrentDistrict() ?: DEFAULT_LOCATION
+            database.getTopPlayers(district).collect { players ->
                 emit(players)
             }
         } catch (e: Exception) {
@@ -65,8 +65,8 @@ class LeaderboardRepository(
 
     suspend fun getPlayerStats(account: GoogleSignInAccount): PlayerProfile? {
         return try {
-            val city = locationManager.getCurrentCity() ?: DEFAULT_CITY
-            database.getPlayerProfile(city, account.id!!)
+            val district = locationManager.getCurrentDistrict() ?: DEFAULT_LOCATION
+            database.getPlayerProfile(district, account.id!!)
         } catch (e: Exception) {
             Log.e(TAG, "Error getting player stats: ${e.message}")
             null

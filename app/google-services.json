@@ -12,7 +12,16 @@
           "package_name": "com.brainfocus.numberdetective"
         }
       },
-      "oauth_client": [],
+      "oauth_client": [
+        {
+          "client_id": "140671902567-i5jdqtncsdu1261n2bkpemh2kf04blt6.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.brainfocus.numberdetective",
+            "certificate_hash": "eb6821627bcf6fa627c0748c218344217554612e"
+          }
+        }
+      ],
       "api_key": [
         {
           "current_key": "AIzaSyBwDD_v7GCka-7SjUY3b5PRIqektenUo2g"

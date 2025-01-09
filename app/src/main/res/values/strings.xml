@@ -62,7 +62,6 @@
         <item>"Hayal gücü, bilginin çok ötesindedir." - Albert Einstein</item>
     </string-array>
 
-
     <!-- Reklam ID'leri -->
     <string name="banner_ad_unit_id">ca-app-pub-3940256099942544/6300978111</string>
     <string name="interstitial_ad_unit_id">ca-app-pub-3940256099942544/1033173712</string>
@@ -82,11 +81,14 @@
     <string name="leaderboard_title">Sıralama</string>
     <string name="high_score">En Yüksek Skor</string>
     <string name="total_games">Toplam Oyun</string>
+    <string name="games_played">Oyun Sayısı</string>
     <string name="top_players">En İyi Oyuncular</string>
+    <string name="nearby_players">Yakındaki Oyuncular</string>
+    <string name="global_players">Tüm Oyuncular</string>
     <string name="no_leaderboard_data">Henüz sıralama verisi yok</string>
     <string name="location_permission_required">Sıralamayı görmek için konum izni gerekli</string>
     <string name="grant_permission">İzin Ver</string>
     <string name="error_loading_leaderboard">Sıralama yüklenirken bir hata oluştu</string>
     <string name="retry">Tekrar Dene</string>
-
+    <string name="nearby_top_players">Çevrendeki En İyi Oyuncular</string>
 </resources>

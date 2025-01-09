@@ -35,7 +35,7 @@ class GameLocationManager(private val context: Context) {
         ) == PackageManager.PERMISSION_GRANTED
     }
     
-    suspend fun getCurrentCity(): String? = suspendCancellableCoroutine { continuation ->
+    suspend fun getCurrentDistrict(): String? = suspendCancellableCoroutine { continuation ->
         if (!hasLocationPermission()) {
             continuation.resume(null)
             return@suspendCancellableCoroutine
@@ -58,8 +58,8 @@ class GameLocationManager(private val context: Context) {
                                 location.longitude,
                                 1
                             ) { addresses ->
-                                val city = addresses.firstOrNull()?.adminArea
-                                continuation.resume(city)
+                                val district = addresses.firstOrNull()?.subAdminArea
+                                continuation.resume(district)
                             }
                         } else {
                             @Suppress("DEPRECATION")
@@ -68,11 +68,11 @@ class GameLocationManager(private val context: Context) {
                                 location.longitude,
                                 1
                             )
-                            val city = addresses?.firstOrNull()?.adminArea
-                            continuation.resume(city)
+                            val district = addresses?.firstOrNull()?.subAdminArea
+                            continuation.resume(district)
                         }
                     } catch (e: Exception) {
-                        Log.e(TAG, "Error getting city name: ${e.message}")
+                        Log.e(TAG, "Error getting district name: ${e.message}")
                         continuation.resume(null)
                     }
                 }

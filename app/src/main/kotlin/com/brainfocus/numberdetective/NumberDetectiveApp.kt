@@ -5,7 +5,8 @@ import org.koin.android.ext.koin.androidContext
 import org.koin.android.ext.koin.androidLogger
 import org.koin.core.context.startKoin
 import org.koin.core.logger.Level
-import com.google.firebase.FirebaseApp
+import com.google.firebase.database.ktx.database
+import com.google.firebase.ktx.Firebase
 import com.google.android.gms.ads.MobileAds
 import com.brainfocus.numberdetective.di.viewModelModule
 
@@ -21,7 +22,10 @@ class NumberDetectiveApp : Application() {
             ))
         }
 
-        FirebaseApp.initializeApp(this)
+        // Firebase persistence'ı etkinleştir
+        Firebase.database.setPersistenceEnabled(true)
+        
+        // AdMob başlat
         MobileAds.initialize(this)
     }
 } 

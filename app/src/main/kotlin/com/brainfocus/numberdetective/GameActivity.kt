@@ -65,6 +65,7 @@ import com.google.android.gms.ads.interstitial.InterstitialAd
 import com.google.android.gms.ads.interstitial.InterstitialAdLoadCallback
 import com.google.android.gms.ads.FullScreenContentCallback
 import com.google.android.gms.ads.AdError
+import com.brainfocus.numberdetective.sound.SoundManager
 
 class GameActivity : AppCompatActivity() {
     private val viewModel: GameViewModel by viewModel()
@@ -79,6 +80,7 @@ class GameActivity : AppCompatActivity() {
     private val attemptsList = ArrayList<String>()
     private var mInterstitialAd: InterstitialAd? = null
     private var pendingGameResult: Intent? = null
+    private lateinit var soundManager: SoundManager
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -88,6 +90,7 @@ class GameActivity : AppCompatActivity() {
         setupFullscreen()
         
         adView = findViewById(R.id.adView)
+        soundManager = SoundManager(this)
         
         setupViews()
         observeViewModel()
@@ -424,6 +427,7 @@ class GameActivity : AppCompatActivity() {
 
     override fun onPause() {
         adView.pause()
+        soundManager.releaseMediaPlayer()
         super.onPause()
     }
 
@@ -434,6 +438,7 @@ class GameActivity : AppCompatActivity() {
 
     override fun onDestroy() {
         adView.destroy()
+        soundManager.releaseMediaPlayer()
         super.onDestroy()
     }
 
