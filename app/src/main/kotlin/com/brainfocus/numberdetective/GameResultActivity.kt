@@ -2,60 +2,41 @@ package com.brainfocus.numberdetective
 
 import android.content.Intent
 import android.media.MediaPlayer
+import android.os.Build
 import android.os.Bundle
+import android.util.Log
 import android.view.View
 import android.view.WindowInsets
-import android.view.WindowManager
+import android.view.WindowInsetsController
 import android.widget.Button
 import android.widget.TextView
-import androidx.activity.OnBackPressedCallback
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
-import com.airbnb.lottie.LottieAnimationView
-import com.airbnb.lottie.LottieDrawable
 import com.brainfocus.numberdetective.auth.GameSignInManager
-import com.brainfocus.numberdetective.repository.LeaderboardRepository
-import com.google.android.gms.ads.AdError
-import com.google.android.gms.ads.AdRequest
-import com.google.android.gms.ads.FullScreenContentCallback
-import com.google.android.gms.ads.LoadAdError
-import com.google.android.gms.ads.interstitial.InterstitialAd
-import com.google.android.gms.ads.interstitial.InterstitialAdLoadCallback
-import com.google.android.material.button.MaterialButton
+import com.brainfocus.numberdetective.database.LeaderboardDatabase
+import com.brainfocus.numberdetective.model.GameLocation
+import com.brainfocus.numberdetective.ui.leaderboard.LeaderboardFragment
+import com.google.android.gms.auth.api.signin.GoogleSignIn
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
-import android.util.Log
-import android.view.WindowInsetsController
-import android.os.Build
-import android.widget.Toast
-import android.animation.ValueAnimator
-import android.view.animation.DecelerateInterpolator
-import android.os.Handler
-import android.os.Looper
-import com.brainfocus.numberdetective.ads.AdManager
 
 class GameResultActivity : AppCompatActivity() {
-    private lateinit var resultText: TextView
-    private lateinit var scoreText: TextView
-    private lateinit var attemptsText: TextView
-    private lateinit var timeText: TextView
-    private lateinit var correctAnswerText: TextView
-    private lateinit var incorrectGuessesText: TextView
-    private lateinit var timeExpiredText: TextView
-    private lateinit var backButton: MaterialButton
-    private lateinit var leaderboardButton: MaterialButton
-    private lateinit var shareButton: MaterialButton
-    private lateinit var playAgainButton: MaterialButton
-    private var mInterstitialAd: InterstitialAd? = null
+    private lateinit var leaderboardDatabase: LeaderboardDatabase
+    private val mainScope = CoroutineScope(Dispatchers.Main + Job())
     private var mediaPlayer: MediaPlayer? = null
-    private lateinit var adManager: AdManager
-    private val TAG = "GameResultActivity"
-
+    
     companion object {
-        const val EXTRA_SCORE = "SCORE"
-        const val EXTRA_ATTEMPTS = "ATTEMPTS"
-        const val EXTRA_TIME = "TIME"
-        const val EXTRA_SUCCESS = "SUCCESS"
-        const val EXTRA_CORRECT_ANSWER = "CORRECT_ANSWER"
+        private const val TAG = "GameResultActivity"
+        const val EXTRA_SCORE = "score"
+        const val EXTRA_IS_HIGH_SCORE = "isHighScore"
+        const val EXTRA_IS_WIN = "isWin"
+        const val EXTRA_ATTEMPTS = "attempts"
+        const val EXTRA_TIME = "time"
+        const val EXTRA_CORRECT_ANSWER = "correctAnswer"
+        const val EXTRA_GUESSES = "guesses"
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -63,24 +44,144 @@ class GameResultActivity : AppCompatActivity() {
         setContentView(R.layout.activity_game_result)
 
         setupFullscreen()
-        adManager = AdManager.getInstance(this)
-        initializeViews()
-        setupListeners()
-        loadAds()
-        
-        val success = intent.getBooleanExtra(EXTRA_SUCCESS, false)
+        leaderboardDatabase = LeaderboardDatabase()
+
         val score = intent.getIntExtra(EXTRA_SCORE, 0)
+        val isHighScore = intent.getBooleanExtra(EXTRA_IS_HIGH_SCORE, false)
+        val isWin = intent.getBooleanExtra(EXTRA_IS_WIN, false)
         val attempts = intent.getIntExtra(EXTRA_ATTEMPTS, 0)
-        val time = intent.getLongExtra(EXTRA_TIME, 0L).toInt()
-        
-        displayResults(success, score, attempts, time)
-        loadInterstitialAd()
+        val time = intent.getLongExtra(EXTRA_TIME, 0L)
+        val correctAnswer = intent.getStringExtra(EXTRA_CORRECT_ANSWER) ?: ""
+        val guesses = intent.getStringArrayListExtra(EXTRA_GUESSES) ?: arrayListOf()
+
+        setupViews(score, isWin, attempts, time, correctAnswer, guesses)
+        playSound(isWin)
+        updateLeaderboardScore()
+        initializeAds()
     }
 
-    override fun onDestroy() {
-        super.onDestroy()
-        mediaPlayer?.release()
-        mediaPlayer = null
+    private fun setupViews(score: Int, isWin: Boolean, attempts: Int, time: Long, correctAnswer: String, guesses: ArrayList<String>) {
+        // Find all views
+        val scoreText = findViewById<TextView>(R.id.scoreText)
+        val resultText = findViewById<TextView>(R.id.resultText)
+        val correctAnswerText = findViewById<TextView>(R.id.correctAnswerText)
+        val incorrectGuessesText = findViewById<TextView>(R.id.incorrectGuessesText)
+        val motivationText = findViewById<TextView>(R.id.motivationText)
+        val playAgainButton = findViewById<Button>(R.id.playAgainButton)
+        val leaderboardButton = findViewById<Button>(R.id.leaderboardButton)
+        val timeText = findViewById<TextView>(R.id.timeText)
+        val shareButton = findViewById<Button>(R.id.shareButton)
+        val backButton = findViewById<Button>(R.id.backButton)
+        val attemptsText = findViewById<TextView>(R.id.attemptsText)
+
+        // Set text values
+        scoreText.text = "Skorunuz: $score"
+        resultText.text = if (isWin) "Tebrikler!" else "Oyun Bitti!"
+        correctAnswerText.text = "$correctAnswer"
+        incorrectGuessesText.text = if (guesses.isEmpty()) "-" else guesses.joinToString(", ")
+        timeText.text = formatTime(time)
+        attemptsText.text = attempts.toString()
+
+        // Set motivation text based on game result
+        motivationText.text = if (isWin) {
+            "Harika bir oyun! Devam et!"
+        } else {
+            "Daha iyisini yapabilirsin! Tekrar dene!"
+        }
+
+        // Set button click listeners
+        playAgainButton.setOnClickListener {
+            val intent = Intent(this, MainActivity::class.java)
+            intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_NEW_TASK
+            startActivity(intent)
+            finish()
+        }
+
+        leaderboardButton.setOnClickListener {
+            val account = GoogleSignIn.getLastSignedInAccount(this)
+            if (account != null) {
+                lifecycleScope.launch {
+                    try {
+                        leaderboardDatabase.updatePlayerScore(
+                            userId = account.id ?: return@launch,
+                            score = score,
+                            location = GameLocation()
+                        )
+                        // Show leaderboard after score update
+                        showLeaderboard()
+                    } catch (e: Exception) {
+                        Log.e(TAG, "Error updating score: ${e.message}")
+                        // Show leaderboard even if score update fails
+                        showLeaderboard()
+                    }
+                }
+            } else {
+                showLeaderboard()
+            }
+        }
+
+        shareButton.setOnClickListener {
+            shareResult(score, attempts, time, isWin, guesses)
+        }
+
+        backButton.setOnClickListener {
+            finish()
+        }
+    }
+
+    private fun shareResult(score: Int, attempts: Int, time: Long, isWin: Boolean, guesses: ArrayList<String>) {
+        val emoji = if (isWin) "🎉" else "🎮"
+        val message = """
+            $emoji Number Detective Oyun Sonucu $emoji
+            ${if (isWin) "Kazandım!" else "Oyun Bitti!"}
+            Skor: $score
+            Deneme: $attempts
+            Süre: ${formatTime(time)}
+            Tahminler: ${guesses.joinToString(", ")}
+            
+            Sen de oyna: https://play.google.com/store/apps/details?id=$packageName
+        """.trimIndent()
+
+        val intent = Intent(Intent.ACTION_SEND).apply {
+            type = "text/plain"
+            putExtra(Intent.EXTRA_TEXT, message)
+        }
+        startActivity(Intent.createChooser(intent, "Sonucu Paylaş"))
+    }
+
+    private fun showLeaderboard() {
+        if (isFinishing || isDestroyed) {
+            return
+        }
+
+        try {
+            // Show leaderboard fragment
+            val fragment = LeaderboardFragment()
+            supportFragmentManager.beginTransaction()
+                .replace(R.id.fragmentContainer, fragment)
+                .addToBackStack(null)
+                .commitAllowingStateLoss()  // Use commitAllowingStateLoss instead of commit
+                
+            // Show fragment container and hide other views
+            val fragmentContainer = findViewById<View>(R.id.fragmentContainer)
+            fragmentContainer.visibility = View.VISIBLE
+
+            // Hide other views
+            findViewById<View>(R.id.statsCard)?.visibility = View.GONE
+            findViewById<View>(R.id.buttonContainer)?.visibility = View.GONE
+            findViewById<View>(R.id.resultText)?.visibility = View.GONE
+            findViewById<View>(R.id.scoreText)?.visibility = View.GONE
+            findViewById<View>(R.id.motivationText)?.visibility = View.GONE
+        } catch (e: Exception) {
+            Log.e(TAG, "Error showing leaderboard: ${e.message}")
+        }
+    }
+
+    private fun formatTime(timeInMillis: Long): String {
+        val totalSeconds = (timeInMillis / 1000).toInt()
+        val minutes = totalSeconds / 60
+        val seconds = totalSeconds % 60
+        return String.format("%02d:%02d", minutes, seconds)
     }
 
     private fun setupFullscreen() {
@@ -92,263 +193,9 @@ class GameResultActivity : AppCompatActivity() {
             }
         } else {
             @Suppress("DEPRECATION")
-            window.setFlags(
-                WindowManager.LayoutParams.FLAG_FULLSCREEN,
-                WindowManager.LayoutParams.FLAG_FULLSCREEN
-            )
-        }
-    }
-
-    private fun initializeViews() {
-        resultText = findViewById(R.id.resultText)
-        scoreText = findViewById(R.id.scoreText)
-        attemptsText = findViewById(R.id.attemptsText)
-        timeText = findViewById(R.id.timeText)
-        correctAnswerText = findViewById(R.id.correctAnswerText)
-        incorrectGuessesText = findViewById(R.id.incorrectGuessesText)
-
-        // Set initial states for animations
-        resultText.alpha = 0f
-        scoreText.alpha = 0f
-        findViewById<com.google.android.material.card.MaterialCardView>(R.id.statsCard).alpha = 0f
-
-        // Initialize buttons with animations
-        findViewById<MaterialButton>(R.id.playAgainButton).apply {
-            alpha = 0f
-            setOnClickListener {
-                animateButton(this) {
-                    startActivity(Intent(this@GameResultActivity, GameActivity::class.java))
-                    finish()
-                }
-            }
-        }
-        
-        findViewById<MaterialButton>(R.id.leaderboardButton).apply {
-            alpha = 0f
-            setOnClickListener {
-                animateButton(this) {
-                    startActivity(Intent(this@GameResultActivity, LeaderboardActivity::class.java))
-                }
-            }
-        }
-        
-        findViewById<MaterialButton>(R.id.shareButton).apply {
-            alpha = 0f
-            setOnClickListener {
-                animateButton(this) {
-                    shareScore()
-                }
-            }
-        }
-        
-        findViewById<MaterialButton>(R.id.backButton).apply {
-            alpha = 0f
-            setOnClickListener {
-                animateButton(this) {
-                    finish()
-                }
-            }
-        }
-
-        // Start animations after a short delay
-        handler.postDelayed({
-            animateViewsIn()
-        }, 300)
-    }
-
-    private fun animateButton(button: MaterialButton, action: () -> Unit) {
-        button.animate()
-            .scaleX(0.92f)
-            .scaleY(0.92f)
-            .setDuration(100)
-            .withEndAction {
-                button.animate()
-                    .scaleX(1f)
-                    .scaleY(1f)
-                    .setDuration(100)
-                    .withEndAction {
-                        action.invoke()
-                    }
-            }
-            .start()
-    }
-
-    private fun animateViewsIn() {
-        // Animate result text
-        resultText.animate()
-            .alpha(1f)
-            .translationY(0f)
-            .setDuration(600)
-            .setInterpolator(DecelerateInterpolator())
-            .start()
-
-        // Animate score with delay
-        handler.postDelayed({
-            scoreText.animate()
-                .alpha(1f)
-                .translationY(0f)
-                .setDuration(600)
-                .setInterpolator(DecelerateInterpolator())
-                .start()
-        }, 200)
-
-        // Animate stats card with delay
-        handler.postDelayed({
-            findViewById<com.google.android.material.card.MaterialCardView>(R.id.statsCard).animate()
-                .alpha(1f)
-                .translationY(0f)
-                .setDuration(600)
-                .setInterpolator(DecelerateInterpolator())
-                .start()
-        }, 400)
-
-        // Animate buttons
-        val buttons = listOf(
-            findViewById<MaterialButton>(R.id.playAgainButton),
-            findViewById<MaterialButton>(R.id.leaderboardButton),
-            findViewById<MaterialButton>(R.id.shareButton),
-            findViewById<MaterialButton>(R.id.backButton)
-        )
-
-        buttons.forEachIndexed { index, button ->
-            handler.postDelayed({
-                button.animate()
-                    .alpha(1f)
-                    .translationY(0f)
-                    .setDuration(400)
-                    .setInterpolator(DecelerateInterpolator())
-                    .start()
-            }, 600 + (index * 100L))
-        }
-    }
-
-    private fun setupListeners() {
-        onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
-            override fun handleOnBackPressed() {
-                startActivity(Intent(this@GameResultActivity, MainActivity::class.java))
-                finish()
-            }
-        })
-    }
-
-    private fun displayResults(success: Boolean, score: Int, attempts: Int, time: Int) {
-        if (success) {
-            resultText.text = "Tebrikler!"
-            findViewById<TextView>(R.id.motivationText).visibility = View.GONE
-        } else {
-            resultText.text = "Tekrar Dene!"
-            findViewById<TextView>(R.id.motivationText).visibility = View.VISIBLE
-        }
-        
-        // Animate score number counting up
-        val animator = ValueAnimator.ofInt(0, score).apply {
-            duration = 1500
-            interpolator = DecelerateInterpolator()
-            addUpdateListener { animation ->
-                scoreText.text = animation.animatedValue.toString()
-            }
-        }
-        
-        handler.postDelayed({
-            animator.start()
-        }, 300)
-        
-        attemptsText.text = attempts.toString()
-        timeText.text = "${time}s"
-
-        // Display correct answer with animation
-        val correctAnswer = intent.getStringExtra(EXTRA_CORRECT_ANSWER) ?: ""
-        correctAnswerText.text = correctAnswer
-        correctAnswerText.visibility = View.VISIBLE
-        correctAnswerText.alpha = 0f
-        correctAnswerText.animate()
-            .alpha(1f)
-            .setDuration(500)
-            .setStartDelay(600)
-            .start()
-
-        // Display incorrect guesses with animation
-        val guessList = intent.getStringArrayListExtra("attempts_list") ?: arrayListOf()
-        if (guessList.isNotEmpty()) {
-            incorrectGuessesText.text = guessList.joinToString(", ")
-            incorrectGuessesText.visibility = View.VISIBLE
-            incorrectGuessesText.alpha = 0f
-            incorrectGuessesText.animate()
-                .alpha(1f)
-                .setDuration(500)
-                .setStartDelay(600)
-                .start()
-        }
-        
-        // Play sound effect
-        val mediaPlayer = MediaPlayer.create(this, if (success) R.raw.victory else R.raw.game_over)
-        mediaPlayer.start()
-        mediaPlayer.setOnCompletionListener { it.release() }
-    }
-
-    private fun shareScore() {
-        val score = intent.getIntExtra(EXTRA_SCORE, 0)
-        val shareText = "Skorunuz: $score"
-
-        val shareIntent = Intent().apply {
-            action = Intent.ACTION_SEND
-            type = "text/plain"
-            putExtra(Intent.EXTRA_TEXT, shareText)
-        }
-
-        startActivity(Intent.createChooser(shareIntent, null))
-    }
-
-    private fun loadInterstitialAd() {
-        val adRequest = AdRequest.Builder().build()
-
-        InterstitialAd.load(
-            this,
-            getString(R.string.interstitial_ad_unit_id),
-            adRequest,
-            object : InterstitialAdLoadCallback() {
-                override fun onAdLoaded(interstitialAd: InterstitialAd) {
-                    mInterstitialAd = interstitialAd
-                    setupInterstitialCallbacks()
-                }
-
-                override fun onAdFailedToLoad(loadAdError: LoadAdError) {
-                    Log.d("Ads", loadAdError.message)
-                    mInterstitialAd = null
-                }
-            }
-        )
-    }
-
-    private fun setupInterstitialCallbacks() {
-        mInterstitialAd?.fullScreenContentCallback = object : FullScreenContentCallback() {
-            override fun onAdDismissedFullScreenContent() {
-                Log.d("Ads", "Ad was dismissed.")
-                mInterstitialAd = null
-                startActivity(Intent(this@GameResultActivity, GameActivity::class.java))
-                finish()
-            }
-
-            override fun onAdFailedToShowFullScreenContent(adError: AdError) {
-                Log.e("Ads", "Ad failed to show.")
-                mInterstitialAd = null
-                startActivity(Intent(this@GameResultActivity, GameActivity::class.java))
-                finish()
-            }
-
-            override fun onAdShowedFullScreenContent() {
-                Log.d("Ads", "Ad showed fullscreen content.")
-            }
-        }
-    }
-
-    private fun showInterstitialAd() {
-        if (mInterstitialAd != null) {
-            mInterstitialAd?.show(this)
-        } else {
-            Log.d("Ads", "The interstitial ad wasn't ready yet.")
-            startActivity(Intent(this, GameActivity::class.java))
-            finish()
+            window.decorView.systemUiVisibility = (View.SYSTEM_UI_FLAG_FULLSCREEN
+                    or View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
+                    or View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY)
         }
     }
 
@@ -358,17 +205,20 @@ class GameResultActivity : AppCompatActivity() {
         signInManager.initializeSignIn()
         signInManager.signIn(
             onSuccess = { account ->
-                val repository = LeaderboardRepository(this)
                 lifecycleScope.launch {
                     try {
-                        repository.updatePlayerScore(account, score)
+                        leaderboardDatabase.updatePlayerScore(
+                            userId = account.id ?: return@launch,
+                            score = score,
+                            location = GameLocation()
+                        )
                     } catch (e: Exception) {
-                        Log.e("GameResultActivity", "Error updating score: ${e.message}")
+                        Log.e(TAG, "Error updating score: ${e.message}")
                     }
                 }
             },
             onFailed = {
-                Log.e("GameResultActivity", "Sign in failed, score not updated")
+                Log.e(TAG, "Sign in failed, score not updated")
             }
         )
     }
@@ -376,7 +226,7 @@ class GameResultActivity : AppCompatActivity() {
     private fun playSound(isWin: Boolean) {
         try {
             val soundResId = if (isWin) R.raw.victory else R.raw.game_over
-            val mediaPlayer = MediaPlayer.create(this, soundResId)
+            mediaPlayer = MediaPlayer.create(this, soundResId)
             mediaPlayer?.apply {
                 setOnCompletionListener { release() }
                 start()
@@ -388,12 +238,29 @@ class GameResultActivity : AppCompatActivity() {
         }
     }
 
-    private fun loadAds() {
-        adManager.initialize {
+    private fun initializeAds() {
+        try {
             val adView = findViewById<com.google.android.gms.ads.AdView>(R.id.adView)
-            adManager.loadBannerAd(adView)
+            val adRequest = com.google.android.gms.ads.AdRequest.Builder().build()
+            adView.loadAd(adRequest)
+        } catch (e: Exception) {
+            Log.e(TAG, "Error loading ad: ${e.message}")
         }
     }
 
-    private val handler = Handler(Looper.getMainLooper())
+    override fun onBackPressed() {
+        if (supportFragmentManager.backStackEntryCount > 0) {
+            findViewById<View>(R.id.fragmentContainer).visibility = View.GONE
+            supportFragmentManager.popBackStack()
+        } else {
+            super.onBackPressed()
+        }
+    }
+
+    override fun onDestroy() {
+        mediaPlayer?.release()
+        mediaPlayer = null
+        mainScope.cancel()
+        super.onDestroy()
+    }
 }

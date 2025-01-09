@@ -6,6 +6,16 @@
     android:layout_height="match_parent"
     android:background="@drawable/gradient_background">
 
+    <FrameLayout
+        android:id="@+id/fragmentContainer"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:visibility="gone"/>
+
     <TextView
         android:id="@+id/titleText"
         android:layout_width="wrap_content"

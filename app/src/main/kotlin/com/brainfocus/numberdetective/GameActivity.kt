@@ -126,7 +126,12 @@ class GameActivity : AppCompatActivity() {
         adView = findViewById(R.id.adView)
         
         setupNumberPickers()
-        setupSubmitButton()
+        
+        submitButton.setOnClickListener {
+            val guess = currentNumbers.joinToString("")
+            attemptsList.add(guess)  // Store the guess when it's made
+            viewModel.makeGuess(guess.toInt())
+        }
         
         hintsAdapter = HintAdapter()
         hintsContainer.adapter = hintsAdapter
@@ -239,22 +244,7 @@ class GameActivity : AppCompatActivity() {
                 }.collect { (hints, state) ->
                     updateHints(hints)
                     
-                    when (state) {
-                        is GameState.Won -> {
-                            handleGameState(state)
-                        }
-                        is GameState.Lost -> {
-                            handleGameState(state)
-                        }
-                        is GameState.Playing -> {
-                            updateScore(state.score)
-                            updateRemainingAttempts(3 - viewModel.getAttempts())
-                            if (viewModel.getAttempts() > 0) {
-                                showWrongGuessDialog(3 - viewModel.getAttempts())
-                            }
-                        }
-                        else -> {}
-                    }
+                    handleGameState(state)
                 }
             }
         }
@@ -264,25 +254,38 @@ class GameActivity : AppCompatActivity() {
         when (state) {
             is GameState.Won -> {
                 val intent = Intent(this, GameResultActivity::class.java).apply {
-                    putExtra(GameResultActivity.EXTRA_SUCCESS, true)
                     putExtra(GameResultActivity.EXTRA_SCORE, state.score)
+                    putExtra(GameResultActivity.EXTRA_IS_HIGH_SCORE, false)
+                    putExtra(GameResultActivity.EXTRA_IS_WIN, true)
                     putExtra(GameResultActivity.EXTRA_ATTEMPTS, viewModel.getAttempts())
                     putExtra(GameResultActivity.EXTRA_TIME, viewModel.getGameTime().toLong())
                     putExtra(GameResultActivity.EXTRA_CORRECT_ANSWER, viewModel.getCorrectAnswer())
-                    putStringArrayListExtra("attempts_list", attemptsList)
+                    putStringArrayListExtra(GameResultActivity.EXTRA_GUESSES, attemptsList)
                 }
                 showGameResultWithAd(intent)
             }
             is GameState.Lost -> {
                 val intent = Intent(this, GameResultActivity::class.java).apply {
-                    putExtra(GameResultActivity.EXTRA_SUCCESS, false)
                     putExtra(GameResultActivity.EXTRA_SCORE, 0)
+                    putExtra(GameResultActivity.EXTRA_IS_HIGH_SCORE, false)
+                    putExtra(GameResultActivity.EXTRA_IS_WIN, false)
                     putExtra(GameResultActivity.EXTRA_ATTEMPTS, viewModel.getAttempts())
                     putExtra(GameResultActivity.EXTRA_TIME, viewModel.getGameTime().toLong())
                     putExtra(GameResultActivity.EXTRA_CORRECT_ANSWER, viewModel.getCorrectAnswer())
-                    putStringArrayListExtra("attempts_list", attemptsList)
+                    putStringArrayListExtra(GameResultActivity.EXTRA_GUESSES, attemptsList)
                 }
                 showGameResultWithAd(intent)
+            }
+            is GameState.Playing -> {
+                updateScore(state.score)
+                val remainingAttempts = 3 - viewModel.getAttempts()
+                updateRemainingAttempts(remainingAttempts)
+                if (viewModel.getAttempts() > 0) {
+                    showWrongGuessDialog(remainingAttempts)
+                }
+            }
+            is GameState.Error -> {
+                showErrorDialog(state.message)
             }
             else -> {
                 // Handle other states
@@ -356,7 +359,17 @@ class GameActivity : AppCompatActivity() {
     }
 
     private fun showWrongGuessDialog(remainingAttempts: Int) {
-        showErrorDialog("Maalesef doğru tahminde bulunamadın.\nKalan hakkın: $remainingAttempts")
+        val message = when (remainingAttempts) {
+            2 -> "Yanlış tahmin! 2 hakkınız kaldı."
+            1 -> "Yanlış tahmin! Son hakkınız!"
+            else -> "Yanlış tahmin!"
+        }
+        
+        AlertDialog.Builder(this)
+            .setTitle("Tekrar Deneyin")
+            .setMessage(message)
+            .setPositiveButton("Tamam", null)
+            .show()
     }
 
     private fun loadAds() {
@@ -516,5 +529,8 @@ class GameActivity : AppCompatActivity() {
 
     companion object {
         private const val TAG = "GameActivity"
+        const val EXTRA_ATTEMPTS = "attempts"
+        const val EXTRA_TIME = "time"
+        const val EXTRA_CORRECT_ANSWER = "correctAnswer"
     }
 }

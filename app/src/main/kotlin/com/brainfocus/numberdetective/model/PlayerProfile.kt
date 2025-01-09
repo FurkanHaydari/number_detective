@@ -2,35 +2,51 @@ package com.brainfocus.numberdetective.model
 
 import com.google.firebase.database.IgnoreExtraProperties
 
+data class Location(
+    val district: String? = null,
+    val city: String? = null,
+    val country: String? = null
+)
+
 @IgnoreExtraProperties
 data class PlayerProfile(
-    val playerId: String = "",
-    val displayName: String = "",
-    val location: String = "",
-    val highScore: Int = 0,
-    val totalGames: Int = 0,
-    val lastPlayed: Long = 0
+    val id: String = "",
+    val name: String = "",
+    val score: Int = 0,
+    val location: GameLocation? = null,
+    val timestamp: Long = System.currentTimeMillis()
 ) {
     fun toMap(): Map<String, Any> {
         return mapOf(
-            "playerId" to playerId,
-            "displayName" to displayName,
-            "location" to location,
-            "highScore" to highScore,
-            "totalGames" to totalGames,
-            "lastPlayed" to lastPlayed
+            "id" to id,
+            "name" to name,
+            "score" to score,
+            "timestamp" to timestamp,
+            "location" to (location?.let {
+                mapOf(
+                    "district" to (it.district ?: ""),
+                    "city" to (it.city ?: ""),
+                    "country" to it.country
+                )
+            } ?: emptyMap<String, String>())
         )
     }
 
     companion object {
         fun fromMap(map: Map<String, Any>): PlayerProfile {
+            val locationMap = map["location"] as? Map<String, Any>
             return PlayerProfile(
-                playerId = map["playerId"] as? String ?: "",
-                displayName = map["displayName"] as? String ?: "",
-                location = map["location"] as? String ?: "",
-                highScore = (map["highScore"] as? Long)?.toInt() ?: 0,
-                totalGames = (map["totalGames"] as? Long)?.toInt() ?: 0,
-                lastPlayed = map["lastPlayed"] as? Long ?: 0
+                id = map["id"] as? String ?: "",
+                name = map["name"] as? String ?: "",
+                score = (map["score"] as? Long)?.toInt() ?: 0,
+                timestamp = map["timestamp"] as? Long ?: 0,
+                location = locationMap?.let {
+                    GameLocation(
+                        district = it["district"] as? String,
+                        city = it["city"] as? String,
+                        country = it["country"] as? String ?: "Türkiye"
+                    )
+                }
             )
         }
     }

@@ -8,7 +8,7 @@ import com.brainfocus.numberdetective.game.NumberDetectiveGame
 class GameViewModel : ViewModel() {
     private val game = NumberDetectiveGame()
     private var _attempts = 0
-    private val startTime = System.currentTimeMillis()
+    private var startTime = System.currentTimeMillis()
     private val _gameState = MutableStateFlow<GameState>(GameState.Initial)
     val gameState: StateFlow<GameState> = _gameState
     
@@ -25,6 +25,7 @@ class GameViewModel : ViewModel() {
     fun startNewGame() {
         _attempts = 0
         _score.value = 1000
+        startTime = System.currentTimeMillis()
         game.startNewGame()
         
         val gameHints = listOf(
@@ -70,7 +71,9 @@ class GameViewModel : ViewModel() {
 
     fun getAttempts(): Int = _attempts
 
-    fun getGameTime(): Long = (System.currentTimeMillis() - startTime) / 1000
+    fun getGameTime(): Long {
+        return System.currentTimeMillis() - startTime
+    }
 
     fun getCorrectAnswer(): String = game.getCorrectAnswer()
 
