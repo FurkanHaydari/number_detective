@@ -31,6 +31,7 @@ import android.animation.ValueAnimator
 import android.view.animation.DecelerateInterpolator
 import android.os.Handler
 import android.os.Looper
+import com.brainfocus.numberdetective.ads.AdManager
 
 class GameResultActivity : AppCompatActivity() {
     private lateinit var resultText: TextView
@@ -46,6 +47,7 @@ class GameResultActivity : AppCompatActivity() {
     private lateinit var playAgainButton: MaterialButton
     private var mInterstitialAd: InterstitialAd? = null
     private var mediaPlayer: MediaPlayer? = null
+    private lateinit var adManager: AdManager
     private val TAG = "GameResultActivity"
 
     companion object {
@@ -61,9 +63,10 @@ class GameResultActivity : AppCompatActivity() {
         setContentView(R.layout.activity_game_result)
 
         setupFullscreen()
+        adManager = AdManager.getInstance(this)
         initializeViews()
         setupListeners()
-        initializeBannerAd()
+        loadAds()
         
         val success = intent.getBooleanExtra(EXTRA_SUCCESS, false)
         val score = intent.getIntExtra(EXTRA_SCORE, 0)
@@ -385,10 +388,11 @@ class GameResultActivity : AppCompatActivity() {
         }
     }
 
-    private fun initializeBannerAd() {
-        val adView = findViewById<com.google.android.gms.ads.AdView>(R.id.adView)
-        val adRequest = AdRequest.Builder().build()
-        adView.loadAd(adRequest)
+    private fun loadAds() {
+        adManager.initialize {
+            val adView = findViewById<com.google.android.gms.ads.AdView>(R.id.adView)
+            adManager.loadBannerAd(adView)
+        }
     }
 
     private val handler = Handler(Looper.getMainLooper())

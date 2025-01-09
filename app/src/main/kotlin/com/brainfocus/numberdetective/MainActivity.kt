@@ -1,83 +1,55 @@
 package com.brainfocus.numberdetective
 
 import android.content.Intent
-import android.media.MediaPlayer
 import android.os.Bundle
 import android.util.Log
 import android.view.View
 import android.view.WindowManager
-import android.widget.Button
-import android.widget.ImageView
+import android.widget.*
 import androidx.appcompat.app.AppCompatActivity
 import androidx.activity.OnBackPressedCallback
 import com.airbnb.lottie.LottieAnimationView
 import com.google.android.gms.ads.*
-import com.google.android.gms.ads.interstitial.InterstitialAd
-import com.google.android.gms.ads.interstitial.InterstitialAdLoadCallback
-import com.google.android.gms.ads.RequestConfiguration
 import com.google.android.material.button.MaterialButton
-import java.util.Calendar
-import android.widget.TextView
 import android.view.animation.AnimationUtils
 import android.os.Handler
 import android.os.Looper
-import android.widget.LinearLayout
 import android.view.ViewGroup
 import android.widget.FrameLayout
 import androidx.constraintlayout.widget.ConstraintLayout
-import android.text.SpannableStringBuilder
-import android.text.style.ImageSpan
-import android.text.style.StyleSpan
-import android.text.style.ForegroundColorSpan
+import android.text.*
+import android.text.style.*
 import android.graphics.Typeface
-import android.text.style.RelativeSizeSpan
 import android.graphics.Color
-import android.view.Window
 import android.view.WindowInsets
 import android.view.WindowInsetsController
 import android.os.Build
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.*
 import androidx.appcompat.content.res.AppCompatResources
-import android.text.Spanned
+import com.brainfocus.numberdetective.ads.AdManager
 
 class MainActivity : AppCompatActivity() {
-    private var _adView: AdView? = null
     private lateinit var adView: AdView
-    
+    private lateinit var adManager: AdManager
     private val mainScope = CoroutineScope(Dispatchers.Main + Job())
+    private lateinit var descriptionText: TextView
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         setupFullscreen()
         
-        // Handle back button
-        onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
-            override fun handleOnBackPressed() {
-                finishAffinity()
-            }
-        })
+        adView = findViewById(R.id.adView)
+        adManager = AdManager.getInstance(this)
+        descriptionText = findViewById(R.id.descriptionText)
         
-        // Configure AdMob test device
-        val configuration = RequestConfiguration.Builder()
-            .setTestDeviceIds(listOf("2AB9450CDEBBD309C545CF4327C4FB6C"))
-            .build()
-        MobileAds.setRequestConfiguration(configuration)
+        setupViews()
+        loadAds()
         
-        // Initialize AdMob
-        MobileAds.initialize(this) {
-            // Then setup ads after initialization
-            setupAds()
-        }
-        
-        // UI işlemlerini sırayla yapalım
         mainScope.launch {
             setupButtons()
             setupFeatures()
-            
+
             coroutineScope {
                 delay(100)
                 setupAnimation()
@@ -90,9 +62,9 @@ class MainActivity : AppCompatActivity() {
     private fun setupFullscreen() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
             window.setDecorFitsSystemWindows(false)
-            window.insetsController?.let { controller ->
-                controller.hide(WindowInsets.Type.statusBars() or WindowInsets.Type.navigationBars())
-                controller.systemBarsBehavior = WindowInsetsController.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
+            window.insetsController?.let {
+                it.hide(WindowInsets.Type.statusBars() or WindowInsets.Type.navigationBars())
+                it.systemBarsBehavior = WindowInsetsController.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
             }
         } else {
             @Suppress("DEPRECATION")
@@ -102,72 +74,31 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private fun setupAds() {
-        val adContainer = findViewById<FrameLayout>(R.id.adContainer)
-        adView = findViewById(R.id.adView)
-        _adView = adView
-        
-        // Container ve AdView'ı başlangıçta görünmez yap
-        adContainer.alpha = 0f
-        adView.alpha = 0f
-        
-        // Reklam yüklemesini main thread'de yapıyoruz
-        val adRequest = AdRequest.Builder().build()
-        adView.loadAd(adRequest)
-        
-        adView.adListener = object : AdListener() {
-            override fun onAdLoaded() {
-                Log.d("Ads", "Main activity ad loaded successfully")
-                
-                // Önce container'ı fade in yap
-                adContainer.animate()
-                    .alpha(1f)
-                    .setDuration(500)
-                    .withEndAction {
-                        // Sonra AdView'ı fade in yap
-                        adView.animate()
-                            .alpha(1f)
-                            .setDuration(300)
-                            .start()
-                    }
-                    .start()
-            }
-            
-            override fun onAdFailedToLoad(error: LoadAdError) {
-                Log.e("Ads", "Ad failed to load: ${error.message}")
-            }
+    private fun loadAds() {
+        adManager.initialize {
+            adManager.loadBannerAd(adView)
         }
     }
 
-    override fun onPause() {
-        _adView?.pause()
-        super.onPause()
-    }
-
-    override fun onResume() {
-        super.onResume()
-        _adView?.resume()
-    }
-
-    override fun onDestroy() {
-        mainScope.cancel() // Coroutine'leri temizle
-        _adView?.destroy()
-        _adView = null
-        super.onDestroy()
-    }
-
-    private fun setupButtons() {
-        findViewById<MaterialButton>(R.id.beyniniKoruButton).setOnClickListener {
+    private fun setupViews() {
+        val beyniniKoruButton = findViewById<MaterialButton>(R.id.beyniniKoruButton)
+        beyniniKoruButton.setOnClickListener {
             val intent = Intent(this, GameActivity::class.java)
             intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
             startActivity(intent)
         }
 
-        findViewById<MaterialButton>(R.id.leaderboardButton).setOnClickListener {
+        val leaderboardButton = findViewById<MaterialButton>(R.id.leaderboardButton)
+        leaderboardButton.setOnClickListener {
             startActivity(Intent(this, LeaderboardActivity::class.java))
         }
 
-        // Handle back press
+        val startButton = findViewById<MaterialButton>(R.id.beyniniKoruButton)
+        startButton.setOnClickListener {
+            val intent = Intent(this, GameActivity::class.java)
+            startActivity(intent)
+        }
+
         onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
             override fun handleOnBackPressed() {
                 finishAffinity()
@@ -176,29 +107,23 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun setupAnimation() {
-        // Feature container'ları bul
         val dikkatFeature = findViewById<ViewGroup>(R.id.dikkatFeature)
         val hafizaFeature = findViewById<ViewGroup>(R.id.hafizaFeature)
         val mantikFeature = findViewById<ViewGroup>(R.id.mantikFeature)
-        
-        // Animasyonları yükle
+
         val pulseAnimation = AnimationUtils.loadAnimation(this, R.anim.pulse_animation)
-        val glowAnimation = AnimationUtils.loadAnimation(this, R.anim.glow_animation)
         
-        // Animasyonları başlat
         dikkatFeature.startAnimation(pulseAnimation)
         hafizaFeature.startAnimation(pulseAnimation)
         mantikFeature.startAnimation(pulseAnimation)
-        
-        // Buton animasyonu
+
         val startButton = findViewById<MaterialButton>(R.id.beyniniKoruButton)
+        val buttonAnimation = AnimationUtils.loadAnimation(this, R.anim.glow_animation)
         
         startButton.post {
-            // Butonun parent'ını bul
             val parent = startButton.parent as ViewGroup
             val buttonIndex = parent.indexOfChild(startButton)
             
-            // FrameLayout oluştur ve constraint parametrelerini kopyala
             val frameLayout = FrameLayout(this).apply {
                 layoutParams = ConstraintLayout.LayoutParams(
                     startButton.width,
@@ -209,128 +134,36 @@ class MainActivity : AppCompatActivity() {
                     rightToRight = ConstraintLayout.LayoutParams.PARENT_ID
                     bottomMargin = resources.getDimensionPixelSize(R.dimen.button_margin_bottom)
                 }
-                clipChildren = true  // Çocuk view'ların dışarı taşmasını engelle
-                clipToOutline = true // Outline'a göre kırp
+                clipChildren = true
+                clipToOutline = true
             }
             
-            // Butonu parent'ından kaldır ve frame'e ekle
             parent.removeView(startButton)
             frameLayout.addView(startButton, FrameLayout.LayoutParams(
                 FrameLayout.LayoutParams.MATCH_PARENT,
                 FrameLayout.LayoutParams.MATCH_PARENT
             ))
             
-            // Overlay view oluştur
             val overlayView = View(this).apply {
                 layoutParams = FrameLayout.LayoutParams(
-                    (startButton.width * 0.2).toInt(), // Buton genişliğinin %20'si
-                    startButton.height - 16 // Kenarlardan biraz içeride
+                    (startButton.width * 0.2).toInt(),
+                    startButton.height - 16
                 ).apply {
                     gravity = android.view.Gravity.CENTER
-                    setMargins(8, 8, 8, 8) // Kenarlardan margin
+                    setMargins(8, 8, 8, 8)
                 }
                 background = AppCompatResources.getDrawable(context, R.drawable.button_glow_overlay)
                 elevation = startButton.elevation - 1f
             }
             
-            // Overlay'i frame'e ekle
             frameLayout.addView(overlayView)
-            
-            // Frame'i orijinal pozisyona ekle
             parent.addView(frameLayout, buttonIndex)
-            
-            // Animasyonu başlat
-            overlayView.startAnimation(glowAnimation)
-        }
-        
-        startButton.setOnClickListener {
-            val intent = Intent(this, GameActivity::class.java)
-            startActivity(intent)
+            overlayView.startAnimation(buttonAnimation)
         }
     }
 
-    private fun setupQuoteOfDay() {
-        val quotes = resources.getStringArray(R.array.game_quotes)
-        val randomQuote = quotes.random()
-        val parts = randomQuote.split(" - ")
-        
-        findViewById<TextView>(R.id.quoteText).text = parts[0]
-        findViewById<TextView>(R.id.quoteAuthor).text = "- ${parts[1]}"
-    }
-
-    private fun setupDescription() {
-        val descriptionText = findViewById<TextView>(R.id.descriptionText)
-        val titleText = findViewById<TextView>(R.id.titleText)
-        val quoteText = findViewById<TextView>(R.id.quoteText)
-        
-        // Başlık stili
-        titleText.apply {
-            setTextColor(getColor(R.color.titleTextColor))
-            setShadowLayer(4f, 0f, 2f, Color.parseColor("#40000000"))
-        }
-        
-        // Alıntı stili
-        quoteText.apply {
-            val quoteSpannable = SpannableStringBuilder().apply {
-                // Tırnak işareti
-                append("❝   ", StyleSpan(Typeface.BOLD), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
-                setSpan(
-                    RelativeSizeSpan(1.4f), // Tırnak işaretini %40 daha büyük yap
-                    0,
-                    1,
-                    Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
-                )
-                setSpan(
-                    ForegroundColorSpan(getColor(R.color.quoteTextColor)),
-                    0,
-                    1,
-                    Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
-                )
-                
-                // Alıntı metni
-                append(text)
-            }
-            
-            text = quoteSpannable
-            setTextColor(getColor(R.color.quoteTextColor))
-            setShadowLayer(2f, 0f, 1f, Color.parseColor("#40000000"))
-        }
-        
-        val spannable = SpannableStringBuilder().apply {
-            // Ana metin
-            append("\n\nModern teknolojinin getirdiği kısa\nsüreli içerikler, dikkat süremizi ve\nodaklanma yeteneğimizi azaltıyor.")
-            append("\n\nBilimsel araştırmalar, günde sadece ")
-            
-            // Vurgulu metin (daha parlak ve farklı renk)
-            val highlightedText = "10 dakikalık"
-            val start = length
-            append(highlightedText)
-            val end = length
-            
-            // Renk ve stil efektleri
-            setSpan(
-                ForegroundColorSpan(Color.parseColor("#FFE500")), // Parlak sarı
-                start,
-                end,
-                Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
-            )
-            
-            setSpan(
-                StyleSpan(Typeface.BOLD),
-                start,
-                end,
-                Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
-            )
-            
-            // Son kısım
-            append(" zihinsel egzersiz bile beyin\nsağlığımızı korumada etkili olduğunu\ngösteriyor.")
-        }
-
-        descriptionText.apply {
-            text = spannable
-            setTextColor(getColor(R.color.bodyTextColor))
-            setShadowLayer(3f, 1f, 1f, Color.parseColor("#40000000"))
-        }
+    private fun setupButtons() {
+        // No changes needed here
     }
 
     private fun setupFeatures() {
@@ -347,6 +180,98 @@ class MainActivity : AppCompatActivity() {
             featureView.findViewById<ImageView>(R.id.featureIcon).setImageResource(feature.iconRes)
             featureView.findViewById<TextView>(R.id.featureTitle).text = feature.title
         }
+
+        val titleText = findViewById<TextView>(R.id.titleText)
+        val quoteText = findViewById<TextView>(R.id.quoteText)
+        
+        titleText.apply {
+            setTextColor(getColor(R.color.titleTextColor))
+            setShadowLayer(4f, 0f, 2f, Color.parseColor("#40000000"))
+        }
+        
+        quoteText.apply {
+            val quoteSpannable = SpannableStringBuilder().apply {
+                append("❝   ", StyleSpan(Typeface.BOLD), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
+                setSpan(
+                    RelativeSizeSpan(1.4f),
+                    0,
+                    1,
+                    Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
+                )
+                setSpan(
+                    ForegroundColorSpan(Color.parseColor("#FFE500")),
+                    0,
+                    1,
+                    Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
+                )
+                
+                append(text)
+            }
+            
+            text = quoteSpannable
+            setTextColor(getColor(R.color.quoteTextColor))
+            setShadowLayer(4f, 0f, 2f, Color.parseColor("#40000000"))
+        }
+    }
+
+    private fun setupQuoteOfDay() {
+        val quotes = resources.getStringArray(R.array.game_quotes)
+        val randomQuote = quotes.random()
+        val parts = randomQuote.split(" - ")
+        
+        findViewById<TextView>(R.id.quoteText).text = parts[0]
+        findViewById<TextView>(R.id.quoteAuthor).text = "- ${parts[1]}"
+    }
+
+    private fun setupDescription() {
+        val spannable = SpannableStringBuilder().apply {
+            append("\n\nModern çağın getirdiği kısa süreli içerikler\n(reels, shorts, tiktok videoları vb.)\nbeynimizin odaklanma ve derinlemesine\ndüşünme yeteneğini zayıflatıyor.")
+            append("\n\nBilimsel araştırmalar, bu tür içeriklerin\nsürekli tüketiminin \"beyin çürümesi\"\n(brain rot) olarak adlandırılan duruma\nyol açtığını gösteriyor.")
+            append("\n\nGünde sadece ")
+            
+            val highlightedText = "\n10 dakika\n"
+            val start = length
+            append(highlightedText)
+            val end = length
+            
+            setSpan(
+                ForegroundColorSpan(Color.parseColor("#FFE500")),
+                start,
+                end,
+                Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
+            )
+            
+            setSpan(
+                StyleSpan(Typeface.BOLD),
+                start,
+                end,
+                Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
+            )
+            
+            append("akıl oyunları ve mantık problemleriyle\nzihnini diri tutabilirsin!")
+        }
+
+        descriptionText.apply {
+            text = spannable
+            setTextColor(getColor(R.color.bodyTextColor))
+            setShadowLayer(3f, 1f, 1f, Color.parseColor("#40000000"))
+        }
+    }
+
+    override fun onPause() {
+        adManager.onPause()
+        super.onPause()
+    }
+
+    override fun onResume() {
+        super.onResume()
+        adManager.onResume()
+    }
+
+    override fun onDestroy() {
+        mainScope.cancel()
+        adManager.onDestroy()
+        super.onDestroy()
     }
 
     override fun onWindowFocusChanged(hasFocus: Boolean) {

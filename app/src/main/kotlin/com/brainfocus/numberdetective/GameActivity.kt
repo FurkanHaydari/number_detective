@@ -61,11 +61,8 @@ import android.text.style.StyleSpan
 import android.text.Spanned
 import androidx.core.content.res.ResourcesCompat
 import androidx.recyclerview.widget.RecyclerView
-import com.google.android.gms.ads.interstitial.InterstitialAd
-import com.google.android.gms.ads.interstitial.InterstitialAdLoadCallback
-import com.google.android.gms.ads.FullScreenContentCallback
-import com.google.android.gms.ads.AdError
 import com.brainfocus.numberdetective.sound.SoundManager
+import com.brainfocus.numberdetective.ads.AdManager
 
 class GameActivity : AppCompatActivity() {
     private val viewModel: GameViewModel by viewModel()
@@ -78,9 +75,9 @@ class GameActivity : AppCompatActivity() {
     private lateinit var remainingAttemptsText: TextView
     private lateinit var adView: AdView
     private val attemptsList = ArrayList<String>()
-    private var mInterstitialAd: InterstitialAd? = null
     private var pendingGameResult: Intent? = null
     private lateinit var soundManager: SoundManager
+    private lateinit var adManager: AdManager
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -91,11 +88,12 @@ class GameActivity : AppCompatActivity() {
         
         adView = findViewById(R.id.adView)
         soundManager = SoundManager(this)
+        adManager = AdManager.getInstance(this)
         
         setupViews()
         observeViewModel()
         startScoreTimer()
-        loadInterstitialAd()
+        loadAds()
     }
 
     private fun setupFullscreen() {
@@ -129,7 +127,6 @@ class GameActivity : AppCompatActivity() {
         
         setupNumberPickers()
         setupSubmitButton()
-        setupAds()
         
         hintsAdapter = HintAdapter()
         hintsContainer.adapter = hintsAdapter
@@ -318,10 +315,9 @@ class GameActivity : AppCompatActivity() {
 
     private fun showGameResultWithAd(intent: Intent) {
         pendingGameResult = intent
-        if (mInterstitialAd != null) {
-            mInterstitialAd?.show(this)
+        if (adManager.hasLoadedInterstitialAd()) {
+            adManager.showInterstitialAd(this)
         } else {
-            // If no ad is available, just show the result
             startActivity(intent)
             finish()
         }
@@ -363,65 +359,32 @@ class GameActivity : AppCompatActivity() {
         showErrorDialog("Maalesef doğru tahminde bulunamadın.\nKalan hakkın: $remainingAttempts")
     }
 
-    private fun setupAds() {
-        if (!isAdsInitialized) {
-            MobileAds.initialize(this) { initializationStatus ->
-                isAdsInitialized = true
-                loadAd()
-            }
-        } else {
-            loadAd()
-        }
-    }
-
-    private fun loadAd() {
-        try {
-            val adRequest = AdRequest.Builder().build()
-            adView.loadAd(adRequest)
-        } catch (e: Exception) {
-            Log.e(TAG, "Error loading ad: ${e.message}")
-        }
-    }
-
-    private fun loadInterstitialAd() {
-        val adRequest = AdRequest.Builder().build()
-        InterstitialAd.load(this, getString(R.string.interstitial_ad_unit_id), adRequest,
-            object : InterstitialAdLoadCallback() {
-                override fun onAdLoaded(interstitialAd: InterstitialAd) {
-                    mInterstitialAd = interstitialAd
-                    setupInterstitialCallbacks()
-                }
-
-                override fun onAdFailedToLoad(loadAdError: LoadAdError) {
-                    mInterstitialAd = null
-                    // If ad fails to load, proceed with showing game result
+    private fun loadAds() {
+        adManager.initialize {
+            adManager.loadBannerAd(adView)
+            adManager.loadInterstitialAd(
+                activity = this,
+                adUnitId = getString(R.string.interstitial_ad_unit_id),
+                onAdLoaded = {},
+                onAdDismissed = {
+                    pendingGameResult?.let {
+                        startActivity(it)
+                        finish()
+                    }
+                },
+                onAdFailedToLoad = {
+                    pendingGameResult?.let {
+                        startActivity(it)
+                        finish()
+                    }
+                },
+                onAdFailedToShow = {
                     pendingGameResult?.let {
                         startActivity(it)
                         finish()
                     }
                 }
-            })
-    }
-
-    private fun setupInterstitialCallbacks() {
-        mInterstitialAd?.fullScreenContentCallback = object : FullScreenContentCallback() {
-            override fun onAdDismissedFullScreenContent() {
-                mInterstitialAd = null
-                // When ad is dismissed, show the game result
-                pendingGameResult?.let {
-                    startActivity(it)
-                    finish()
-                }
-            }
-
-            override fun onAdFailedToShowFullScreenContent(adError: AdError) {
-                mInterstitialAd = null
-                // If ad fails to show, proceed with showing game result
-                pendingGameResult?.let {
-                    startActivity(it)
-                    finish()
-                }
-            }
+            )
         }
     }
 
@@ -553,6 +516,5 @@ class GameActivity : AppCompatActivity() {
 
     companion object {
         private const val TAG = "GameActivity"
-        private var isAdsInitialized = false
     }
 }
