@@ -1,24 +1,27 @@
 package com.brainfocus.numberdetective
 
 import android.content.Intent
+import android.media.MediaPlayer
 import android.os.Bundle
 import android.util.Log
-import androidx.activity.OnBackPressedCallback
+import android.view.View
+import android.view.WindowManager
+import android.widget.Button
+import android.widget.ImageView
 import androidx.appcompat.app.AppCompatActivity
-import com.google.android.gms.ads.AdListener
-import com.google.android.gms.ads.AdRequest
-import com.google.android.gms.ads.AdView
-import com.google.android.gms.ads.MobileAds
-import com.google.android.gms.ads.LoadAdError
-import com.google.android.material.button.MaterialButton
+import androidx.activity.OnBackPressedCallback
 import com.airbnb.lottie.LottieAnimationView
+import com.google.android.gms.ads.*
+import com.google.android.gms.ads.interstitial.InterstitialAd
+import com.google.android.gms.ads.interstitial.InterstitialAdLoadCallback
+import com.google.android.gms.ads.RequestConfiguration
+import com.google.android.material.button.MaterialButton
 import java.util.Calendar
 import android.widget.TextView
 import android.view.animation.AnimationUtils
 import android.os.Handler
 import android.os.Looper
 import android.widget.LinearLayout
-import android.view.View
 import android.view.ViewGroup
 import android.widget.FrameLayout
 import androidx.constraintlayout.widget.ConstraintLayout
@@ -27,11 +30,8 @@ import android.text.style.ImageSpan
 import android.text.style.StyleSpan
 import android.text.style.ForegroundColorSpan
 import android.graphics.Typeface
-import android.text.Spanned
-import android.graphics.Color
-import android.widget.ImageView
-import android.view.WindowManager
 import android.text.style.RelativeSizeSpan
+import android.graphics.Color
 import android.view.Window
 import android.view.WindowInsets
 import android.view.WindowInsetsController
@@ -41,6 +41,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.*
 import androidx.appcompat.content.res.AppCompatResources
+import android.text.Spanned
 
 class MainActivity : AppCompatActivity() {
     private var _adView: AdView? = null
@@ -53,7 +54,20 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main)
         setupFullscreen()
         
-        // Initialize MobileAds first
+        // Handle back button
+        onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
+            override fun handleOnBackPressed() {
+                finishAffinity()
+            }
+        })
+        
+        // Configure AdMob test device
+        val configuration = RequestConfiguration.Builder()
+            .setTestDeviceIds(listOf("2AB9450CDEBBD309C545CF4327C4FB6C"))
+            .build()
+        MobileAds.setRequestConfiguration(configuration)
+        
+        // Initialize AdMob
         MobileAds.initialize(this) {
             // Then setup ads after initialization
             setupAds()
@@ -147,6 +161,10 @@ class MainActivity : AppCompatActivity() {
             val intent = Intent(this, GameActivity::class.java)
             intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
             startActivity(intent)
+        }
+
+        findViewById<MaterialButton>(R.id.leaderboardButton).setOnClickListener {
+            startActivity(Intent(this, LeaderboardActivity::class.java))
         }
 
         // Handle back press

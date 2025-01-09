@@ -67,4 +67,13 @@
     
     <color name="colorDivider">#CCCCCC</color>
     <color name="colorDividerDark">#666666</color>
+    
+    <!-- Leaderboard Colors -->
+    <color name="gold">#FFD700</color>
+    <color name="silver">#C0C0C0</color>
+    <color name="bronze">#CD7F32</color>
+    <color name="score_color">#4CAF50</color>
+    <color name="card_background">#FFFFFF</color>
+    <color name="text_primary">#212121</color>
+    <color name="text_secondary">#757575</color>
 </resources>

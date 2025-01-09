@@ -56,4 +56,20 @@
     <string name="hint_icon_description">İpucu ikonu</string>
     <string name="number_up_button">Sayıyı artır</string>
     <string name="number_down_button">Sayıyı azalt</string>
+
+    <!-- Google Play Games Services -->
+    <string name="games_oauth_client_id" translatable="false">140671902567-i5jdqtncsdu1261n2bkpemh2kf04blt6.apps.googleusercontent.com</string>
+    <string name="games_app_id" translatable="false">140671902567</string>
+
+    <!-- Leaderboard -->
+    <string name="leaderboard_title">Sıralama</string>
+    <string name="high_score">En Yüksek Skor</string>
+    <string name="total_games">Toplam Oyun</string>
+    <string name="top_players">En İyi Oyuncular</string>
+    <string name="no_leaderboard_data">Henüz sıralama verisi yok</string>
+    <string name="location_permission_required">Sıralamayı görmek için konum izni gerekli</string>
+    <string name="grant_permission">İzin Ver</string>
+    <string name="error_loading_leaderboard">Sıralama yüklenirken bir hata oluştu</string>
+    <string name="retry">Tekrar Dene</string>
+
 </resources>
