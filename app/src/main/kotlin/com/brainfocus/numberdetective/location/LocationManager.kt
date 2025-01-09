@@ -18,15 +18,15 @@ import kotlinx.coroutines.tasks.await
 import java.util.Locale
 import kotlin.coroutines.resume
 
-class LocationManager(private val context: Context) {
+class LocationManager {
     companion object {
         private const val TAG = "LocationManager"
         private const val MIN_TIME_MS = 1000L
         private const val MIN_DISTANCE_M = 10f
     }
 
-    suspend fun getCurrentLocation(): GameLocation? {
-        if (!hasLocationPermission()) {
+    suspend fun getCurrentLocation(context: Context): GameLocation? {
+        if (!hasLocationPermission(context)) {
             Log.d(TAG, "Location permission not granted")
             return null
         }
@@ -34,57 +34,49 @@ class LocationManager(private val context: Context) {
         return try {
             val locationClient = LocationServices.getFusedLocationProviderClient(context)
             val location = locationClient.lastLocation.await()
-            location?.let { getAddressFromLocation(it) } ?: GameLocation()
+            location?.let { getAddressFromLocation(context, it) } ?: GameLocation()
         } catch (e: Exception) {
             Log.e(TAG, "Error getting location: ${e.message}")
             GameLocation()
         }
     }
 
-    private fun hasLocationPermission(): Boolean {
+    private fun hasLocationPermission(context: Context): Boolean {
         return ContextCompat.checkSelfPermission(
             context,
             Manifest.permission.ACCESS_FINE_LOCATION
         ) == PackageManager.PERMISSION_GRANTED
     }
 
-    private suspend fun getAddressFromLocation(location: Location): GameLocation = suspendCancellableCoroutine { continuation ->
+    private suspend fun getAddressFromLocation(context: Context, location: Location): GameLocation = suspendCancellableCoroutine { continuation ->
         try {
-            val geocoder = Geocoder(context, Locale("tr"))
+            val geocoder = Geocoder(context, Locale.getDefault())
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
                 geocoder.getFromLocation(location.latitude, location.longitude, 1) { addresses ->
-                    if (addresses.isNotEmpty()) {
-                        val address = addresses[0]
-                        continuation.resume(
-                            GameLocation(
-                                district = address.subLocality,
-                                city = address.adminArea,
-                                country = "Türkiye"
-                            )
-                        )
-                    } else {
-                        continuation.resume(GameLocation())
-                    }
+                    val address = addresses.firstOrNull()
+                    continuation.resume(createGameLocation(address))
                 }
             } else {
                 @Suppress("DEPRECATION")
                 val addresses = geocoder.getFromLocation(location.latitude, location.longitude, 1)
-                if (addresses != null && addresses.isNotEmpty()) {
-                    val address = addresses[0]
-                    continuation.resume(
-                        GameLocation(
-                            district = address.subLocality,
-                            city = address.adminArea,
-                            country = "Türkiye"
-                        )
-                    )
-                } else {
-                    continuation.resume(GameLocation())
-                }
+                val address = addresses?.firstOrNull()
+                continuation.resume(createGameLocation(address))
             }
         } catch (e: Exception) {
             Log.e(TAG, "Error getting address: ${e.message}")
             continuation.resume(GameLocation())
+        }
+    }
+
+    private fun createGameLocation(address: Address?): GameLocation {
+        return if (address != null) {
+            GameLocation(
+                district = address.subLocality ?: address.subAdminArea,
+                city = address.locality ?: address.adminArea,
+                country = address.countryName ?: "Türkiye"
+            )
+        } else {
+            GameLocation()
         }
     }
 }

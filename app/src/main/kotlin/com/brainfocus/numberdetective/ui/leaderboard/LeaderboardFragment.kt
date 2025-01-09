@@ -4,24 +4,22 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.activity.addCallback
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
+import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.brainfocus.numberdetective.R
 import com.brainfocus.numberdetective.databinding.FragmentLeaderboardBinding
-import com.brainfocus.numberdetective.database.LeaderboardDatabase
-import com.brainfocus.numberdetective.location.LocationManager
-import com.brainfocus.numberdetective.model.GameLocation
-import com.brainfocus.numberdetective.model.PlayerProfile
-import kotlinx.coroutines.flow.collectLatest
+import com.brainfocus.numberdetective.viewmodel.LeaderboardViewModel
 import kotlinx.coroutines.launch
 
 class LeaderboardFragment : Fragment() {
+    private val viewModel: LeaderboardViewModel by viewModels()
     private var _binding: FragmentLeaderboardBinding? = null
     private val binding get() = _binding!!
-
     private lateinit var leaderboardAdapter: LeaderboardAdapter
-    private lateinit var leaderboardDatabase: LeaderboardDatabase
-    private lateinit var locationManager: LocationManager
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -34,46 +32,55 @@ class LeaderboardFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        
+        requireActivity().onBackPressedDispatcher.addCallback(viewLifecycleOwner) {
+            findNavController().navigateUp()
+        }
 
-        setupDependencies()
+        setupViews()
         setupRecyclerView()
-        loadLeaderboard()
+        observeViewModel()
+        
+        viewModel.loadLeaderboard(requireContext())
     }
 
-    private fun setupDependencies() {
-        leaderboardDatabase = LeaderboardDatabase()
-        locationManager = LocationManager(requireContext())
+    private fun setupViews() {
         leaderboardAdapter = LeaderboardAdapter()
     }
 
     private fun setupRecyclerView() {
-        binding.recyclerView.apply {
-            layoutManager = LinearLayoutManager(context)
+        binding.leaderboardRecyclerView.apply {
+            layoutManager = LinearLayoutManager(requireContext())
             adapter = leaderboardAdapter
+            setHasFixedSize(true)
         }
     }
 
-    private fun loadLeaderboard() {
+    private fun observeViewModel() {
         viewLifecycleOwner.lifecycleScope.launch {
-            val location = locationManager.getCurrentLocation()
-            leaderboardDatabase.getLeaderboard(location ?: GameLocation())
-                .collectLatest { players ->
-                    updateLeaderboardUI(players, location)
+            viewModel.leaderboardState.collect { state ->
+                when (state) {
+                    is LeaderboardViewModel.LeaderboardState.Loading -> {
+                        binding.progressBar.visibility = View.VISIBLE
+                        binding.leaderboardRecyclerView.visibility = View.GONE
+                        binding.errorCard.visibility = View.GONE
+                    }
+                    is LeaderboardViewModel.LeaderboardState.Success -> {
+                        binding.progressBar.visibility = View.GONE
+                        binding.leaderboardRecyclerView.visibility = View.VISIBLE
+                        binding.errorCard.visibility = View.GONE
+                        binding.titleText.text = getString(R.string.district_leaderboard, state.location.district)
+                        leaderboardAdapter.submitList(state.players)
+                    }
+                    is LeaderboardViewModel.LeaderboardState.Error -> {
+                        binding.progressBar.visibility = View.GONE
+                        binding.leaderboardRecyclerView.visibility = View.GONE
+                        binding.errorCard.visibility = View.VISIBLE
+                        binding.errorText.text = state.message
+                    }
                 }
+            }
         }
-    }
-
-    private fun updateLeaderboardUI(players: List<PlayerProfile>, location: GameLocation?) {
-        // Update header text based on location
-        binding.headerText.text = when {
-            !location?.district.isNullOrEmpty() -> "İlçe Sıralaması: ${location?.district}"
-            !location?.city.isNullOrEmpty() -> "Şehir Sıralaması: ${location?.city}"
-            !location?.country.isNullOrEmpty() -> "Ülke Sıralaması: ${location?.country}"
-            else -> "Global Sıralama"
-        }
-
-        // Update player list
-        leaderboardAdapter.submitList(players)
     }
 
     override fun onDestroyView() {

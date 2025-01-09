@@ -9,8 +9,11 @@ import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.brainfocus.numberdetective.R
 import com.brainfocus.numberdetective.model.PlayerProfile
+import com.google.firebase.auth.FirebaseAuth
 
-class LeaderboardAdapter : ListAdapter<PlayerProfile, LeaderboardAdapter.ViewHolder>(DiffCallback()) {
+class LeaderboardAdapter : ListAdapter<PlayerProfile, LeaderboardAdapter.ViewHolder>(DIFF_CALLBACK) {
+
+    private val currentUserId = FirebaseAuth.getInstance().currentUser?.uid ?: ""
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
         val view = LayoutInflater.from(parent.context)
@@ -21,29 +24,38 @@ class LeaderboardAdapter : ListAdapter<PlayerProfile, LeaderboardAdapter.ViewHol
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         val player = getItem(position)
         holder.bind(player, position + 1)
+        
+        if (player.userId == currentUserId) {
+            holder.itemView.setBackgroundResource(R.drawable.current_user_background)
+            holder.currentUserIndicator.visibility = View.VISIBLE
+        } else {
+            holder.itemView.background = null
+            holder.currentUserIndicator.visibility = View.GONE
+        }
     }
 
-    class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
+    inner class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         private val rankText: TextView = itemView.findViewById(R.id.rankText)
-        private val playerNameText: TextView = itemView.findViewById(R.id.playerNameText)
+        private val nameText: TextView = itemView.findViewById(R.id.nameText)
         private val scoreText: TextView = itemView.findViewById(R.id.scoreText)
-        private val locationText: TextView = itemView.findViewById(R.id.locationText)
+        val currentUserIndicator: View = itemView.findViewById(R.id.currentUserIndicator)
 
         fun bind(player: PlayerProfile, rank: Int) {
             rankText.text = rank.toString()
-            playerNameText.text = player.name
-            scoreText.text = player.score.toString()
-            locationText.text = player.location?.district ?: player.location?.city ?: player.location?.country ?: "Global"
+            nameText.text = player.displayName
+            scoreText.text = itemView.context.getString(R.string.score_format, player.score)
         }
     }
 
-    private class DiffCallback : DiffUtil.ItemCallback<PlayerProfile>() {
-        override fun areItemsTheSame(oldItem: PlayerProfile, newItem: PlayerProfile): Boolean {
-            return oldItem.id == newItem.id
-        }
+    companion object {
+        private val DIFF_CALLBACK = object : DiffUtil.ItemCallback<PlayerProfile>() {
+            override fun areItemsTheSame(oldItem: PlayerProfile, newItem: PlayerProfile): Boolean {
+                return oldItem.userId == newItem.userId
+            }
 
-        override fun areContentsTheSame(oldItem: PlayerProfile, newItem: PlayerProfile): Boolean {
-            return oldItem == newItem
+            override fun areContentsTheSame(oldItem: PlayerProfile, newItem: PlayerProfile): Boolean {
+                return oldItem == newItem
+            }
         }
     }
 }

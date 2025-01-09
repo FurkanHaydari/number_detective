@@ -1,15 +1,24 @@
 package com.brainfocus.numberdetective
 
+import android.content.Context
 import android.content.Intent
+import android.content.pm.PackageManager
+import android.location.Geocoder
+import android.location.Location
+import android.location.LocationManager
 import android.media.MediaPlayer
 import android.os.Build
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
 import android.util.Log
 import android.view.View
 import android.view.WindowInsets
 import android.view.WindowInsetsController
 import android.widget.Button
+import android.widget.FrameLayout
 import android.widget.TextView
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import com.brainfocus.numberdetective.auth.GameSignInManager
@@ -17,16 +26,27 @@ import com.brainfocus.numberdetective.database.LeaderboardDatabase
 import com.brainfocus.numberdetective.model.GameLocation
 import com.brainfocus.numberdetective.ui.leaderboard.LeaderboardFragment
 import com.google.android.gms.auth.api.signin.GoogleSignIn
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.database.DataSnapshot
+import com.google.firebase.database.DatabaseError
+import com.google.firebase.database.DatabaseReference
+import com.google.firebase.database.FirebaseDatabase
+import com.google.firebase.database.ServerValue
+import com.google.firebase.database.ValueEventListener
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
+import org.json.JSONArray
+import org.json.JSONObject
+import java.util.*
 
 class GameResultActivity : AppCompatActivity() {
     private lateinit var leaderboardDatabase: LeaderboardDatabase
     private val mainScope = CoroutineScope(Dispatchers.Main + Job())
     private var mediaPlayer: MediaPlayer? = null
+    private lateinit var database: DatabaseReference
     
     companion object {
         private const val TAG = "GameResultActivity"
@@ -37,6 +57,7 @@ class GameResultActivity : AppCompatActivity() {
         const val EXTRA_TIME = "time"
         const val EXTRA_CORRECT_ANSWER = "correctAnswer"
         const val EXTRA_GUESSES = "guesses"
+        private const val MAX_RETRY_ATTEMPTS = 3
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -45,7 +66,10 @@ class GameResultActivity : AppCompatActivity() {
 
         setupFullscreen()
         leaderboardDatabase = LeaderboardDatabase()
-
+        
+        // Initialize Firebase reference
+        database = FirebaseDatabase.getInstance().reference
+        
         val score = intent.getIntExtra(EXTRA_SCORE, 0)
         val isHighScore = intent.getBooleanExtra(EXTRA_IS_HIGH_SCORE, false)
         val isWin = intent.getBooleanExtra(EXTRA_IS_WIN, false)
@@ -58,6 +82,21 @@ class GameResultActivity : AppCompatActivity() {
         playSound(isWin)
         updateLeaderboardScore()
         initializeAds()
+        
+        // Save score with Firebase auth check
+        FirebaseAuth.getInstance().currentUser?.let { user ->
+            saveScore(score, attempts, time)
+        } ?: run {
+            Log.w(TAG, "User not authenticated, attempting anonymous sign-in")
+            FirebaseAuth.getInstance().signInAnonymously()
+                .addOnSuccessListener {
+                    saveScore(score, attempts, time)
+                }
+                .addOnFailureListener { e ->
+                    Log.e(TAG, "Failed to sign in anonymously: ${e.message}")
+                    saveScoreLocally(score, attempts, time)
+                }
+        }
     }
 
     private fun setupViews(score: Int, isWin: Boolean, attempts: Int, time: Long, correctAnswer: String, guesses: ArrayList<String>) {
@@ -157,15 +196,13 @@ class GameResultActivity : AppCompatActivity() {
         try {
             // Show leaderboard fragment
             val fragment = LeaderboardFragment()
+            val fragmentContainer = findViewById<FrameLayout>(R.id.fragmentContainer)
+            fragmentContainer.visibility = View.VISIBLE
             supportFragmentManager.beginTransaction()
                 .replace(R.id.fragmentContainer, fragment)
                 .addToBackStack(null)
                 .commitAllowingStateLoss()  // Use commitAllowingStateLoss instead of commit
                 
-            // Show fragment container and hide other views
-            val fragmentContainer = findViewById<View>(R.id.fragmentContainer)
-            fragmentContainer.visibility = View.VISIBLE
-
             // Hide other views
             findViewById<View>(R.id.statsCard)?.visibility = View.GONE
             findViewById<View>(R.id.buttonContainer)?.visibility = View.GONE
@@ -248,10 +285,170 @@ class GameResultActivity : AppCompatActivity() {
         }
     }
 
+    private fun saveScore(score: Int, attempts: Int, timeSpent: Long) {
+        val user = FirebaseAuth.getInstance().currentUser
+        if (user != null) {
+            saveScoreToDatabase(score, attempts, timeSpent, user.uid)
+        } else {
+            Log.e(TAG, "No user found, saving score locally")
+            saveScoreLocally(score, attempts, timeSpent)
+        }
+    }
+
+    private fun saveScoreToDatabase(score: Int, attempts: Int, timeSpent: Long, userId: String?, retryCount: Int = MAX_RETRY_ATTEMPTS) {
+        if (userId == null) {
+            Log.e(TAG, "Cannot save score: no user ID")
+            saveScoreLocally(score, attempts, timeSpent)
+            return
+        }
+
+        val location: Map<String, Any?> = mapOf(
+            "country" to "Türkiye",
+            "city" to (getLastKnownLocation()?.let { getCityFromLocation(it) }),
+            "district" to (getLastKnownLocation()?.let { getDistrictFromLocation(it) })
+        )
+
+        val deviceInfo: Map<String, Any?> = mapOf(
+            "model" to Build.MODEL,
+            "manufacturer" to Build.MANUFACTURER,
+            "androidVersion" to Build.VERSION.SDK_INT.toString()
+        )
+
+        val scoreData: Map<String, Any?> = mapOf(
+            "score" to score,
+            "timestamp" to ServerValue.TIMESTAMP,
+            "attempts" to attempts,
+            "timeSpent" to timeSpent,
+            "location" to location,
+            "deviceInfo" to deviceInfo
+        )
+
+        val scoreRef = database.child("leaderboard").child(userId)
+        scoreRef.setValue(scoreData)
+            .addOnSuccessListener {
+                Log.d(TAG, "Score saved successfully")
+                // Clear any locally saved scores that were pending upload
+                clearLocalScore()
+                Toast.makeText(this, "Score saved successfully!", Toast.LENGTH_SHORT).show()
+            }
+            .addOnFailureListener { e ->
+                Log.e(TAG, "Error saving score: ${e.message}")
+                if (retryCount > 0) {
+                    Log.d(TAG, "Retrying save... ($retryCount attempts remaining)")
+                    // Retry with exponential backoff
+                    Handler(Looper.getMainLooper()).postDelayed({
+                        saveScoreToDatabase(score, attempts, timeSpent, userId, retryCount - 1)
+                    }, (MAX_RETRY_ATTEMPTS - retryCount + 1) * 1000L)
+                } else {
+                    // Store score locally if all retries failed
+                    saveScoreLocally(score, attempts, timeSpent)
+                    Toast.makeText(this, "Score saved locally for later sync", Toast.LENGTH_SHORT).show()
+                }
+            }
+    }
+
+    private fun saveScoreLocally(score: Int, attempts: Int, timeSpent: Long) {
+        try {
+            val prefs = getSharedPreferences("pending_scores", Context.MODE_PRIVATE)
+            val pendingScores = prefs.getString("scores", "[]")
+            val scoresArray = JSONArray(pendingScores)
+            
+            val location = JSONObject().apply {
+                put("country", "Türkiye")
+                getLastKnownLocation()?.let { loc ->
+                    getCityFromLocation(loc)?.let { city ->
+                        put("city", city)
+                    }
+                    getDistrictFromLocation(loc)?.let { district ->
+                        put("district", district)
+                    }
+                }
+            }
+            
+            val deviceInfo = JSONObject().apply {
+                put("model", Build.MODEL)
+                put("manufacturer", Build.MANUFACTURER)
+                put("androidVersion", Build.VERSION.SDK_INT.toString())
+            }
+            
+            val scoreObject = JSONObject().apply {
+                put("score", score)
+                put("attempts", attempts)
+                put("timeSpent", timeSpent)
+                put("timestamp", System.currentTimeMillis())
+                put("location", location)
+                put("deviceInfo", deviceInfo)
+            }
+            
+            scoresArray.put(scoreObject)
+            prefs.edit().putString("scores", scoresArray.toString()).apply()
+            Log.d(TAG, "Score saved locally for later sync")
+        } catch (e: Exception) {
+            Log.e(TAG, "Error saving score locally: ${e.message}")
+        }
+    }
+
+    private fun getLastKnownLocation(): Location? {
+        try {
+            val locationManager = getSystemService(Context.LOCATION_SERVICE) as LocationManager
+            if (checkSelfPermission(android.Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+                return locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER)
+                    ?: locationManager.getLastKnownLocation(LocationManager.NETWORK_PROVIDER)
+            }
+        } catch (e: Exception) {
+            Log.e("Location", "Error getting location: ${e.message}")
+        }
+        return null
+    }
+
+    private fun getCityFromLocation(location: Location): String? {
+        try {
+            val geocoder = Geocoder(this, Locale.getDefault())
+            val addresses = geocoder.getFromLocation(location.latitude, location.longitude, 1)
+            return addresses?.firstOrNull()?.adminArea
+        } catch (e: Exception) {
+            Log.e("Location", "Error getting city: ${e.message}")
+        }
+        return null
+    }
+
+    private fun getDistrictFromLocation(location: Location): String? {
+        try {
+            val geocoder = Geocoder(this, Locale.getDefault())
+            val addresses = geocoder.getFromLocation(location.latitude, location.longitude, 1)
+            return addresses?.firstOrNull()?.subAdminArea
+        } catch (e: Exception) {
+            Log.e("Location", "Error getting district: ${e.message}")
+        }
+        return null
+    }
+
+    private fun clearLocalScore() {
+        try {
+            getSharedPreferences("pending_scores", Context.MODE_PRIVATE)
+                .edit()
+                .remove("scores")
+                .apply()
+        } catch (e: Exception) {
+            Log.e(TAG, "Error clearing local scores: ${e.message}")
+        }
+    }
+
+    private fun calculateScore(score: Int, attempts: Int, timeSpent: Long): Int {
+        // Score calculation based on attempts and time spent
+        val baseScore = 1000
+        val attemptPenalty = attempts * 50
+        val timePenalty = ((timeSpent / 1000).toInt() * 10)  // Convert Long to Int after division
+        return maxOf(0, baseScore - attemptPenalty - timePenalty)
+    }
+
     override fun onBackPressed() {
         if (supportFragmentManager.backStackEntryCount > 0) {
-            findViewById<View>(R.id.fragmentContainer).visibility = View.GONE
             supportFragmentManager.popBackStack()
+            val fragmentContainer = findViewById<FrameLayout>(R.id.fragmentContainer)
+            fragmentContainer.visibility = View.GONE
+            findViewById<View>(R.id.statsCard)?.visibility = View.VISIBLE
+            findViewById<View>(R.id.buttonContainer)?.visibility = View.VISIBLE
         } else {
             super.onBackPressed()
         }

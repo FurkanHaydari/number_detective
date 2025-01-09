@@ -10,16 +10,16 @@ data class Location(
 
 @IgnoreExtraProperties
 data class PlayerProfile(
-    val id: String = "",
-    val name: String = "",
+    val userId: String = "",
+    val displayName: String = "",
     val score: Int = 0,
     val location: GameLocation? = null,
     val timestamp: Long = System.currentTimeMillis()
 ) {
     fun toMap(): Map<String, Any> {
         return mapOf(
-            "id" to id,
-            "name" to name,
+            "userId" to userId,
+            "displayName" to displayName,
             "score" to score,
             "timestamp" to timestamp,
             "location" to (location?.let {
@@ -36,8 +36,8 @@ data class PlayerProfile(
         fun fromMap(map: Map<String, Any>): PlayerProfile {
             val locationMap = map["location"] as? Map<String, Any>
             return PlayerProfile(
-                id = map["id"] as? String ?: "",
-                name = map["name"] as? String ?: "",
+                userId = map["userId"] as? String ?: "",
+                displayName = map["displayName"] as? String ?: "",
                 score = (map["score"] as? Long)?.toInt() ?: 0,
                 timestamp = map["timestamp"] as? Long ?: 0,
                 location = locationMap?.let {

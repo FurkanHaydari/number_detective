@@ -1,112 +1,73 @@
 <?xml version="1.0" encoding="utf-8"?>
 <com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_marginHorizontal="4dp"
+    android:layout_marginHorizontal="8dp"
     android:layout_marginVertical="4dp"
-    app:cardBackgroundColor="#80FFFFFF"
-    app:cardCornerRadius="16dp"
-    app:cardElevation="0dp"
-    android:animateLayoutChanges="true">
+    app:cardCornerRadius="12dp"
+    app:cardElevation="2dp">
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:background="?attr/selectableItemBackground"
         android:padding="12dp">
 
         <TextView
             android:id="@+id/rankText"
             android:layout_width="40dp"
-            android:layout_height="wrap_content"
+            android:layout_height="40dp"
             android:background="@drawable/circle_background"
             android:gravity="center"
-            android:textColor="@color/white"
-            android:textSize="18sp"
-            android:fontFamily="@font/poppins_bold"
-            android:shadowColor="@color/textShadow"
-            android:shadowDx="0"
-            android:shadowDy="1"
-            android:shadowRadius="2"
+            android:textAppearance="@style/TextAppearance.MaterialComponents.Body1"
+            android:textColor="@android:color/white"
             android:textStyle="bold"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
+            app:layout_constraintTop_toTopOf="parent"
+            tools:text="1" />
 
         <TextView
-            android:id="@+id/playerNameText"
+            android:id="@+id/nameText"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_marginStart="12dp"
-            android:layout_marginEnd="12dp"
-            android:textColor="@color/white"
-            android:textSize="16sp"
-            android:fontFamily="@font/poppins_medium"
-            android:shadowColor="@color/textShadow"
-            android:shadowDx="0"
-            android:shadowDy="1"
-            android:shadowRadius="2"
-            app:layout_constraintBottom_toTopOf="@+id/locationText"
-            app:layout_constraintEnd_toStartOf="@+id/scoreText"
-            app:layout_constraintStart_toEndOf="@+id/rankText"
-            app:layout_constraintTop_toTopOf="parent" />
-
-        <LinearLayout
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="12dp"
-            android:layout_marginEnd="12dp"
+            android:layout_marginStart="16dp"
+            android:layout_marginEnd="16dp"
+            android:ellipsize="end"
+            android:maxLines="1"
+            android:textAppearance="@style/TextAppearance.MaterialComponents.Body1"
+            android:textColor="@color/colorText"
+            android:textStyle="bold"
             app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toStartOf="@+id/scoreText"
-            app:layout_constraintStart_toEndOf="@+id/rankText"
-            app:layout_constraintTop_toBottomOf="@+id/playerNameText">
-
-            <ImageView
-                android:layout_width="14dp"
-                android:layout_height="14dp"
-                android:src="@drawable/ic_location"
-                app:tint="@color/white"/>
-
-            <TextView
-                android:id="@+id/locationText"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="4dp"
-                android:textColor="@color/white"
-                android:alpha="0.9"
-                android:textSize="14sp"
-                android:fontFamily="@font/poppins_regular" />
-
-        </LinearLayout>
+            app:layout_constraintEnd_toStartOf="@id/scoreText"
+            app:layout_constraintStart_toEndOf="@id/rankText"
+            app:layout_constraintTop_toTopOf="parent"
+            tools:text="Anonim Oyuncu" />
 
         <TextView
             android:id="@+id/scoreText"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:textColor="@color/white"
-            android:textSize="18sp"
-            android:fontFamily="@font/poppins_bold"
-            android:shadowColor="@color/textShadow"
-            android:shadowDx="0"
-            android:shadowDy="1"
-            android:shadowRadius="2"
+            android:textAppearance="@style/TextAppearance.MaterialComponents.Body2"
+            android:textColor="@color/colorPrimary"
             android:textStyle="bold"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
+            app:layout_constraintTop_toTopOf="parent"
+            tools:text="1000 Puan" />
 
-        <TextView
-            android:id="@+id/gamesPlayedText"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="2dp"
-            android:textColor="@color/white"
-            android:alpha="0.9"
-            android:textSize="12sp"
-            android:fontFamily="@font/poppins_regular"
+        <View
+            android:id="@+id/currentUserIndicator"
+            android:layout_width="4dp"
+            android:layout_height="0dp"
+            android:background="@color/colorPrimary"
+            android:visibility="gone"
             app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/scoreText" />
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            tools:visibility="visible" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 

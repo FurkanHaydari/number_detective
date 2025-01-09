@@ -1,47 +1,57 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <!-- Ana Renkler -->
-    <color name="colorPrimary">#007AFF</color>  <!-- iOS mavi -->
-    <color name="colorPrimaryDark">#0056B3</color>
-    <color name="colorAccent">#FF2D55</color>   <!-- iOS pembe -->
-    
-    <!-- Temel Renkler -->
-    <color name="black">#000000</color>
-    <color name="white">#FFFFFF</color>
+    <color name="purple_200">#FFBB86FC</color>
+    <color name="purple_500">#FF6200EE</color>
+    <color name="purple_700">#FF3700B3</color>
+    <color name="teal_200">#FF03DAC5</color>
+    <color name="teal_700">#FF018786</color>
+    <color name="black">#FF000000</color>
+    <color name="white">#FFFFFFFF</color>
+    <color name="colorPrimary">@color/purple_500</color>
+    <color name="colorPrimaryDark">@color/purple_700</color>
+    <color name="colorAccent">@color/teal_200</color>
     
     <!-- Arkaplan Renkleri -->
-    <color name="colorBackground">#F2F2F7</color>  <!-- iOS gri arkaplan -->
+    <color name="colorBackground">#F5F5F5</color>  
     <color name="colorSurface">#FFFFFF</color>
     <color name="colorCardBackground">#FFFFFF</color>
-    <color name="colorCardStroke">#E5E5EA</color>  <!-- iOS border rengi -->
+    <color name="colorCardStroke">#E5E5EA</color>  
+    <color name="current_user_background">#1A6200EE</color>
     
     <!-- Metin Renkleri -->
-    <color name="colorText">#000000</color>
-    <color name="colorTextSecondary">#8E8E93</color>  <!-- iOS ikincil metin -->
+    <color name="colorText">#212121</color>
+    <color name="colorTextSecondary">#757575</color>  
+    <color name="titleTextColor">#FFFFFF</color>     
+    <color name="subtitleTextColor">#E6FFFFFF</color> 
+    <color name="quoteTextColor">#CCFFFFFF</color>    
+    <color name="bodyTextColor">#F2FFFFFF</color>     
     
     <!-- Oyun Renkleri -->
-    <color name="colorCorrect">#34C759</color>      <!-- iOS yeşil -->
-    <color name="colorMisplaced">#FF9500</color>    <!-- iOS turuncu -->
-    <color name="colorIncorrect">#FF3B30</color>    <!-- iOS kırmızı -->
+    <color name="colorCorrect">#34C759</color>     
+    <color name="colorMisplaced">#FF9500</color>    
+    <color name="colorIncorrect">#FF3B30</color>    
     
     <!-- Buton Renkleri -->
     <color name="primaryButton">#007AFF</color>
     <color name="primaryButtonRipple">#0056B3</color>
     
     <!-- Gradient ve Border -->
-    <color name="gradientStart">#FF2D55</color>    <!-- Daha canlı pembe -->
-    <color name="gradientMiddle">#7B68EE</color>   <!-- Daha parlak mor -->
-    <color name="gradientEnd">#007AFF</color>      <!-- iOS mavi -->
+    <color name="gradientStart">#FF2D55</color>    
+    <color name="gradientMiddle">#7B68EE</color>   
+    <color name="gradientEnd">#007AFF</color>      
     <color name="colorBorder">#E5E5EA</color>
     
     <!-- Neon Efektler -->
     <color name="neonBlue">#007AFF</color>
-    <color name="neonCyan">#32ADE6</color>          <!-- iOS açık mavi -->
+    <color name="neonCyan">#32ADE6</color>         
+    <color name="warmOrange">#FF9500</color>  
+    <color name="warmOrangeNew">#FF5722</color>  
     
     <!-- Gradient Renkler -->
-    <color name="gradientStartNew">#4568DC</color>    <!-- Daha koyu mavi -->
-    <color name="gradientMiddleNew">#B06AB3</color>   <!-- Orta mor -->
-    <color name="gradientEndNew">#D1437A</color>      <!-- Koyu pembe -->
+    <color name="gradientStartNew">#4568DC</color>    
+    <color name="gradientMiddleNew">#B06AB3</color>   
+    <color name="gradientEndNew">#D1437A</color>      
     
     <!-- Container Renkler -->
     <color name="containerBackground">#26FFFFFF</color>
@@ -53,27 +63,11 @@
     <color name="textOverlayDark">#99000000</color>
     <color name="buttonShadow">#26000000</color>
     
-    <!-- Turuncu ton -->
-    <color name="warmOrange">#FF9500</color>  <!-- iOS style turuncu -->
-    <color name="warmOrangeNew">#FF5722</color>  <!-- Material Design deep orange -->
-    
-    <!-- Metin Renkleri (Yeni) -->
-    <color name="titleTextColor">#FFFFFF</color>      <!-- Başlık beyaz -->
-    <color name="subtitleTextColor">#E6FFFFFF</color> <!-- Alt başlık %90 beyaz -->
-    <color name="quoteTextColor">#CCFFFFFF</color>    <!-- Alıntı %80 beyaz -->
-    <color name="bodyTextColor">#F2FFFFFF</color>     <!-- Gövde %95 beyaz -->
-    
-    <color name="numberPickerTextColor">@android:color/white</color>
-    
-    <color name="colorDivider">#CCCCCC</color>
-    <color name="colorDividerDark">#666666</color>
-    
     <!-- Leaderboard Colors -->
     <color name="gold">#FFD700</color>
     <color name="silver">#C0C0C0</color>
     <color name="bronze">#CD7F32</color>
-    <color name="score_color">#4CAF50</color>
-    <color name="card_background">#FFFFFF</color>
-    <color name="text_primary">#212121</color>
-    <color name="text_secondary">#757575</color>
+    <color name="colorDivider">#BDBDBD</color>
+    <color name="colorDividerDark">#666666</color>
+    <color name="numberPickerTextColor">@android:color/white</color>
 </resources>

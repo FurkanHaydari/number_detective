@@ -60,11 +60,30 @@
         <item>"Doğru soruyu sormak, bir problemin yarısını çözmektir." - Charles Kettering</item>
         <item>"Beyin, en büyük laboratuvardır. Onu keşfetmekten korkmayın." - Carl Sagan</item>
         <item>"Hayal gücü, bilginin çok ötesindedir." - Albert Einstein</item>
+        <item>"İnovasyon, hayal gücüyle başlar." - Walt Disney</item>
+        <item>"Öğrenmenin sonu yoktur, hayat boyu devam eder." - Mahatma Gandhi</item>
+        <item>"Geçmişteki tüm büyük işler, bir zamanlar imkansız olarak kabul edilirdi." - Thomas Carlyle</item>
+        <item>"Bilim, sonsuz bir merakla başlar." - Richard Feynman</item>
+        <item>"Hayatın anlamı, anlam yaratmaktır." - Viktor Frankl</item>
+        <item>"Bir insanın büyüklüğü, düşüncelerinin büyüklüğüyle ölçülür." - Ralph Waldo Emerson</item>
+        <item>"Her yeni fikir, başlangıçta delilik olarak görülür." - George Bernard Shaw</item>
+        <item>"Hayatta önemli olan, hep ileriye bakmaktır." - Walt Whitman</item>
+        <item>"Bilgi güçtür, ancak bilgelik her şeydir." - Francis Bacon</item>
+        <item>"Bir sorunu çözmenin en iyi yolu, onu anlamaktır." - Albert Einstein</item>
+        <item>"Hayatta başarı, korkularımızla yüzleşmekten geçer." - Oprah Winfrey</item>
+        <item>"Dünyayı değiştiren fikirler, cesur adımlarla başlar." - Steve Jobs</item>
+        <item>"Başarı, cesaretin başka bir adıdır." - Winston Churchill</item>
+        <item>"Eğer hayal edebiliyorsan, yapabilirsin." - Walt Disney</item>
+        <item>"Hiçbir şey öğrenmiyorsanız, hiçbir şey bilmiyorsunuzdur." - Socrates</item>
+        <item>"Kendini tanımak, bilgeliktir." - Lao Tzu</item>
+        <item>"Zorluklar, yaratıcılığın anasıdır." - Plato</item>
     </string-array>
+
 
     <!-- Reklam ID'leri -->
     <string name="banner_ad_unit_id">ca-app-pub-3940256099942544/6300978111</string>
     <string name="interstitial_ad_unit_id">ca-app-pub-3940256099942544/1033173712</string>
+    <string name="test_banner_ad_unit_id">ca-app-pub-3940256099942544/6300978111</string>
 
     <!-- AdMob -->
     <string name="ad_unit_id">ca-app-pub-3940256099942544/6300978111</string>
@@ -85,10 +104,17 @@
     <string name="top_players">En İyi Oyuncular</string>
     <string name="nearby_players">Yakındaki Oyuncular</string>
     <string name="global_players">Tüm Oyuncular</string>
-    <string name="no_leaderboard_data">Henüz sıralama verisi yok</string>
-    <string name="location_permission_required">Sıralamayı görmek için konum izni gerekli</string>
-    <string name="grant_permission">İzin Ver</string>
     <string name="error_loading_leaderboard">Sıralama yüklenirken bir hata oluştu</string>
     <string name="retry">Tekrar Dene</string>
     <string name="nearby_top_players">Çevrendeki En İyi Oyuncular</string>
+    <string name="district_leaderboard">%s Bölgesi Sıralaması</string>
+    <string name="no_location_title">Bölge Sıralaması</string>
+    <string name="location_required_message">Bölge sıralamasına katılmak için konum bilgilerinizi paylaşabilirsiniz</string>
+    <string name="error_loading_data">Veriler yüklenirken bir hata oluştu. Lütfen tekrar deneyin</string>
+    <string name="update_location">Konumu Güncelle</string>
+    <string name="location_permission_rationale">Bölge sıralamasını görebilmek için konum izni gerekiyor</string>
+    <string name="location_permission_denied">Konum izni olmadan bölge sıralaması görüntülenemez</string>
+    <string name="score_format">%d Puan</string>
+    <string name="location_error">Konum bilgisi alınamadı</string>
+    <string name="no_leaderboard_data">Bu bölgede henüz sıralama verisi yok</string>
 </resources>

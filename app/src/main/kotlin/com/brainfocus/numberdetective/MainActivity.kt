@@ -97,7 +97,7 @@ class MainActivity : AppCompatActivity() {
         descriptionText = findViewById(R.id.descriptionText)
         
         leaderboardDatabase = LeaderboardDatabase()
-        locationManager = LocationManager(this)
+        locationManager = LocationManager()
 
         setupGoogleSignIn()
         setupViews()

@@ -18,14 +18,12 @@ class LeaderboardDatabase {
         private const val USERS_REF = "users"
         private const val STATS_REF = "stats"
         private const val MAX_LEADERBOARD_ENTRIES = 100
+        private const val DATABASE_URL = "https://number-detective-686e2-default-rtdb.europe-west1.firebasedatabase.app"
     }
 
-    private val database: DatabaseReference by lazy {
-        Firebase.database.reference
-    }
+    private val database: DatabaseReference = Firebase.database(DATABASE_URL).reference
 
     init {
-        // Bağlantı durumunu izle
         database.root.child(".info/connected").addValueEventListener(object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
                 val connected = snapshot.getValue(Boolean::class.java) ?: false
@@ -33,26 +31,34 @@ class LeaderboardDatabase {
                     Log.d(TAG, "Connected to Firebase Database")
                 } else {
                     Log.w(TAG, "Disconnected from Firebase Database")
+                    reconnectToDatabase()
                 }
             }
 
             override fun onCancelled(error: DatabaseError) {
                 Log.e(TAG, "Firebase connection listener cancelled: ${error.message}")
+                reconnectToDatabase()
             }
         })
     }
 
+    private fun reconnectToDatabase() {
+        try {
+            Firebase.database(DATABASE_URL).setPersistenceEnabled(true)
+            Log.d(TAG, "Attempting to reconnect to Firebase Database")
+        } catch (e: Exception) {
+            Log.e(TAG, "Error reconnecting to database: ${e.message}")
+        }
+    }
+
     suspend fun updatePlayerScore(userId: String, score: Int, location: GameLocation) {
         try {
-            val userData = mapOf(
-                "score" to score,
-                "timestamp" to System.currentTimeMillis(),
-                "location" to mapOf(
-                    "district" to location.district,
-                    "city" to location.city,
-                    "country" to location.country
-                )
-            )
+            val userData = PlayerProfile(
+                userId = userId,
+                displayName = "Anonim Oyuncu",  // TODO: Gerçek kullanıcı adını al
+                score = score,
+                location = location
+            ).toMap()
 
             database.child(USERS_REF)
                 .child(userId)
@@ -104,6 +110,30 @@ class LeaderboardDatabase {
         }
     }
 
+    suspend fun getDistrictLeaderboard(district: String): List<PlayerProfile> {
+        return try {
+            val snapshot = database.child(USERS_REF)
+                .orderByChild("location/district")
+                .equalTo(district)
+                .limitToLast(MAX_LEADERBOARD_ENTRIES)
+                .get()
+                .await()
+
+            val profiles = mutableListOf<PlayerProfile>()
+            snapshot.children.forEach { child ->
+                val data = child.value as? Map<String, Any>
+                if (data != null) {
+                    profiles.add(PlayerProfile.fromMap(data))
+                }
+            }
+            
+            profiles.sortedByDescending { it.score }
+        } catch (e: Exception) {
+            Log.e(TAG, "Error getting district leaderboard: ${e.message}")
+            emptyList()
+        }
+    }
+
     fun getLeaderboard(location: GameLocation): Flow<List<PlayerProfile>> = callbackFlow {
         val query = database.child(USERS_REF)
             .orderByChild("score")
@@ -111,38 +141,19 @@ class LeaderboardDatabase {
 
         val listener = object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
-                val players = mutableListOf<PlayerProfile>()
-                for (child in snapshot.children.reversed()) {
-                    val data = child.value as? Map<String, Any> ?: continue
-                    val locationData = data["location"] as? Map<String, Any>
-                    val playerLocation = locationData?.let {
-                        GameLocation(
-                            district = it["district"] as? String,
-                            city = it["city"] as? String,
-                            country = it["country"] as? String ?: "Türkiye"
-                        )
+                val profiles = mutableListOf<PlayerProfile>()
+                snapshot.children.forEach { child ->
+                    val data = child.value as? Map<String, Any>
+                    if (data != null) {
+                        profiles.add(PlayerProfile.fromMap(data))
                     }
-
-                    if (location.district != null && playerLocation?.district != location.district) continue
-                    if (location.city != null && playerLocation?.city != location.city) continue
-                    if (playerLocation?.country != location.country) continue
-
-                    players.add(
-                        PlayerProfile(
-                            id = child.key ?: continue,
-                            name = data["name"] as? String ?: "Anonim",
-                            score = (data["score"] as? Long)?.toInt() ?: 0,
-                            location = playerLocation,
-                            timestamp = data["timestamp"] as? Long ?: 0
-                        )
-                    )
                 }
-                trySend(players)
+                trySend(profiles.sortedByDescending { it.score })
             }
 
             override fun onCancelled(error: DatabaseError) {
                 Log.e(TAG, "Error loading leaderboard: ${error.message}")
-                close(error.toException())
+                trySend(emptyList())
             }
         }
 
@@ -150,34 +161,17 @@ class LeaderboardDatabase {
         awaitClose { query.removeEventListener(listener) }
     }
 
-    fun getPlayerStats(userId: String): Flow<PlayerStats> = callbackFlow {
-        val statsRef = database.child(STATS_REF).child(userId)
-        val listener = object : ValueEventListener {
-            override fun onDataChange(snapshot: DataSnapshot) {
-                val stats = if (snapshot.exists()) {
-                    val data = snapshot.value as Map<String, Any>
-                    PlayerStats(
-                        totalGames = (data["totalGames"] as? Long)?.toInt() ?: 0,
-                        wins = (data["wins"] as? Long)?.toInt() ?: 0,
-                        losses = (data["losses"] as? Long)?.toInt() ?: 0,
-                        highScore = (data["highScore"] as? Long)?.toInt() ?: 0,
-                        averageScore = (data["averageScore"] as? Double) ?: 0.0,
-                        totalScore = (data["totalScore"] as? Long)?.toInt() ?: 0,
-                        lastPlayed = data["lastPlayed"] as? Long ?: 0
-                    )
-                } else {
-                    PlayerStats()
-                }
-                trySend(stats)
+    suspend fun getPlayer(userId: String): PlayerProfile? {
+        return try {
+            val snapshot = database.child(USERS_REF).child(userId).get().await()
+            if (snapshot.exists()) {
+                PlayerProfile.fromMap(snapshot.value as Map<String, Any>)
+            } else {
+                null
             }
-
-            override fun onCancelled(error: DatabaseError) {
-                Log.e(TAG, "Error loading player stats: ${error.message}")
-                close(error.toException())
-            }
+        } catch (e: Exception) {
+            Log.e(TAG, "Error getting player: ${e.message}")
+            null
         }
-
-        statsRef.addValueEventListener(listener)
-        awaitClose { statsRef.removeEventListener(listener) }
     }
 }
