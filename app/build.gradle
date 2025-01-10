@@ -16,6 +16,8 @@ android {
         versionName "1.0"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+        
+        buildConfigField "String", "WEB_CLIENT_ID", "\"140671902567-i5jdqtncsdu1261n2bkpemh2kf04blt6.apps.googleusercontent.com\""
     }
 
     buildTypes {
@@ -36,6 +38,7 @@ android {
 
     buildFeatures {
         viewBinding true
+        buildConfig true
     }
 
     lint {
@@ -79,8 +82,8 @@ dependencies {
     // Google Play Games
     implementation 'com.google.android.gms:play-services-games:23.1.0'
     implementation 'com.google.android.gms:play-services-auth:20.7.0'
-    implementation 'com.google.android.gms:play-services-games:23.1.0'
-    implementation 'com.google.android.gms:play-services-auth:20.7.0'
+    implementation 'com.google.android.gms:play-services-auth-api-phone:18.0.1'
+    implementation 'com.google.android.gms:play-services-identity:18.0.1'
     
     // Konum servisleri
     implementation 'com.google.android.gms:play-services-location:21.0.1'

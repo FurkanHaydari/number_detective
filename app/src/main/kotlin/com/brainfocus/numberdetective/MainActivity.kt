@@ -3,6 +3,7 @@ package com.brainfocus.numberdetective
 import android.Manifest
 import android.app.Activity
 import android.content.Intent
+import android.content.IntentSender
 import android.content.pm.PackageManager
 import android.graphics.Color
 import android.graphics.Typeface
@@ -13,6 +14,7 @@ import android.text.Spanned
 import android.text.style.ForegroundColorSpan
 import android.text.style.RelativeSizeSpan
 import android.text.style.StyleSpan
+import android.util.Log
 import android.view.View
 import android.view.ViewGroup
 import android.view.WindowInsets
@@ -37,10 +39,10 @@ import com.brainfocus.numberdetective.location.LocationManager
 import com.brainfocus.numberdetective.model.GameLocation
 import com.brainfocus.numberdetective.ui.leaderboard.LeaderboardFragment
 import com.google.android.gms.ads.AdView
-import com.google.android.gms.auth.api.signin.GoogleSignIn
-import com.google.android.gms.auth.api.signin.GoogleSignInAccount
-import com.google.android.gms.auth.api.signin.GoogleSignInClient
-import com.google.android.gms.auth.api.signin.GoogleSignInOptions
+import com.google.android.gms.auth.api.identity.BeginSignInRequest
+import com.google.android.gms.auth.api.identity.Identity
+import com.google.android.gms.auth.api.identity.SignInClient
+import com.google.android.gms.auth.api.identity.SignInCredential
 import com.google.android.gms.games.Games
 import com.google.android.gms.location.LocationRequest
 import com.google.android.material.button.MaterialButton
@@ -49,13 +51,18 @@ import com.google.android.material.textfield.TextInputEditText
 import kotlinx.coroutines.*
 
 class MainActivity : AppCompatActivity() {
+    companion object {
+        private const val RC_SIGN_IN = 9001
+        private const val TAG = "MainActivity"
+    }
+
     private lateinit var adView: AdView
     private lateinit var adManager: AdManager
     private val mainScope = CoroutineScope(Dispatchers.Main + Job())
     private lateinit var descriptionText: TextView
     private lateinit var leaderboardDatabase: LeaderboardDatabase
     private lateinit var locationManager: LocationManager
-    private lateinit var googleSignInClient: GoogleSignInClient
+    private lateinit var oneTapClient: SignInClient
     private var isSignedIn = false
 
     private val locationPermissionRequest = registerForActivityResult(
@@ -76,10 +83,13 @@ class MainActivity : AppCompatActivity() {
         ActivityResultContracts.StartActivityForResult()
     ) { result ->
         if (result.resultCode == Activity.RESULT_OK) {
-            val account = GoogleSignIn.getLastSignedInAccount(this)
-            if (account != null) {
+            try {
+                val credential = Identity.getSignInClient(this).getSignInCredentialFromIntent(result.data)
                 isSignedIn = true
-                onSignInSuccess(account)
+                handleSignInSuccess(credential)
+            } catch (e: Exception) {
+                Log.e(TAG, "Failed to get credential: ${e.localizedMessage}")
+                showNameInputDialog()
             }
         } else {
             showNameInputDialog()
@@ -149,31 +159,136 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun setupGoogleSignIn() {
-        val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_GAMES_SIGN_IN)
-            .requestEmail()
-            .build()
+        try {
+            oneTapClient = Identity.getSignInClient(this)
+            if (BuildConfig.WEB_CLIENT_ID.isNotEmpty()) {
+                val signInRequest = BeginSignInRequest.builder()
+                    .setGoogleIdTokenRequestOptions(
+                        BeginSignInRequest.GoogleIdTokenRequestOptions.builder()
+                            .setSupported(true)
+                            .setServerClientId(BuildConfig.WEB_CLIENT_ID)
+                            .setFilterByAuthorizedAccounts(true)
+                            .build()
+                    )
+                    .setAutoSelectEnabled(true)
+                    .build()
 
-        googleSignInClient = GoogleSignIn.getClient(this, gso)
+                oneTapClient.beginSignIn(signInRequest)
+                    .addOnSuccessListener { result ->
+                        try {
+                            startIntentSenderForResult(
+                                result.pendingIntent.intentSender, RC_SIGN_IN,
+                                null, 0, 0, 0, null)
+                        } catch (e: IntentSender.SendIntentException) {
+                            Log.e(TAG, "Couldn't start One Tap UI: ${e.localizedMessage}")
+                            proceedWithoutSignIn()
+                        }
+                    }
+                    .addOnFailureListener { e ->
+                        Log.e(TAG, e.localizedMessage ?: "Unknown error during sign in")
+                        proceedWithoutSignIn()
+                    }
+            } else {
+                Log.w(TAG, "Google Sign-In is not configured. Proceeding without sign-in.")
+                proceedWithoutSignIn()
+            }
+        } catch (e: Exception) {
+            Log.e(TAG, "Error setting up Google Sign-In: ${e.localizedMessage}")
+            proceedWithoutSignIn()
+        }
     }
 
     private fun checkSignIn() {
-        val account = GoogleSignIn.getLastSignedInAccount(this)
-        if (account != null) {
-            isSignedIn = true
-            onSignInSuccess(account)
+        try {
+            oneTapClient = Identity.getSignInClient(this)
+            if (BuildConfig.WEB_CLIENT_ID.isNotEmpty()) {
+                val signInRequest = BeginSignInRequest.builder()
+                    .setGoogleIdTokenRequestOptions(
+                        BeginSignInRequest.GoogleIdTokenRequestOptions.builder()
+                            .setSupported(true)
+                            .setServerClientId(BuildConfig.WEB_CLIENT_ID)
+                            .setFilterByAuthorizedAccounts(true)
+                            .build()
+                    )
+                    .setAutoSelectEnabled(true)
+                    .build()
+
+                oneTapClient.beginSignIn(signInRequest)
+                    .addOnSuccessListener { result ->
+                        try {
+                            startIntentSenderForResult(
+                                result.pendingIntent.intentSender, RC_SIGN_IN,
+                                null, 0, 0, 0, null)
+                        } catch (e: IntentSender.SendIntentException) {
+                            Log.e(TAG, "Silent sign-in failed: ${e.localizedMessage}")
+                            proceedWithoutSignIn()
+                        }
+                    }
+                    .addOnFailureListener { e ->
+                        Log.e(TAG, "Silent sign-in failed: ${e.localizedMessage}")
+                        proceedWithoutSignIn()
+                    }
+            } else {
+                Log.w(TAG, "Google Sign-In is not configured. Proceeding without sign-in.")
+                proceedWithoutSignIn()
+            }
+        } catch (e: Exception) {
+            Log.e(TAG, "Error checking sign-in: ${e.localizedMessage}")
+            proceedWithoutSignIn()
         }
     }
 
     private fun signInToPlayGames() {
-        signInLauncher.launch(googleSignInClient.signInIntent)
+        try {
+            oneTapClient = Identity.getSignInClient(this)
+            if (BuildConfig.WEB_CLIENT_ID.isNotEmpty()) {
+                val signInRequest = BeginSignInRequest.builder()
+                    .setGoogleIdTokenRequestOptions(
+                        BeginSignInRequest.GoogleIdTokenRequestOptions.builder()
+                            .setSupported(true)
+                            .setServerClientId(BuildConfig.WEB_CLIENT_ID)
+                            .setFilterByAuthorizedAccounts(false)
+                            .build()
+                    )
+                    .setAutoSelectEnabled(false)
+                    .build()
+
+                oneTapClient.beginSignIn(signInRequest)
+                    .addOnSuccessListener { result ->
+                        try {
+                            startIntentSenderForResult(
+                                result.pendingIntent.intentSender, RC_SIGN_IN,
+                                null, 0, 0, 0, null)
+                        } catch (e: IntentSender.SendIntentException) {
+                            Log.e(TAG, "Couldn't start One Tap UI: ${e.localizedMessage}")
+                            proceedWithoutSignIn()
+                        }
+                    }
+                    .addOnFailureListener { e ->
+                        Log.e(TAG, "Sign-in failed: ${e.localizedMessage ?: "Unknown error"}")
+                        proceedWithoutSignIn()
+                    }
+            } else {
+                Log.w(TAG, "Google Sign-In is not configured. Proceeding without sign-in.")
+                proceedWithoutSignIn()
+            }
+        } catch (e: Exception) {
+            Log.e(TAG, "Error during sign-in: ${e.localizedMessage}")
+            proceedWithoutSignIn()
+        }
     }
 
-    private fun onSignInSuccess(account: GoogleSignInAccount) {
-        Games.getGamesClient(this, account).setViewForPopups(findViewById(android.R.id.content))
+    private fun proceedWithoutSignIn() {
+        isSignedIn = false
+        showNameInputDialog()
+    }
+
+    private fun handleSignInSuccess(credential: SignInCredential) {
+        val userId = credential.id
         
         mainScope.launch {
             leaderboardDatabase.updatePlayerScore(
-                userId = account.id ?: System.currentTimeMillis().toString(),
+                userId = userId,
                 score = 0,
                 location = GameLocation()
             )

@@ -368,8 +368,17 @@ class GameResultActivity : AppCompatActivity() {
     private fun getCityFromLocation(location: Location): String? {
         try {
             val geocoder = Geocoder(this, Locale.getDefault())
-            val addresses = geocoder.getFromLocation(location.latitude, location.longitude, 1)
-            return addresses?.firstOrNull()?.adminArea
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                var result: String? = null
+                geocoder.getFromLocation(location.latitude, location.longitude, 1) { addresses ->
+                    result = addresses.firstOrNull()?.adminArea
+                }
+                return result
+            } else {
+                @Suppress("DEPRECATION")
+                val addresses = geocoder.getFromLocation(location.latitude, location.longitude, 1)
+                return addresses?.firstOrNull()?.adminArea
+            }
         } catch (e: Exception) {
             Log.e("Location", "Error getting city: ${e.message}")
         }
@@ -379,8 +388,17 @@ class GameResultActivity : AppCompatActivity() {
     private fun getDistrictFromLocation(location: Location): String? {
         try {
             val geocoder = Geocoder(this, Locale.getDefault())
-            val addresses = geocoder.getFromLocation(location.latitude, location.longitude, 1)
-            return addresses?.firstOrNull()?.subAdminArea
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                var result: String? = null
+                geocoder.getFromLocation(location.latitude, location.longitude, 1) { addresses ->
+                    result = addresses.firstOrNull()?.subAdminArea
+                }
+                return result
+            } else {
+                @Suppress("DEPRECATION")
+                val addresses = geocoder.getFromLocation(location.latitude, location.longitude, 1)
+                return addresses?.firstOrNull()?.subAdminArea
+            }
         } catch (e: Exception) {
             Log.e("Location", "Error getting district: ${e.message}")
         }
