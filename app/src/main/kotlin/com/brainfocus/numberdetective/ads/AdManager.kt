@@ -20,11 +20,15 @@ class AdManager private constructor(private val context: Context) {
                 instance ?: AdManager(context).also { instance = it }
             }
         }
+
+        fun buildAdRequest(): AdRequest {
+            return AdRequest.Builder().build()
+        }
     }
 
     fun initialize(onInitialized: () -> Unit = {}) {
         if (!isAdsInitialized) {
-            MobileAds.initialize(context) { initializationStatus ->
+            MobileAds.initialize(context) { _ ->
                 isAdsInitialized = true
                 onInitialized()
             }
@@ -35,7 +39,7 @@ class AdManager private constructor(private val context: Context) {
 
     fun loadBannerAd(adView: AdView) {
         try {
-            val adRequest = AdRequest.Builder().build()
+            val adRequest = buildAdRequest()
             adView.loadAd(adRequest)
         } catch (e: Exception) {
             Log.e(TAG, "Error loading banner ad: ${e.message}")
@@ -48,7 +52,7 @@ class AdManager private constructor(private val context: Context) {
         onAdLoaded: () -> Unit = {},
         onAdFailedToLoad: () -> Unit = {}
     ) {
-        val adRequest = AdRequest.Builder().build()
+        val adRequest = buildAdRequest()
         InterstitialAd.load(activity, adUnitId, adRequest,
             object : InterstitialAdLoadCallback() {
                 override fun onAdLoaded(interstitialAd: InterstitialAd) {

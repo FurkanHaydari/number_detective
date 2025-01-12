@@ -1,6 +1,7 @@
 package com.brainfocus.numberdetective.location
 
 import android.Manifest
+import android.annotation.SuppressLint
 import android.content.Context
 import android.content.pm.PackageManager
 import android.location.Address
@@ -25,6 +26,7 @@ class LocationManager {
         private const val MIN_DISTANCE_M = 10f
     }
 
+    @SuppressLint("MissingPermission")
     suspend fun getCurrentLocation(context: Context): GameLocation? {
         if (!hasLocationPermission(context)) {
             Log.d(TAG, "Location permission not granted")

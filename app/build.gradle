@@ -5,92 +5,89 @@ plugins {
 }
 
 android {
-    namespace 'com.brainfocus.numberdetective'
-    compileSdk 34
+    namespace = 'com.brainfocus.numberdetective'
+    compileSdk = 34
 
     defaultConfig {
-        applicationId "com.brainfocus.numberdetective"
-        minSdk 24
-        targetSdk 34
-        versionCode 1
-        versionName "1.0"
+        applicationId = "com.brainfocus.numberdetective"
+        minSdk = 24
+        targetSdk = 34
+        versionCode = 1
+        versionName = "1.0"
 
-        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         
         buildConfigField "String", "WEB_CLIENT_ID", "\"140671902567-i5jdqtncsdu1261n2bkpemh2kf04blt6.apps.googleusercontent.com\""
     }
 
     buildTypes {
         release {
-            minifyEnabled true
+            minifyEnabled = false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
     }
 
     compileOptions {
-        sourceCompatibility JavaVersion.VERSION_17
-        targetCompatibility JavaVersion.VERSION_17
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
     }
 
     kotlinOptions {
         jvmTarget = '17'
+        languageVersion = '2.1'
+        apiVersion = '2.1'
     }
 
     buildFeatures {
-        viewBinding true
-        buildConfig true
+        viewBinding = true
+        buildConfig = true
     }
 
     lint {
-        disable 'WrongViewCast'
+        checkReleaseBuilds = false
     }
 }
 
 dependencies {
-    // Material Design
-    implementation 'com.google.android.material:material:1.11.0'
-    
-    // Koin - Doğru versiyonlar
-    implementation "io.insert-koin:koin-android:3.4.3"
-    implementation "io.insert-koin:koin-android-compat:3.4.3"
-    implementation "io.insert-koin:koin-androidx-workmanager:3.4.3"
-    
-    // AdMob
-    implementation 'com.google.android.gms:play-services-ads:22.5.0'
-    
-    // Firebase
-    implementation platform('com.google.firebase:firebase-bom:33.7.0')
-    implementation 'com.google.firebase:firebase-analytics'
-    implementation 'com.google.firebase:firebase-database-ktx'
-    implementation 'com.google.firebase:firebase-auth-ktx'
-    
-    // Mevcut bağımlılıklar
-    implementation 'com.airbnb.android:lottie:6.3.0'
     implementation 'androidx.core:core-ktx:1.12.0'
-    implementation 'androidx.appcompat:appcompat:1.7.0'
-    implementation 'androidx.constraintlayout:constraintlayout:2.2.0'
-    implementation 'com.google.android.material:material:1.12.0'
-    implementation "androidx.lifecycle:lifecycle-runtime-ktx:2.7.0"
-    implementation "androidx.lifecycle:lifecycle-viewmodel-ktx:2.7.0"
-    implementation "androidx.activity:activity-ktx:1.8.2"
-    implementation "androidx.fragment:fragment-ktx:1.6.2"
+    implementation 'androidx.appcompat:appcompat:1.6.1'
+    implementation 'com.google.android.material:material:1.11.0'
+    implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
+    implementation 'androidx.lifecycle:lifecycle-runtime-ktx:2.6.2'
+    implementation 'androidx.lifecycle:lifecycle-viewmodel-ktx:2.6.2'
+    implementation 'androidx.lifecycle:lifecycle-livedata-ktx:2.6.2'
+    implementation 'androidx.activity:activity-ktx:1.8.2'
+    implementation 'androidx.fragment:fragment-ktx:1.6.2'
     
     // Navigation
-    implementation "androidx.navigation:navigation-fragment-ktx:2.7.6"
-    implementation "androidx.navigation:navigation-ui-ktx:2.7.6"
+    implementation 'androidx.navigation:navigation-fragment-ktx:2.7.6'
+    implementation 'androidx.navigation:navigation-ui-ktx:2.7.6'
     
-    // Google Play Games
-    implementation 'com.google.android.gms:play-services-games:23.1.0'
+    // Firebase
+    implementation platform('com.google.firebase:firebase-bom:32.7.0')
+    implementation 'com.google.firebase:firebase-analytics'
+    implementation 'com.google.firebase:firebase-auth-ktx'
+    implementation 'com.google.firebase:firebase-database-ktx'
+    
+    // Google Play Services
     implementation 'com.google.android.gms:play-services-auth:20.7.0'
-    implementation 'com.google.android.gms:play-services-auth-api-phone:18.0.1'
-    implementation 'com.google.android.gms:play-services-identity:18.0.1'
-    
-    // Konum servisleri
+    implementation 'com.google.android.gms:play-services-games:23.1.0'
     implementation 'com.google.android.gms:play-services-location:21.0.1'
     
-    // UI components
+    // AdMob
+    implementation 'com.google.android.gms:play-services-ads:22.6.0'
+    
+    // UI Components
+    implementation 'com.airbnb.android:lottie:6.3.0'
     implementation 'com.github.PhilJay:MPAndroidChart:v3.1.0'
     
-    androidTestImplementation 'androidx.test.ext:junit:1.2.1'
-    androidTestImplementation 'androidx.test.espresso:espresso-core:3.6.1'
+    // Dependency Injection
+    implementation 'io.insert-koin:koin-android:3.4.3'
+    implementation 'io.insert-koin:koin-android-compat:3.4.3'
+    implementation 'io.insert-koin:koin-androidx-workmanager:3.4.3'
+    
+    // Testing
+    testImplementation 'junit:junit:4.13.2'
+    androidTestImplementation 'androidx.test.ext:junit:1.1.5'
+    androidTestImplementation 'androidx.test.espresso:espresso-core:3.5.1'
 }

@@ -159,14 +159,15 @@ class GameActivity : AppCompatActivity() {
                     }
                 })
                 
-                setOnValueChangedListener { _, oldVal, newVal ->
-                    animateValueChange(this, oldVal, newVal)
-                    val currentTime = System.currentTimeMillis()
-                    if (currentTime - lastPlayTime >= MIN_SOUND_INTERVAL) {
-                        soundManager.playSound(R.raw.tick_sound)
-                        lastPlayTime = currentTime
+                setOnValueChangedListener(object : NumberPicker.OnValueChangeListener {
+                    override fun onValueChange(picker: NumberPicker, oldVal: Int, newVal: Int) {
+                        val currentTime = System.currentTimeMillis()
+                        if (currentTime - lastPlayTime >= MIN_SOUND_INTERVAL) {
+                            soundManager.playSound(R.raw.tick_sound)
+                            lastPlayTime = currentTime
+                        }
                     }
-                }
+                })
             }
         }
         
@@ -189,7 +190,7 @@ class GameActivity : AppCompatActivity() {
         }
     }
 
-    private fun animateValueChange(picker: NumberPicker, oldVal: Int, newVal: Int) {
+    private fun animateValueChange(picker: NumberPicker) {
         val animator = ValueAnimator.ofFloat(0f, 1f)
         animator.duration = 150
         animator.interpolator = AccelerateDecelerateInterpolator()
@@ -265,7 +266,7 @@ class GameActivity : AppCompatActivity() {
             is GameState.Playing -> {
                 soundManager.playSound(R.raw.wrong_guess)
                 submitButton.startAnimation(AnimationUtils.loadAnimation(this, R.anim.shake))
-                showErrorDialog("Üzgünüm, bu doğru tahmin değil. Tekrar deneyin! 🎯")
+                showErrorDialog("Üzgünüm, bu doğru tahmin değil. Tekrar deneyin! ")
                 updateRemainingAttempts(3 - viewModel.getAttempts())
             }
             is GameState.Error -> {

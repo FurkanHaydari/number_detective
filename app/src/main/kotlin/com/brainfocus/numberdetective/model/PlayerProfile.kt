@@ -34,20 +34,38 @@ data class PlayerProfile(
 
     companion object {
         fun fromMap(map: Map<String, Any>): PlayerProfile {
-            val locationMap = map["location"] as? Map<String, Any>
-            return PlayerProfile(
-                userId = map["userId"] as? String ?: "",
-                displayName = map["displayName"] as? String ?: "",
-                score = (map["score"] as? Long)?.toInt() ?: 0,
-                timestamp = map["timestamp"] as? Long ?: 0,
-                location = locationMap?.let {
-                    GameLocation(
-                        district = it["district"] as? String,
-                        city = it["city"] as? String,
-                        country = it["country"] as? String ?: "Türkiye"
-                    )
-                }
-            )
+            return try {
+                val locationData = map["location"] as? Map<*, *>
+                val locationMap = locationData?.mapNotNull { (key, value) ->
+                    key?.toString()?.let { k -> value?.let { v -> k to v } }
+                }?.toMap()
+
+                PlayerProfile(
+                    userId = map["userId"]?.toString() ?: "",
+                    displayName = map["displayName"]?.toString() ?: "",
+                    score = when (val scoreValue = map["score"]) {
+                        is Long -> scoreValue.toInt()
+                        is Int -> scoreValue
+                        is String -> scoreValue.toIntOrNull() ?: 0
+                        else -> 0
+                    },
+                    timestamp = when (val timeValue = map["timestamp"]) {
+                        is Long -> timeValue
+                        is Int -> timeValue.toLong()
+                        is String -> timeValue.toLongOrNull() ?: 0L
+                        else -> 0L
+                    },
+                    location = locationMap?.let {
+                        GameLocation(
+                            district = it["district"]?.toString(),
+                            city = it["city"]?.toString(),
+                            country = it["country"]?.toString() ?: "Türkiye"
+                        )
+                    }
+                )
+            } catch (e: Exception) {
+                PlayerProfile()
+            }
         }
     }
 }

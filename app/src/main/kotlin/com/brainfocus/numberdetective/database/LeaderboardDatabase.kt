@@ -79,6 +79,7 @@ class LeaderboardDatabase {
             val snapshot = statsRef.get().await()
             
             val currentStats = if (snapshot.exists()) {
+                @Suppress("UNCHECKED_CAST")
                 val data = snapshot.value as Map<String, Any>
                 PlayerStats(
                     totalGames = (data["totalGames"] as? Long)?.toInt() ?: 0,
@@ -121,9 +122,14 @@ class LeaderboardDatabase {
 
             val profiles = mutableListOf<PlayerProfile>()
             snapshot.children.forEach { child ->
-                val data = child.value as? Map<String, Any>
-                if (data != null) {
-                    profiles.add(PlayerProfile.fromMap(data))
+                try {
+                    @Suppress("UNCHECKED_CAST")
+                    val data = child.value as? Map<String, Any>
+                    if (data != null) {
+                        profiles.add(PlayerProfile.fromMap(data))
+                    }
+                } catch (e: Exception) {
+                    Log.e(TAG, "Error parsing player profile: ${e.message}")
                 }
             }
             
@@ -134,7 +140,7 @@ class LeaderboardDatabase {
         }
     }
 
-    fun getLeaderboard(location: GameLocation): Flow<List<PlayerProfile>> = callbackFlow {
+    fun getLeaderboard(@Suppress("UNUSED_PARAMETER") location: GameLocation): Flow<List<PlayerProfile>> = callbackFlow {
         val query = database.child(USERS_REF)
             .orderByChild("score")
             .limitToLast(MAX_LEADERBOARD_ENTRIES)
@@ -143,6 +149,7 @@ class LeaderboardDatabase {
             override fun onDataChange(snapshot: DataSnapshot) {
                 val profiles = mutableListOf<PlayerProfile>()
                 snapshot.children.forEach { child ->
+                    @Suppress("UNCHECKED_CAST")
                     val data = child.value as? Map<String, Any>
                     if (data != null) {
                         profiles.add(PlayerProfile.fromMap(data))
@@ -165,6 +172,7 @@ class LeaderboardDatabase {
         return try {
             val snapshot = database.child(USERS_REF).child(userId).get().await()
             if (snapshot.exists()) {
+                @Suppress("UNCHECKED_CAST")
                 PlayerProfile.fromMap(snapshot.value as Map<String, Any>)
             } else {
                 null

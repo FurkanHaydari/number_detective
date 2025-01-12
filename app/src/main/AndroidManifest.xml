@@ -56,10 +56,5 @@
             android:theme="@style/Theme.NumberDetective.Fullscreen"
             android:screenOrientation="portrait" />
 
-        <activity
-            android:name=".LeaderboardActivity"
-            android:theme="@style/Theme.NumberDetective.Fullscreen"
-            android:screenOrientation="portrait" />
-
     </application>
 </manifest>

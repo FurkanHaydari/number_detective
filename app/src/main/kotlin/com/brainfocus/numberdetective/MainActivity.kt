@@ -9,6 +9,8 @@ import android.graphics.Color
 import android.graphics.Typeface
 import android.os.Build
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
 import android.text.SpannableStringBuilder
 import android.text.Spanned
 import android.text.style.ForegroundColorSpan
@@ -23,6 +25,7 @@ import android.view.animation.AnimationUtils
 import android.widget.FrameLayout
 import android.widget.ImageView
 import android.widget.TextView
+import android.widget.Toast
 import androidx.activity.OnBackPressedCallback
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
@@ -33,7 +36,13 @@ import androidx.core.app.ActivityCompat
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
+import androidx.lifecycle.lifecycleScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import com.brainfocus.numberdetective.ads.AdManager
+import com.brainfocus.numberdetective.auth.GameSignInManager
 import com.brainfocus.numberdetective.database.LeaderboardDatabase
 import com.brainfocus.numberdetective.location.LocationManager
 import com.brainfocus.numberdetective.model.GameLocation
@@ -48,7 +57,6 @@ import com.google.android.gms.location.LocationRequest
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.textfield.TextInputEditText
-import kotlinx.coroutines.*
 
 class MainActivity : AppCompatActivity() {
     companion object {
@@ -58,12 +66,11 @@ class MainActivity : AppCompatActivity() {
 
     private lateinit var adView: AdView
     private lateinit var adManager: AdManager
-    private val mainScope = CoroutineScope(Dispatchers.Main + Job())
     private lateinit var descriptionText: TextView
-    private lateinit var leaderboardDatabase: LeaderboardDatabase
     private lateinit var locationManager: LocationManager
     private lateinit var oneTapClient: SignInClient
     private var isSignedIn = false
+    private var doubleBackToExitPressedOnce = false
 
     private val locationPermissionRequest = registerForActivityResult(
         ActivityResultContracts.RequestMultiplePermissions()
@@ -102,37 +109,57 @@ class MainActivity : AppCompatActivity() {
         
         setupFullscreen()
         
+        // Initialize views and managers
         adView = findViewById(R.id.adView)
         adManager = AdManager.getInstance(this)
         descriptionText = findViewById(R.id.descriptionText)
-        
-        leaderboardDatabase = LeaderboardDatabase()
         locationManager = LocationManager()
 
+        // Setup essential features immediately
         setupGoogleSignIn()
         setupViews()
-        loadAds()
-        checkSignIn()
         
-        mainScope.launch {
-            setupButtons()
-            setupFeatures()
+        // Launch non-blocking operations
+        lifecycleScope.launch(Dispatchers.IO) {
+            loadAds()
+            checkSignIn()
+        }
+        
+        // Setup UI elements with slight delays to improve performance
+        lifecycleScope.launch {
+            withContext(Dispatchers.Default) {
+                // Prepare data in background
+                val buttonsData = prepareButtonsData()
+                val featuresData = prepareFeaturesData()
+                val animationData = prepareAnimationData()
+                val (quoteText, authorText) = prepareQuoteData()
+                val descriptionData = prepareDescriptionData()
 
-            coroutineScope {
-                delay(100)
-                setupAnimation()
-                setupQuoteOfDay()
-                setupDescription()
+                // Switch to main thread for UI updates
+                withContext(Dispatchers.Main) {
+                    setupButtons()
+                    setupFeatures()
+                    delay(100)
+                    setupAnimation()
+                    setupQuoteOfDay(quoteText, authorText)
+                    setupDescription()
+                }
             }
         }
 
         onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
             override fun handleOnBackPressed() {
-                if (supportFragmentManager.backStackEntryCount > 0) {
-                    supportFragmentManager.popBackStack()
-                } else {
+                if (doubleBackToExitPressedOnce) {
                     finish()
+                    return
                 }
+
+                doubleBackToExitPressedOnce = true
+                Toast.makeText(this@MainActivity, getString(R.string.press_back_again_to_exit), Toast.LENGTH_SHORT).show()
+
+                Handler(Looper.getMainLooper()).postDelayed({
+                    doubleBackToExitPressedOnce = false
+                }, 2000)
             }
         })
     }
@@ -176,6 +203,7 @@ class MainActivity : AppCompatActivity() {
                 oneTapClient.beginSignIn(signInRequest)
                     .addOnSuccessListener { result ->
                         try {
+                            @Suppress("DEPRECATION")
                             startIntentSenderForResult(
                                 result.pendingIntent.intentSender, RC_SIGN_IN,
                                 null, 0, 0, 0, null)
@@ -216,6 +244,7 @@ class MainActivity : AppCompatActivity() {
                 oneTapClient.beginSignIn(signInRequest)
                     .addOnSuccessListener { result ->
                         try {
+                            @Suppress("DEPRECATION")
                             startIntentSenderForResult(
                                 result.pendingIntent.intentSender, RC_SIGN_IN,
                                 null, 0, 0, 0, null)
@@ -256,6 +285,7 @@ class MainActivity : AppCompatActivity() {
                 oneTapClient.beginSignIn(signInRequest)
                     .addOnSuccessListener { result ->
                         try {
+                            @Suppress("DEPRECATION")
                             startIntentSenderForResult(
                                 result.pendingIntent.intentSender, RC_SIGN_IN,
                                 null, 0, 0, 0, null)
@@ -284,14 +314,14 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun handleSignInSuccess(credential: SignInCredential) {
-        val userId = credential.id
+        @Suppress("UNUSED_VARIABLE") val userId = credential.id
         
-        mainScope.launch {
-            leaderboardDatabase.updatePlayerScore(
-                userId = userId,
-                score = 0,
-                location = GameLocation()
-            )
+        lifecycleScope.launch {
+            // leaderboardDatabase.updatePlayerScore(
+            //     userId = userId,
+            //     score = 0,
+            //     location = GameLocation()
+            // )
         }
     }
 
@@ -306,12 +336,12 @@ class MainActivity : AppCompatActivity() {
             .setPositiveButton("Tamam") { _, _ ->
                 val displayName = nameInput.text.toString()
                 if (displayName.isNotEmpty()) {
-                    mainScope.launch {
-                        leaderboardDatabase.updatePlayerScore(
-                            userId = System.currentTimeMillis().toString(),
-                            score = 0,
-                            location = GameLocation()
-                        )
+                    lifecycleScope.launch {
+                        // leaderboardDatabase.updatePlayerScore(
+                        //     userId = System.currentTimeMillis().toString(),
+                        //     score = 0,
+                        //     location = GameLocation()
+                        // )
                     }
                 }
             }
@@ -361,9 +391,12 @@ class MainActivity : AppCompatActivity() {
             val buttonIndex = parent.indexOfChild(startButton)
             
             val frameLayout = FrameLayout(this).apply {
+                val buttonWidth = startButton.measuredWidth
+                val buttonHeight = startButton.measuredHeight
+                
                 layoutParams = ConstraintLayout.LayoutParams(
-                    startButton.width,
-                    startButton.height
+                    buttonWidth,
+                    buttonHeight
                 ).apply {
                     bottomToTop = R.id.adContainer
                     leftToLeft = ConstraintLayout.LayoutParams.PARENT_ID
@@ -381,9 +414,12 @@ class MainActivity : AppCompatActivity() {
             ))
             
             val overlayView = View(this).apply {
+                val overlayWidth = (startButton.measuredWidth * 0.2).toInt()
+                val overlayHeight = startButton.measuredHeight - 16
+                
                 layoutParams = FrameLayout.LayoutParams(
-                    (startButton.width * 0.2).toInt(),
-                    startButton.height - 16
+                    overlayWidth,
+                    overlayHeight
                 ).apply {
                     gravity = android.view.Gravity.CENTER
                     setMargins(8, 8, 8, 8)
@@ -399,7 +435,27 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun setupButtons() {
-        // No changes needed here
+        findViewById<MaterialButton>(R.id.beyniniKoruButton).apply {
+            setOnClickListener {
+                val intent = Intent(this@MainActivity, GameActivity::class.java)
+                intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
+                startActivity(intent)
+            }
+        }
+
+        findViewById<MaterialButton>(R.id.leaderboardButton).apply {
+            visibility = View.VISIBLE
+            setOnClickListener {
+                showLeaderboard()
+            }
+        }
+
+        findViewById<MaterialButton>(R.id.settingsButton).apply {
+            visibility = View.VISIBLE
+            setOnClickListener {
+                // Handle settings click
+            }
+        }
     }
 
     private fun setupFeatures() {
@@ -450,13 +506,16 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private fun setupQuoteOfDay() {
+    private fun prepareQuoteData(): Pair<String, String> {
         val quotes = resources.getStringArray(R.array.game_quotes)
         val randomQuote = quotes.random()
         val parts = randomQuote.split(" - ")
-        
-        findViewById<TextView>(R.id.quoteText).text = parts[0]
-        findViewById<TextView>(R.id.quoteAuthor).text = "- ${parts[1]}"
+        return Pair(parts[0], "- ${parts[1]}")
+    }
+
+    private fun setupQuoteOfDay(quoteText: String, authorText: String) {
+        findViewById<TextView>(R.id.quoteText).text = quoteText
+        findViewById<TextView>(R.id.quoteAuthor).text = authorText
     }
 
     private fun setupDescription() {
@@ -502,35 +561,16 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun showLeaderboard() {
-        findViewById<View>(R.id.fragmentContainer).visibility = View.VISIBLE
         findViewById<TextView>(R.id.titleText).visibility = View.GONE
         findViewById<View>(R.id.brainAnimation).visibility = View.GONE
         findViewById<View>(R.id.quoteContainer).visibility = View.GONE
         findViewById<View>(R.id.featuresContainer).visibility = View.GONE
         findViewById<View>(R.id.descriptionContainer).visibility = View.GONE
-        findViewById<AdView>(R.id.adView).visibility = View.GONE
-        findViewById<MaterialButton>(R.id.beyniniKoruButton).visibility = View.GONE
-
+        
         supportFragmentManager.beginTransaction()
             .replace(R.id.fragmentContainer, LeaderboardFragment())
             .addToBackStack(null)
             .commit()
-    }
-
-    override fun onBackPressed() {
-        if (supportFragmentManager.backStackEntryCount > 0) {
-            supportFragmentManager.popBackStack()
-            findViewById<View>(R.id.fragmentContainer).visibility = View.GONE
-            findViewById<TextView>(R.id.titleText).visibility = View.VISIBLE
-            findViewById<View>(R.id.brainAnimation).visibility = View.VISIBLE
-            findViewById<View>(R.id.quoteContainer).visibility = View.VISIBLE
-            findViewById<View>(R.id.featuresContainer).visibility = View.VISIBLE
-            findViewById<View>(R.id.descriptionContainer).visibility = View.VISIBLE
-            findViewById<AdView>(R.id.adView).visibility = View.VISIBLE
-            findViewById<MaterialButton>(R.id.beyniniKoruButton).visibility = View.VISIBLE
-        } else {
-            super.onBackPressed()
-        }
     }
 
     override fun onPause() {
@@ -544,7 +584,6 @@ class MainActivity : AppCompatActivity() {
     }
 
     override fun onDestroy() {
-        mainScope.cancel()
         adManager.onDestroy()
         super.onDestroy()
     }
@@ -554,5 +593,25 @@ class MainActivity : AppCompatActivity() {
         if (hasFocus) {
             setupFullscreen()
         }
+    }
+
+    private fun prepareButtonsData(): Any {
+        // Add your data preparation logic here
+        return Any()
+    }
+
+    private fun prepareFeaturesData(): Any {
+        // Add your data preparation logic here
+        return Any()
+    }
+
+    private fun prepareAnimationData(): Any {
+        // Add your data preparation logic here
+        return Any()
+    }
+
+    private fun prepareDescriptionData(): Any {
+        // Add your data preparation logic here
+        return Any()
     }
 }

@@ -18,6 +18,14 @@
     <string name="share_button">Paylaş</string>
     <string name="play_again_button">Tekrar Oyna</string>
     <string name="share_score_text">Number Detective oyununda %1$d puan kazandım!</string>
+    <string name="win_text">Tebrikler!</string>
+    <string name="game_over_text">Oyun Bitti!</string>
+    <string name="win_motivation">Harika bir oyun! Devam et!</string>
+    <string name="lose_motivation">Daha iyisini yapabilirsin! Tekrar dene!</string>
+    <string name="share_win_text">🎉 Number Detective\'de kazandım! Skorum: %1$d 🎮</string>
+    <string name="share_lose_text">🎮 Number Detective\'de skorumu geçebilir misin? Skorum: %1$d</string>
+    <string name="share_title">Sonucu Paylaş</string>
+    <string name="error_showing_leaderboard">Liderlik tablosu gösterilirken bir hata oluştu</string>
 
     <!-- Main Activity -->
     <string name="app_title">Brain Focus</string>
@@ -34,6 +42,7 @@
     <string name="error">Error</string>
     <string name="ok">OK</string>
     <string name="cancel">Cancel</string>
+    <string name="press_back_again_to_exit">Çıkmak için tekrar basın</string>
 
     <string-array name="game_quotes">
         <item>"Düşünmek en büyük eylemdir." - Blaise Pascal</item>
