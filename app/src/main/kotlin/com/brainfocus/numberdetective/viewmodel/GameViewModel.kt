@@ -1,9 +1,9 @@
 package com.brainfocus.numberdetective.viewmodel
 
 import androidx.lifecycle.ViewModel
+import com.brainfocus.numberdetective.game.NumberDetectiveGame
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
-import com.brainfocus.numberdetective.game.NumberDetectiveGame
 
 class GameViewModel : ViewModel() {
     private val game = NumberDetectiveGame()
@@ -29,15 +29,15 @@ class GameViewModel : ViewModel() {
         game.startNewGame()
         
         val gameHints = listOf(
-            Hint(game.firstHint.map { it.toString().toInt() }, 
+            Hint(game.firstHint.map { char -> char.toString().toInt() }, 
                 "Bir rakam doğru ama yanlış yerde"),
-            Hint(game.secondHint.map { it.toString().toInt() }, 
+            Hint(game.secondHint.map { char -> char.toString().toInt() }, 
                 "Bir rakam doğru ve doğru yerde"),
-            Hint(game.thirdHint.map { it.toString().toInt() }, 
+            Hint(game.thirdHint.map { char -> char.toString().toInt() }, 
                 "İki rakam doğru ama ikisi de yanlış yerde"),
-            Hint(game.fourthHint.map { it.toString().toInt() }, 
+            Hint(game.fourthHint.map { char -> char.toString().toInt() }, 
                 "İki rakam doğru ama ikisi de yanlış yerde"),
-            Hint(game.fifthHint.map { it.toString().toInt() }, 
+            Hint(game.fifthHint.map { char -> char.toString().toInt() }, 
                 "İki rakam doğru, biri doğru yerde, biri yanlış yerde")
         )
         _hints.value = gameHints

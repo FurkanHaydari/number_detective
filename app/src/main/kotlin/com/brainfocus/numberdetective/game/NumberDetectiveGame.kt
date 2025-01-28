@@ -3,153 +3,153 @@ package com.brainfocus.numberdetective.game
 import kotlin.random.Random
 
 class NumberDetectiveGame {
+    companion object {
+        private const val MAX_ATTEMPTS = 3
+        private const val INITIAL_SCORE = 1000
+        private const val DIGITS = 3
+        
+        // Hint patterns
+        private val FIRST_A_CHOICES = listOf("xax", "xxa")
+        private val FIRST_B_CHOICES = listOf("bxx", "xxb")
+        private val FIRST_C_CHOICES = listOf("cxx", "xcx")
+        
+        private val ONLY_A_AND_CORRECT_CHOICES = listOf("axx")
+        private val ONLY_B_AND_CORRECT_CHOICES = listOf("xbx")
+        private val ONLY_C_AND_CORRECT_CHOICES = listOf("xxc")
+        
+        private val AB_FALSE = listOf("bax", "bxa", "xab")
+        private val AC_FALSE = listOf("cax", "xca", "cxa")
+        private val CB_FALSE = listOf("bcx", "cxb", "xcb")
+    }
+
     private var secretNumber = ""
-    private var remainingAttempts = 3
-    private var currentScore = 1000
+    private var remainingAttempts = MAX_ATTEMPTS
+    private var currentScore = INITIAL_SCORE
     private var pathSelection = (1..3).random()
     private val numbers = (0..9).toMutableList()
     private var isGameWon = false
     
-    // Hint patterns
-    private val firstAChoices = listOf("xax", "xxa")
-    private val firstBChoices = listOf("bxx", "xxb")
-    private val firstCChoices = listOf("cxx", "xcx")
-    
-    private val onlyAAndCorrectChoices = listOf("axx")
-    private val onlyBAndCorrectChoices = listOf("xbx")
-    private val onlyCAndCorrectChoices = listOf("xxc")
-    
-    private val abFalse = listOf("bax", "bxa", "xab")
-    private val acFalse = listOf("cax", "xca", "cxa")
-    private val cbFalse = listOf("bcx", "cxb", "xcb")
-    
     var firstHint = ""
+        private set
     var secondHint = ""
+        private set
     var thirdHint = ""
+        private set
     var fourthHint = ""
+        private set
     var fifthHint = ""
+        private set
     
     fun getSecretNumber(): String = secretNumber
-    
     fun getRemainingAttempts(): Int = remainingAttempts
-    
     fun getCurrentScore(): Int = currentScore
-    
     fun getCorrectAnswer(): String = secretNumber
-    
-    fun isGameWon(guess: String? = null): Boolean {
-        if (guess != null) {
-            return guess == secretNumber
-        }
-        return isGameWon
-    }
-    
+    fun isGameWon(guess: String? = null): Boolean = guess?.let { it == secretNumber } ?: isGameWon
     fun isGameOver(): Boolean = remainingAttempts <= 0 || isGameWon
 
     fun startNewGame() {
         numbers.clear()
-        numbers.addAll((0..9))
+        numbers.addAll(0..9)
         generateSecretNumber()
-        remainingAttempts = 3
-        currentScore = 1000
+        remainingAttempts = MAX_ATTEMPTS
+        currentScore = INITIAL_SCORE
         isGameWon = false
         pathSelection = (1..3).random()
         generateHints()
     }
     
     private fun generateSecretNumber() {
-        val digits = numbers.shuffled().take(3)
-        secretNumber = digits.joinToString("")
+        secretNumber = numbers.shuffled().take(DIGITS).joinToString("")
     }
     
     private fun generateHints() {
-        val a = secretNumber[0]
-        val b = secretNumber[1]
-        val c = secretNumber[2]
+        val (a, b, c) = secretNumber.map { it }
         
         // x için kullanılabilecek rakamları hazırla (a, b ve c hariç)
-        val availableX = (0..9).map { it.toString()[0] }
-                              .filter { it != a && it != b && it != c }
-                              .toMutableList()
+        val availableX = (0..9)
+            .map { it.toString()[0] }
+            .filterNot { it in setOf(a, b, c) }
+            .toMutableList()
+            .shuffled()
+            .toMutableList()
         
-        fun replaceX(pattern: String): String {
-            val result = pattern.toCharArray()
-            for (i in result.indices) {
-                if (result[i] == 'x') {
-                    val randomX = availableX.random()
-                    availableX.remove(randomX)
-                    result[i] = randomX
-                } else if (result[i] == 'a') {
-                    result[i] = a
-                } else if (result[i] == 'b') {
-                    result[i] = b
-                } else if (result[i] == 'c') {
-                    result[i] = c
-                }
+        fun replaceX(pattern: String): String = buildString {
+            pattern.forEach { char ->
+                append(
+                    when (char) {
+                        'x' -> availableX.removeFirst()
+                        'a' -> a
+                        'b' -> b
+                        'c' -> c
+                        else -> char
+                    }
+                )
             }
-            return String(result)
         }
 
         val temp = Random.nextBoolean()
         
-        when (pathSelection) {
-            1 -> {
-                firstHint = replaceX(firstAChoices.random())
-                secondHint = replaceX(onlyAAndCorrectChoices.random())
-                thirdHint = replaceX(if (temp) abFalse.random() else acFalse.random())
-                fourthHint = replaceX(cbFalse.random())
-                fifthHint = replaceX(if (temp) "cbx" else "bxc")
-            }
-            2 -> {
-                firstHint = replaceX(firstBChoices.random())
-                secondHint = replaceX(onlyBAndCorrectChoices.random())
-                thirdHint = replaceX(if (temp) abFalse.random() else cbFalse.random())
-                fourthHint = replaceX(acFalse.random())
-                fifthHint = replaceX(if (temp) "acx" else "xac")
-            }
-            else -> {
-                firstHint = replaceX(firstCChoices.random())
-                secondHint = replaceX(onlyCAndCorrectChoices.random())
-                thirdHint = replaceX(if (temp) acFalse.random() else cbFalse.random())
-                fourthHint = replaceX(abFalse.random())
-                fifthHint = replaceX(if (temp) "axb" else "xba")
-            }
+        val (first, second, third, fourth, fifth) = when (pathSelection) {
+            1 -> listOf(
+                FIRST_A_CHOICES.random(),
+                ONLY_A_AND_CORRECT_CHOICES.random(),
+                if (temp) AB_FALSE.random() else AC_FALSE.random(),
+                CB_FALSE.random(),
+                if (temp) "cbx" else "bxc"
+            )
+            2 -> listOf(
+                FIRST_B_CHOICES.random(),
+                ONLY_B_AND_CORRECT_CHOICES.random(),
+                if (temp) AB_FALSE.random() else CB_FALSE.random(),
+                AC_FALSE.random(),
+                if (temp) "acx" else "xac"
+            )
+            else -> listOf(
+                FIRST_C_CHOICES.random(),
+                ONLY_C_AND_CORRECT_CHOICES.random(),
+                if (temp) AC_FALSE.random() else CB_FALSE.random(),
+                AB_FALSE.random(),
+                if (temp) "axb" else "xba"
+            )
         }
+
+        firstHint = replaceX(first)
+        secondHint = replaceX(second)
+        thirdHint = replaceX(third)
+        fourthHint = replaceX(fourth)
+        fifthHint = replaceX(fifth)
     }
     
     fun makeGuess(guess: String): GuessResult {
-        if (guess.length != 3) {
-            throw IllegalArgumentException("Tahmin 3 basamaklı olmalıdır")
-        }
+        require(guess.length == DIGITS) { "Tahmin $DIGITS basamaklı olmalıdır" }
 
         remainingAttempts--
+        
+        val secretChars = secretNumber.toCharArray()
+        val guessChars = guess.toCharArray()
         
         var correct = 0
         var misplaced = 0
         
-        val secretDigits = secretNumber.map { it.toString() }
-        val guessDigits = guess.map { it.toString() }
-        
-        // Doğru yerdeki rakamları kontrol et
-        for (i in secretDigits.indices) {
-            if (secretDigits[i] == guessDigits[i]) {
+        // Doğru yerdeki rakamları say
+        for (i in secretChars.indices) {
+            if (secretChars[i] == guessChars[i]) {
                 correct++
             }
         }
         
-        // Yanlış yerdeki rakamları kontrol et
-        val secretCount = secretDigits.groupBy { it }.mapValues { it.value.size }.toMutableMap()
-        val guessCount = guessDigits.groupBy { it }.mapValues { it.value.size }
+        // Yanlış yerdeki rakamları say
+        val secretFreq = secretChars.groupBy { it }
+        val guessFreq = guessChars.groupBy { it }
         
-        for ((digit, count) in guessCount) {
-            val secretDigitCount = secretCount[digit] ?: 0
-            misplaced += minOf(count, secretDigitCount)
-        }
+        misplaced = guessFreq.keys.sumOf { digit ->
+            minOf(
+                guessFreq[digit]?.size ?: 0,
+                secretFreq[digit]?.size ?: 0
+            )
+        } - correct
         
-        // Doğru yerdeki rakamları çıkar
-        misplaced -= correct
-        
-        if (correct == 3) {
+        if (correct == DIGITS) {
             isGameWon = true
         }
         

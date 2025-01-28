@@ -50,16 +50,9 @@ class LeaderboardViewModel : ViewModel() {
     fun updatePlayerScore(userId: String, score: Int) {
         viewModelScope.launch {
             try {
-                val currentPlayer = leaderboardDatabase.getPlayer(userId)
-                val newScore = if (currentPlayer != null) {
-                    maxOf(currentPlayer.score, score)
-                } else {
-                    score
-                }
-                
                 leaderboardDatabase.updatePlayerScore(
                     userId = userId,
-                    score = newScore,
+                    score = score,
                     location = GameLocation()
                 )
             } catch (e: Exception) {

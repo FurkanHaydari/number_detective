@@ -44,6 +44,10 @@
     <string name="cancel">Cancel</string>
     <string name="press_back_again_to_exit">Çıkmak için tekrar basın</string>
 
+    <string name="back_to_menu">Ana Menü</string>
+    <string name="play_again">Tekrar Oyna</string>
+    <string name="share">Paylaş</string>
+
     <string-array name="game_quotes">
         <item>"Düşünmek en büyük eylemdir." - Blaise Pascal</item>
         <item>"Zeka, değişime uyum sağlama yeteneğidir." - Stephen Hawking</item>
@@ -88,6 +92,7 @@
         <item>"Zorluklar, yaratıcılığın anasıdır." - Plato</item>
     </string-array>
 
+    <string name="game_description">Üç basamaklı gizli sayıyı bulmak için ipuçlarını kullan! Her tahminden sonra doğru rakam ve yerleri hakkında bilgi alacaksın. Üç deneme hakkın var, puanın süreye göre azalıyor. Hadi başla!</string>
 
     <!-- Reklam ID'leri -->
     <string name="banner_ad_unit_id">ca-app-pub-3940256099942544/6300978111</string>

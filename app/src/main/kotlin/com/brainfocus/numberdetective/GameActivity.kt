@@ -50,21 +50,29 @@ class GameActivity : AppCompatActivity() {
     private lateinit var submitButton: Button
     private var numberPickers: List<NumberPicker> = listOf()
     private lateinit var remainingAttemptsText: TextView
-    private lateinit var soundManager: SoundManager
+    private val soundManager: SoundManager by lazy { SoundManager(this) }
     private var pendingGameResult: Intent? = null
     private var attemptsList: MutableList<String> = mutableListOf()
+
+    // Cache animations
+    private val shakeAnimation by lazy { AnimationUtils.loadAnimation(this, R.anim.shake) }
+
+    // Cache colors
+    private val correctColor by lazy { getColor(R.color.colorCorrect) }
+    private val misplacedColor by lazy { getColor(R.color.colorMisplaced) }
+    private val incorrectColor by lazy { getColor(R.color.colorIncorrect) }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_game)
         setupFullscreen()
-        
-        soundManager = SoundManager(this)
+
         // Load sound after a short delay to ensure resources are ready
-        Handler(Looper.getMainLooper()).postDelayed({
+        lifecycleScope.launch {
+            delay(500)
             soundManager.loadSound(R.raw.tick_sound)
-        }, 500)
-        
+        }
+
         setupViews()
         observeViewModel()
         startScoreTimer()
@@ -95,25 +103,24 @@ class GameActivity : AppCompatActivity() {
         scoreText = findViewById(R.id.scoreText)
         submitButton = findViewById(R.id.submitButton)
         remainingAttemptsText = findViewById(R.id.remainingAttemptsText)
-        
+
         setupNumberPickers()
-        
+
         setupSubmitButton()
-        
+
         hintsAdapter = HintAdapter()
         hintsContainer.adapter = hintsAdapter
         hintsContainer.addItemDecoration(HintItemDecoration(dpToPx(8)))
-        
+
         updateRemainingAttempts(3)
     }
 
     private fun setupNumberPickers() {
         val pickerContainer = findViewById<LinearLayout>(R.id.numberPickerContainer)
-        
-        val isDarkMode = resources.configuration.uiMode and 
-            android.content.res.Configuration.UI_MODE_NIGHT_MASK == 
-            android.content.res.Configuration.UI_MODE_NIGHT_YES
-        
+
+        val isDarkMode = resources.configuration.uiMode and
+            android.content.res.Configuration.UI_MODE_NIGHT_MASK == android.content.res.Configuration.UI_MODE_NIGHT_YES
+
         numberPickers = List(3) { index ->
             NumberPicker(this).apply {
                 minValue = 0
@@ -121,7 +128,7 @@ class GameActivity : AppCompatActivity() {
                 value = 0  // Başlangıç değeri
                 wrapSelectorWheel = true
                 descendantFocusability = NumberPicker.FOCUS_BLOCK_DESCENDANTS
-                
+
                 val params = LinearLayout.LayoutParams(
                     dpToPx(65),
                     dpToPx(130)
@@ -138,12 +145,12 @@ class GameActivity : AppCompatActivity() {
                     setBackgroundResource(R.drawable.number_picker_background)
                     setDividerColor(ContextCompat.getColor(context, R.color.colorDivider))
                 }
-                
+
                 alpha = 0.7f
-                
+
                 var lastPlayTime = 0L
                 val MIN_SOUND_INTERVAL = 50L // Minimum 50ms between sounds
-                
+
                 setOnScrollListener(object : NumberPicker.OnScrollListener {
                     override fun onScrollStateChange(view: NumberPicker?, scrollState: Int) {
                         when (scrollState) {
@@ -158,7 +165,7 @@ class GameActivity : AppCompatActivity() {
                         }
                     }
                 })
-                
+
                 setOnValueChangedListener(object : NumberPicker.OnValueChangeListener {
                     override fun onValueChange(picker: NumberPicker, oldVal: Int, newVal: Int) {
                         val currentTime = System.currentTimeMillis()
@@ -170,7 +177,7 @@ class GameActivity : AppCompatActivity() {
                 })
             }
         }
-        
+
         numberPickers.forEach { picker ->
             pickerContainer.addView(picker)
         }
@@ -194,11 +201,11 @@ class GameActivity : AppCompatActivity() {
         val animator = ValueAnimator.ofFloat(0f, 1f)
         animator.duration = 150
         animator.interpolator = AccelerateDecelerateInterpolator()
-        
+
         animator.addUpdateListener { animation ->
             picker.alpha = 0.7f + (animation.animatedValue as Float) * 0.3f
         }
-        
+
         animator.start()
         picker.performHapticFeedback(HapticFeedbackConstants.KEYBOARD_TAP)
     }
@@ -238,7 +245,7 @@ class GameActivity : AppCompatActivity() {
             is GameState.Won -> {
                 soundManager.playSound(R.raw.win_sound)
                 disableInput()
-                val intent = Intent(this, GameResultActivity::class.java).apply {
+                pendingGameResult = Intent(this, GameResultActivity::class.java).apply {
                     putExtra("score", state.score)
                     putExtra("result", "win")
                     putExtra("correctAnswer", viewModel.getCorrectAnswer())
@@ -246,13 +253,13 @@ class GameActivity : AppCompatActivity() {
                     putExtra("gameTime", viewModel.getGameTime())
                     putStringArrayListExtra("attemptsList", ArrayList(attemptsList))
                 }
-                startActivity(intent)
+                startActivity(pendingGameResult)
                 finish()
             }
             is GameState.Lost -> {
                 soundManager.playSound(R.raw.lose_sound)
                 disableInput()
-                val intent = Intent(this, GameResultActivity::class.java).apply {
+                pendingGameResult = Intent(this, GameResultActivity::class.java).apply {
                     putExtra("score", viewModel.score.value)
                     putExtra("result", "lose")
                     putExtra("correctAnswer", viewModel.getCorrectAnswer())
@@ -260,13 +267,15 @@ class GameActivity : AppCompatActivity() {
                     putExtra("gameTime", viewModel.getGameTime())
                     putStringArrayListExtra("attemptsList", ArrayList(attemptsList))
                 }
-                startActivity(intent)
+                startActivity(pendingGameResult)
                 finish()
             }
             is GameState.Playing -> {
-                soundManager.playSound(R.raw.wrong_guess)
-                submitButton.startAnimation(AnimationUtils.loadAnimation(this, R.anim.shake))
-                showErrorDialog("Üzgünüm, bu doğru tahmin değil. Tekrar deneyin! ")
+                if (viewModel.getAttempts() > 0) {
+                    soundManager.playSound(R.raw.wrong_guess)
+                    submitButton.startAnimation(shakeAnimation)
+                    showErrorDialog("Üzgünüm, bu doğru tahmin değil. Tekrar deneyin! ")
+                }
                 updateRemainingAttempts(3 - viewModel.getAttempts())
             }
             is GameState.Error -> {
@@ -287,7 +296,7 @@ class GameActivity : AppCompatActivity() {
             elevation = 0f
             outlineProvider = null
             backgroundTintList = null
-            
+
             setOnTouchListener { v, event ->
                 when (event.action) {
                     MotionEvent.ACTION_DOWN -> {
@@ -309,7 +318,7 @@ class GameActivity : AppCompatActivity() {
                 }
                 false
             }
-            
+
             setOnClickListener {
                 soundManager.playSound(R.raw.button_click)
                 performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY)
@@ -323,7 +332,7 @@ class GameActivity : AppCompatActivity() {
                             .scaleY(1f)
                             .setDuration(50)
                             .start()
-                        
+
                         val guessNumber = numberPickers.joinToString("") { it.value.toString() }
                         if (guessNumber.length == 3) {
                             attemptsList.add(guessNumber)
@@ -351,19 +360,19 @@ class GameActivity : AppCompatActivity() {
         val animator = ValueAnimator.ofInt(oldScore, score)
         animator.duration = 1000
         animator.interpolator = OvershootInterpolator(1.5f)
-        
+
         animator.addUpdateListener { animation ->
             val animatedValue = animation.animatedValue as Int
             scoreText.text = "Score: $animatedValue"
         }
-        
+
         animator.start()
     }
 
     private fun startScoreTimer() {
         lifecycleScope.launch {
             repeatOnLifecycle(Lifecycle.State.STARTED) {
-                while(true) {
+                while (true) {
                     delay(1000) // Her saniye
                     viewModel.updateScore()
                 }
@@ -374,18 +383,17 @@ class GameActivity : AppCompatActivity() {
     private fun updateRemainingAttempts(attempts: Int) {
         remainingAttemptsText.apply {
             text = getString(R.string.remaining_attempts, attempts)
-            
+
             val color = when (attempts) {
-                3 -> getColor(R.color.colorCorrect)    // Yeşil
-                2 -> getColor(R.color.colorMisplaced)  // Turuncu  
-                else -> getColor(R.color.colorIncorrect) // Kırmızı
+                3 -> correctColor
+                2 -> misplacedColor
+                else -> incorrectColor
             }
-            
+
             setTextColor(color)
             setShadowLayer(4f, 0f, 2f, Color.parseColor("#40000000"))
-            
+
             if (attempts == 1) {
-                val shakeAnimation = AnimationUtils.loadAnimation(context, R.anim.shake_animation)
                 startAnimation(shakeAnimation)
             } else {
                 alpha = 0f

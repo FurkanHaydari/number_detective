@@ -270,21 +270,32 @@ class MainActivity : AppCompatActivity() {
         soundPool?.load(applicationContext, resId, 1) ?: 0
     }
 
-    private fun setupViews() = with(binding) {
-        val clickListener = View.OnClickListener { view ->
-            soundPool?.play(buttonClickSound, 1f, 1f, 1, 0, 1f)
-            when (view.id) {
-                R.id.beyniniKoruButton -> startActivity(Intent(this@MainActivity, GameActivity::class.java).apply {
-                    addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
-                })
-                R.id.leaderboardButton -> showLeaderboard()
-                R.id.settingsButton -> { /* Handle settings */ }
+    private fun setupViews() {
+        binding.apply {
+            // Diğer view ayarları...
+            
+            descriptionText.apply {
+                visibility = View.VISIBLE
+                text = getString(R.string.game_description)
+                setTextColor(getColor(R.color.white))
+                alpha = 0.9f
             }
-        }
+            
+            val clickListener = View.OnClickListener { view ->
+                soundPool?.play(buttonClickSound, 1f, 1f, 1, 0, 1f)
+                when (view.id) {
+                    R.id.beyniniKoruButton -> startActivity(Intent(this@MainActivity, GameActivity::class.java).apply {
+                        addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
+                    })
+                    R.id.leaderboardButton -> showLeaderboard()
+                    R.id.settingsButton -> { /* Handle settings */ }
+                }
+            }
 
-        beyniniKoruButton.setOnClickListener(clickListener)
-        leaderboardButton.setOnClickListener(clickListener)
-        settingsButton.setOnClickListener(clickListener)
+            beyniniKoruButton.setOnClickListener(clickListener)
+            leaderboardButton.setOnClickListener(clickListener)
+            settingsButton.setOnClickListener(clickListener)
+        }
     }
 
     private fun setupBackPressHandler() {
