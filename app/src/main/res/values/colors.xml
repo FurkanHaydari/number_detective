@@ -35,6 +35,8 @@
     <!-- Buton Renkleri -->
     <color name="primaryButton">#007AFF</color>
     <color name="primaryButtonRipple">#0056B3</color>
+    <color name="button_color_normal">#FF2196F3</color>
+    <color name="button_color_glow">#FF64B5F6</color>
     
     <!-- Gradient ve Border -->
     <color name="gradientStart">#FF2D55</color>    
@@ -71,4 +73,14 @@
     <color name="colorDividerDark">#666666</color>
     <color name="numberPickerTextColor">@android:color/white</color>
     <color name="colorError">#F44336</color>
+    <color name="picker_divider_color">#33FFFFFF</color>
+    
+    <!-- Yeni Renkler -->
+    <color name="colorPrimaryNew">#2196F3</color>
+    <color name="colorPrimaryDarkNew">#1976D2</color>
+    <color name="colorAccentNew">#FF4081</color>
+    <color name="colorBackgroundNew">#FFFFFF</color>
+    <color name="colorWin">#4CAF50</color>
+    <color name="colorLose">#F44336</color>
+    <color name="colorHint">#9E9E9E</color>
 </resources>

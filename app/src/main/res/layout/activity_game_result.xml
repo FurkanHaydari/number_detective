@@ -164,9 +164,11 @@
                         android:id="@+id/guessesText"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:textSize="22sp"
-                        android:textStyle="bold"
+                        android:textSize="16sp"
+                        android:textStyle="normal"
                         android:textColor="@android:color/white"
+                        android:gravity="center"
+                        android:lineSpacingExtra="4dp"
                         android:fontFamily="@font/poppins_medium"/>
 
                     <TextView
@@ -224,15 +226,15 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:layout_marginHorizontal="20dp"
+        android:layout_marginHorizontal="16dp"
         android:layout_marginBottom="16dp"
-        app:layout_constraintBottom_toTopOf="@id/adContainer">
+        app:layout_constraintBottom_toTopOf="@id/adView">
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/leaderboardButton"
             android:layout_width="match_parent"
             android:layout_height="56dp"
-            android:text="SIRALAMA"
+            android:text="@string/leaderboard_title"
             android:textSize="16sp"
             android:fontFamily="@font/poppins_medium"
             android:layout_marginBottom="8dp"
@@ -244,7 +246,7 @@
             android:id="@+id/shareButton"
             android:layout_width="match_parent"
             android:layout_height="56dp"
-            android:text="PAYLAŞ"
+            android:text="@string/share"
             android:textSize="16sp"
             android:fontFamily="@font/poppins_medium"
             android:layout_marginBottom="8dp"
@@ -256,7 +258,7 @@
             android:id="@+id/mainMenuButton"
             android:layout_width="match_parent"
             android:layout_height="56dp"
-            android:text="ANA MENÜ"
+            android:text="@string/back_to_menu"
             android:textSize="16sp"
             android:fontFamily="@font/poppins_medium"
             android:layout_marginBottom="8dp"
@@ -268,7 +270,7 @@
             android:id="@+id/playAgainButton"
             android:layout_width="match_parent"
             android:layout_height="56dp"
-            android:text="TEKRAR OYNA"
+            android:text="@string/play_again"
             android:textSize="16sp"
             android:fontFamily="@font/poppins_medium"
             app:cornerRadius="28dp"
@@ -277,26 +279,15 @@
 
     </LinearLayout>
 
-    <com.google.android.material.card.MaterialCardView
-        android:id="@+id/adContainer"
-        android:layout_width="match_parent"
+    <com.google.android.gms.ads.AdView
+        android:id="@+id/adView"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginHorizontal="20dp"
-        android:layout_marginBottom="16dp"
-        app:cardCornerRadius="16dp"
-        app:cardElevation="0dp"
-        app:cardBackgroundColor="#26FFFFFF"
-        app:layout_constraintBottom_toBottomOf="parent">
-
-        <com.google.android.gms.ads.AdView
-            android:id="@+id/adView"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginVertical="8dp"
-            android:visibility="gone"
-            ads:adSize="BANNER"
-            ads:adUnitId="@string/banner_ad_unit_id"/>
-
-    </com.google.android.material.card.MaterialCardView>
+        android:layout_marginBottom="8dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        ads:adSize="BANNER"
+        ads:adUnitId="@string/banner_ad_unit_id"/>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

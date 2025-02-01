@@ -1,9 +1,11 @@
 package com.brainfocus.numberdetective.di
 
-import com.brainfocus.numberdetective.viewmodel.GameViewModel
-import org.koin.androidx.viewmodel.dsl.viewModel
-import org.koin.dsl.module
+import dagger.Module
+import dagger.hilt.InstallIn
+import dagger.hilt.android.components.ViewModelComponent
 
-val viewModelModule = module {
-    viewModel { GameViewModel() }
-} 
+@Module
+@InstallIn(ViewModelComponent::class)
+object ViewModelModule {
+    // ViewModels with @HiltViewModel and constructor injection don't need providers
+}

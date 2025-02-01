@@ -2,13 +2,31 @@ package com.brainfocus.numberdetective.viewmodel
 
 import androidx.lifecycle.ViewModel
 import com.brainfocus.numberdetective.game.NumberDetectiveGame
+import com.brainfocus.numberdetective.model.GameState
+import com.brainfocus.numberdetective.model.GuessResult
+import com.brainfocus.numberdetective.model.Hint
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import javax.inject.Inject
 
-class GameViewModel : ViewModel() {
-    private val game = NumberDetectiveGame()
+@HiltViewModel
+class GameViewModel @Inject constructor(
+    private val game: NumberDetectiveGame
+) : ViewModel() {
     private var _attempts = 0
-    private var startTime = System.currentTimeMillis()
+    private val _wrongAttempts = MutableStateFlow(0)
+    val wrongAttempts: StateFlow<Int> = _wrongAttempts
+    
+    private val _remainingAttempts = MutableStateFlow(MAX_ATTEMPTS)
+    val remainingAttempts: StateFlow<Int> = _remainingAttempts
+    
+    var startTime = System.currentTimeMillis()
+        private set
+        
+    private val _guesses = MutableStateFlow<List<String>>(emptyList())
+    val guesses: StateFlow<List<String>> = _guesses
+    
     private val _gameState = MutableStateFlow<GameState>(GameState.Initial)
     val gameState: StateFlow<GameState> = _gameState
     
@@ -17,6 +35,12 @@ class GameViewModel : ViewModel() {
     
     private val _score = MutableStateFlow(1000)
     val score: StateFlow<Int> = _score
+    
+    private val _correctAnswer = MutableStateFlow("")
+    val correctAnswer: StateFlow<String> = _correctAnswer
+
+    val attempts: Int
+        get() = _attempts
 
     init {
         startNewGame()
@@ -24,79 +48,74 @@ class GameViewModel : ViewModel() {
 
     fun startNewGame() {
         _attempts = 0
+        _wrongAttempts.value = 0
+        _remainingAttempts.value = MAX_ATTEMPTS
         _score.value = 1000
         startTime = System.currentTimeMillis()
+        _guesses.value = emptyList()
         game.startNewGame()
+        _correctAnswer.value = game.getCorrectAnswer()
+        _gameState.value = GameState.Playing
         
-        val gameHints = listOf(
-            Hint(game.firstHint.map { char -> char.toString().toInt() }, 
-                "Bir rakam doğru ama yanlış yerde"),
-            Hint(game.secondHint.map { char -> char.toString().toInt() }, 
-                "Bir rakam doğru ve doğru yerde"),
-            Hint(game.thirdHint.map { char -> char.toString().toInt() }, 
-                "İki rakam doğru ama ikisi de yanlış yerde"),
-            Hint(game.fourthHint.map { char -> char.toString().toInt() }, 
-                "İki rakam doğru ama ikisi de yanlış yerde"),
-            Hint(game.fifthHint.map { char -> char.toString().toInt() }, 
-                "İki rakam doğru, biri doğru yerde, biri yanlış yerde")
+        // Generate all hints at once
+        _hints.value = listOf(
+            Hint(game.firstHint, 1, 0, "Bir rakam doğru ama yanlış yerde"),
+            Hint(game.secondHint, 1, 0, "Bir rakam doğru ve doğru yerde"),
+            Hint(game.thirdHint, 0, 2, "İki rakam doğru ama yanlış yerde"),
+            Hint(game.fourthHint, 0, 2, "İki rakam doğru ama yanlış yerde"),
+            Hint(game.fifthHint, 1, 1, "İki rakam doğru ve bir tanesi doğru yerde")
         )
-        _hints.value = gameHints
-        updateGameState()
-        updateScore()
-    }
-
-    fun makeGuess(guess: Int) {
-        if (_gameState.value is GameState.Won || _gameState.value is GameState.Lost) {
-            return
-        }
-
-        try {
-            _attempts++
-            val guessStr = guess.toString().padStart(3, '0')  
-            val result = game.makeGuess(guessStr)
-            
-            when {
-                result.correct == 3 -> _gameState.value = GameState.Won(_score.value)
-                _attempts >= 3 -> _gameState.value = GameState.Lost
-                else -> _gameState.value = GameState.Playing(_score.value)
-            }
-        } catch (e: IllegalStateException) {
-            _gameState.value = GameState.Error(e.message ?: "Bilinmeyen hata")
-        }
-        updateScore()
-    }
-
-    private fun updateGameState() {
-        _gameState.value = GameState.Playing(_score.value)
-    }
-
-    fun getAttempts(): Int = _attempts
-
-    fun getGameTime(): Long {
-        return System.currentTimeMillis() - startTime
-    }
-
-    fun getCorrectAnswer(): String = game.getCorrectAnswer()
-
-    fun updateScore() {
-        val currentTime = System.currentTimeMillis()
-        val elapsedSeconds = (currentTime - startTime) / 1000
-        val timeBasedScore = maxOf(1000 - (elapsedSeconds * 2).toInt(), 0)
-        val hintsBasedScore = maxOf(500 - (_hints.value.size * 100), 0)
         
-        _score.value = timeBasedScore + hintsBasedScore
+        updateScore()
+    }
+
+    fun makeGuess(guess: String): GuessResult {
+        _attempts++
+        
+        // Add the guess to the list
+        val currentGuesses = _guesses.value.toMutableList()
+        currentGuesses.add(guess)
+        _guesses.value = currentGuesses
+
+        // Decrease remaining attempts
+        _remainingAttempts.value = _remainingAttempts.value - 1
+
+        val result = game.makeGuess(guess)
+        
+        // Always increment wrong attempts unless it's a complete match
+        if (result.correct != 3) {
+            _wrongAttempts.value = _wrongAttempts.value + 1
+        }
+        
+        val guessResult = when {
+            result.correct == 3 -> {
+                _gameState.value = GameState.Win(_score.value)
+                GuessResult.Correct
+            }
+            _wrongAttempts.value >= MAX_ATTEMPTS -> {
+                _gameState.value = GameState.GameOver(_score.value)
+                GuessResult.Wrong
+            }
+            else -> GuessResult.Partial(result.correct, result.misplaced)
+        }
+        
+        updateScore()
+        return guessResult
+    }
+    
+    private fun updateScore() {
+        val timePenalty = ((System.currentTimeMillis() - startTime) / 1000 * TIME_PENALTY).toInt()
+        val attemptsPenalty = _attempts * ATTEMPT_PENALTY
+        _score.value = maxOf(0, 1000 - timePenalty - attemptsPenalty)
+    }
+    
+    fun getCorrectAnswer(): String = _correctAnswer.value
+    
+    fun getTimeInSeconds(): Long = (System.currentTimeMillis() - startTime) / 1000
+    
+    companion object {
+        private const val MAX_ATTEMPTS = 3
+        private const val TIME_PENALTY = 0.5
+        private const val ATTEMPT_PENALTY = 50
     }
 }
-
-sealed class GameState {
-    object Initial : GameState()
-    data class Playing(val score: Int, val attempts: Int = 0) : GameState()
-    data class Won(val score: Int) : GameState()
-    object Lost : GameState()
-    data class Error(val message: String) : GameState()
-}
-
-data class Hint(
-    val numbers: List<Int>,
-    val description: String
-)

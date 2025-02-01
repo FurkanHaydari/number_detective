@@ -1,60 +1,75 @@
 package com.brainfocus.numberdetective.ui.leaderboard
 
 import android.view.LayoutInflater
-import android.view.View
 import android.view.ViewGroup
-import android.widget.TextView
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.brainfocus.numberdetective.R
-import com.brainfocus.numberdetective.model.PlayerProfile
-import com.google.firebase.auth.FirebaseAuth
+import com.brainfocus.numberdetective.databinding.ItemLeaderboardBinding
+import com.brainfocus.numberdetective.model.PlayerScore
+import com.bumptech.glide.Glide
 
-class LeaderboardAdapter : ListAdapter<PlayerProfile, LeaderboardAdapter.ViewHolder>(DIFF_CALLBACK) {
+class LeaderboardAdapter : ListAdapter<PlayerScore, LeaderboardAdapter.ViewHolder>(DIFF_CALLBACK) {
 
-    private val currentUserId = FirebaseAuth.getInstance().currentUser?.uid ?: ""
+    companion object {
+        private val DIFF_CALLBACK = object : DiffUtil.ItemCallback<PlayerScore>() {
+            override fun areItemsTheSame(oldItem: PlayerScore, newItem: PlayerScore): Boolean {
+                return oldItem.id == newItem.id
+            }
+
+            override fun areContentsTheSame(oldItem: PlayerScore, newItem: PlayerScore): Boolean {
+                return oldItem == newItem
+            }
+        }
+    }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
-        val view = LayoutInflater.from(parent.context)
-            .inflate(R.layout.item_leaderboard, parent, false)
-        return ViewHolder(view)
+        val binding = ItemLeaderboardBinding.inflate(
+            LayoutInflater.from(parent.context),
+            parent,
+            false
+        )
+        return ViewHolder(binding)
     }
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
-        val player = getItem(position)
-        holder.bind(player, position + 1)
-        
-        if (player.userId == currentUserId) {
-            holder.itemView.setBackgroundResource(R.drawable.current_user_background)
-            holder.currentUserIndicator.visibility = View.VISIBLE
-        } else {
-            holder.itemView.background = null
-            holder.currentUserIndicator.visibility = View.GONE
-        }
+        holder.bind(getItem(position))
     }
 
-    inner class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
-        private val rankText: TextView = itemView.findViewById(R.id.rankText)
-        private val nameText: TextView = itemView.findViewById(R.id.nameText)
-        private val scoreText: TextView = itemView.findViewById(R.id.scoreText)
-        val currentUserIndicator: View = itemView.findViewById(R.id.currentUserIndicator)
+    inner class ViewHolder(
+        private val binding: ItemLeaderboardBinding
+    ) : RecyclerView.ViewHolder(binding.root) {
 
-        fun bind(player: PlayerProfile, rank: Int) {
-            rankText.text = rank.toString()
-            nameText.text = player.displayName
-            scoreText.text = itemView.context.getString(R.string.score_format, player.score)
-        }
-    }
+        fun bind(item: PlayerScore) {
+            binding.apply {
+                rankText.text = "#${item.rank}"
+                nameText.text = item.name
+                scoreText.text = item.score.toString()
 
-    companion object {
-        private val DIFF_CALLBACK = object : DiffUtil.ItemCallback<PlayerProfile>() {
-            override fun areItemsTheSame(oldItem: PlayerProfile, newItem: PlayerProfile): Boolean {
-                return oldItem.userId == newItem.userId
-            }
+                // Oyuncu ikonunu yükle
+                item.playerIcon?.let { uri ->
+                    Glide.with(playerIcon)
+                        .load(uri)
+                        .circleCrop()
+                        .placeholder(R.drawable.ic_player_placeholder)
+                        .error(R.drawable.ic_player_placeholder)
+                        .into(playerIcon)
+                } ?: run {
+                    Glide.with(playerIcon)
+                        .load(R.drawable.ic_player_placeholder)
+                        .circleCrop()
+                        .into(playerIcon)
+                }
 
-            override fun areContentsTheSame(oldItem: PlayerProfile, newItem: PlayerProfile): Boolean {
-                return oldItem == newItem
+                // İlk 3 sıradaki oyuncular için özel arka plan
+                val backgroundRes = when (item.rank) {
+                    1L -> R.drawable.bg_rank_gold
+                    2L -> R.drawable.bg_rank_silver
+                    3L -> R.drawable.bg_rank_bronze
+                    else -> R.drawable.bg_rank_default
+                }
+                root.setBackgroundResource(backgroundRes)
             }
         }
     }

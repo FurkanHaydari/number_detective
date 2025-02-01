@@ -4,21 +4,26 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.activity.addCallback
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
+import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
-import androidx.navigation.fragment.findNavController
+import androidx.lifecycle.repeatOnLifecycle
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.brainfocus.numberdetective.R
 import com.brainfocus.numberdetective.databinding.FragmentLeaderboardBinding
+import com.brainfocus.numberdetective.ui.leaderboard.LeaderboardAdapter
 import com.brainfocus.numberdetective.viewmodel.LeaderboardViewModel
+import com.google.android.material.snackbar.Snackbar
+import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 
+@AndroidEntryPoint
 class LeaderboardFragment : Fragment() {
-    private val viewModel: LeaderboardViewModel by viewModels()
     private var _binding: FragmentLeaderboardBinding? = null
     private val binding get() = _binding!!
+
+    private val viewModel: LeaderboardViewModel by viewModels()
     private lateinit var leaderboardAdapter: LeaderboardAdapter
 
     override fun onCreateView(
@@ -32,55 +37,54 @@ class LeaderboardFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        
-        requireActivity().onBackPressedDispatcher.addCallback(viewLifecycleOwner) {
-            findNavController().navigateUp()
-        }
-
-        setupViews()
         setupRecyclerView()
-        observeViewModel()
-        
-        viewModel.loadLeaderboard(requireContext())
-    }
-
-    private fun setupViews() {
-        leaderboardAdapter = LeaderboardAdapter()
+        setupObservers()
+        loadLeaderboard()
     }
 
     private fun setupRecyclerView() {
+        leaderboardAdapter = LeaderboardAdapter()
         binding.leaderboardRecyclerView.apply {
-            layoutManager = LinearLayoutManager(requireContext())
             adapter = leaderboardAdapter
+            layoutManager = LinearLayoutManager(requireContext())
             setHasFixedSize(true)
         }
     }
 
-    private fun observeViewModel() {
+    private fun setupObservers() {
         viewLifecycleOwner.lifecycleScope.launch {
-            viewModel.leaderboardState.collect { state ->
-                when (state) {
-                    is LeaderboardViewModel.LeaderboardState.Loading -> {
-                        binding.progressBar.visibility = View.VISIBLE
-                        binding.leaderboardRecyclerView.visibility = View.GONE
-                        binding.errorCard.visibility = View.GONE
+            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
+                launch {
+                    viewModel.scores.collect { scores ->
+                        leaderboardAdapter.submitList(scores)
                     }
-                    is LeaderboardViewModel.LeaderboardState.Success -> {
-                        binding.progressBar.visibility = View.GONE
-                        binding.leaderboardRecyclerView.visibility = View.VISIBLE
-                        binding.errorCard.visibility = View.GONE
-                        binding.titleText.text = getString(R.string.district_leaderboard, state.location.district)
-                        leaderboardAdapter.submitList(state.players)
+                }
+
+                launch {
+                    viewModel.isLoading.collect { isLoading ->
+                        binding.progressBar.visibility = if (isLoading) View.VISIBLE else View.GONE
                     }
-                    is LeaderboardViewModel.LeaderboardState.Error -> {
-                        binding.progressBar.visibility = View.GONE
-                        binding.leaderboardRecyclerView.visibility = View.GONE
-                        binding.errorCard.visibility = View.VISIBLE
-                        binding.errorText.text = state.message
+                }
+
+                launch {
+                    viewModel.error.collect { error ->
+                        error?.let {
+                            showError(it)
+                        }
                     }
                 }
             }
         }
+    }
+
+    private fun loadLeaderboard() {
+        requireActivity().let { activity ->
+            viewModel.loadLeaderboard(activity)
+        }
+    }
+
+    private fun showError(message: String) {
+        Snackbar.make(binding.root, message, Snackbar.LENGTH_LONG).show()
     }
 
     override fun onDestroyView() {

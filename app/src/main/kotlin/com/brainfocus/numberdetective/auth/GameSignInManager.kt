@@ -3,108 +3,113 @@ package com.brainfocus.numberdetective.auth
 import android.app.Activity
 import android.content.Intent
 import android.util.Log
-import com.google.android.gms.games.Games
-import com.google.android.gms.auth.api.identity.BeginSignInRequest
-import com.google.android.gms.auth.api.identity.Identity
-import com.google.android.gms.auth.api.identity.SignInClient
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount
+import com.google.android.gms.auth.api.signin.GoogleSignInClient
+import com.google.android.gms.auth.api.signin.GoogleSignInOptions
+import com.google.android.gms.common.api.ApiException
+import com.google.android.gms.games.Games
 import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.auth.GoogleAuthProvider
+import dagger.hilt.android.scopes.ActivityScoped
+import javax.inject.Inject
 
-class GameSignInManager(private val activity: Activity) {
+@ActivityScoped
+class GameSignInManager @Inject constructor() {
+    private lateinit var signInClient: GoogleSignInClient
+    private lateinit var activity: Activity
+    private var pendingCallback: ((Boolean) -> Unit)? = null
+    private lateinit var auth: FirebaseAuth
     
+    fun initialize(activity: Activity) {
+        this.activity = activity
+        this.auth = FirebaseAuth.getInstance()
+        val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_GAMES_SIGN_IN)
+            .build()
+        signInClient = GoogleSignIn.getClient(activity, gso)
+    }
+
     companion object {
         private const val TAG = "GameSignInManager"
-        const val RC_SIGN_IN = 9001
+        private const val RC_SIGN_IN = 9001
     }
-    
-    private lateinit var oneTapClient: SignInClient
-    private lateinit var signInRequest: BeginSignInRequest
-    private var onSignInSuccess: ((FirebaseUser) -> Unit)? = null
-    private var onSignInFailed: (() -> Unit)? = null
-    
-    fun initializeSignIn() {
-        oneTapClient = Identity.getSignInClient(activity)
-        signInRequest = BeginSignInRequest.builder()
-            .setGoogleIdTokenRequestOptions(
-                BeginSignInRequest.GoogleIdTokenRequestOptions.builder()
-                    .setSupported(true)
-                    .setServerClientId(activity.getString(com.brainfocus.numberdetective.R.string.games_oauth_client_id))
-                    .setFilterByAuthorizedAccounts(true)
-                    .build())
-            .build()
-    }
-    
-    fun signIn(onSuccess: (FirebaseUser) -> Unit, onFailed: () -> Unit) {
-        this.onSignInSuccess = onSuccess
-        this.onSignInFailed = onFailed
-        
-        oneTapClient.beginSignIn(signInRequest)
-            .addOnSuccessListener { result ->
+
+    fun signInSilently(callback: (Boolean) -> Unit) {
+        val currentAccount = GoogleSignIn.getLastSignedInAccount(activity)
+        if (currentAccount != null && GoogleSignIn.hasPermissions(currentAccount)) {
+            onConnected(currentAccount)
+            callback(true)
+        } else {
+            signInClient.silentSignIn().addOnCompleteListener { task ->
                 try {
-                    activity.startIntentSenderForResult(
-                        result.pendingIntent.intentSender,
-                        RC_SIGN_IN,
-                        null,
-                        0,
-                        0,
-                        0
-                    )
-                } catch (e: Exception) {
-                    Log.e(TAG, "Couldn't start One Tap UI: ${e.message}")
-                    onSignInFailed?.invoke()
+                    val account = task.getResult(ApiException::class.java)
+                    onConnected(account)
+                    callback(true)
+                } catch (e: ApiException) {
+                    Log.d(TAG, "signInSilently failed: ${e.message}")
+                    callback(false)
                 }
-            }
-            .addOnFailureListener { e ->
-                Log.e(TAG, "Sign in failed: ${e.message}")
-                onSignInFailed?.invoke()
-            }
-    }
-    
-    fun handleSignInResult(requestCode: Int, @Suppress("UNUSED_PARAMETER") resultCode: Int, data: Intent?) {
-        if (requestCode == RC_SIGN_IN) {
-            try {
-                val credential = oneTapClient.getSignInCredentialFromIntent(data)
-                val idToken = credential.googleIdToken
-                if (idToken != null) {
-                    val firebaseCredential = GoogleAuthProvider.getCredential(idToken, null)
-                    FirebaseAuth.getInstance().signInWithCredential(firebaseCredential)
-                        .addOnSuccessListener {
-                            val user = FirebaseAuth.getInstance().currentUser
-                            if (user != null) {
-                                Log.d(TAG, "Sign in success: ${user.displayName}")
-                                onSignInSuccess?.invoke(user)
-                            } else {
-                                Log.e(TAG, "User is null after successful sign in")
-                                onSignInFailed?.invoke()
-                            }
-                        }
-                        .addOnFailureListener { e ->
-                            Log.e(TAG, "Firebase auth failed: ${e.message}")
-                            onSignInFailed?.invoke()
-                        }
-                } else {
-                    Log.e(TAG, "No ID token!")
-                    onSignInFailed?.invoke()
-                }
-            } catch (e: Exception) {
-                Log.e(TAG, "Sign in failed: ${e.message}")
-                onSignInFailed?.invoke()
             }
         }
     }
-    
-    fun signOut() {
-        FirebaseAuth.getInstance().signOut()
-        Log.d(TAG, "User signed out")
+
+    fun signIn() {
+        pendingCallback = null
+        val intent = signInClient.signInIntent
+        activity.startActivityForResult(intent, RC_SIGN_IN)
     }
-    
-    fun getGamesClient() = GoogleSignIn.getLastSignedInAccount(activity)?.let { account ->
+
+    fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?, callback: (Boolean) -> Unit) {
+        if (requestCode == RC_SIGN_IN) {
+            handleSignInResult(data)
+            callback(true)
+        }
+    }
+
+    fun signOut(callback: () -> Unit) {
+        signInClient.signOut().addOnCompleteListener {
+            Log.d(TAG, "Sign out completed")
+            callback()
+        }
+    }
+
+    private fun onConnected(account: GoogleSignInAccount) {
         Games.getGamesClient(activity, account)
-    } ?: run {
-        Log.e(TAG, "No signed in account found")
-        null
+            .setViewForPopups(activity.findViewById(android.R.id.content))
+    }
+
+    private fun handleSignInResult(data: Intent?) {
+        try {
+            val task = GoogleSignIn.getSignedInAccountFromIntent(data)
+            val account = task.getResult(ApiException::class.java)
+            
+            // Got Google Account, now get Firebase credential
+            val credential = GoogleAuthProvider.getCredential(account.idToken, null)
+            
+            // Sign in with Firebase
+            auth.signInWithCredential(credential)
+                .addOnSuccessListener { authResult ->
+                    // Successfully signed in
+                    val user = authResult.user
+                    if (user != null) {
+                        onSignInSuccess(user)
+                    } else {
+                        onSignInError("Kullanıcı bilgisi alınamadı")
+                    }
+                }
+                .addOnFailureListener { e ->
+                    onSignInError("Giriş başarısız: ${e.message}")
+                }
+        } catch (e: ApiException) {
+            onSignInError("Google hesabı ile giriş başarısız: ${e.message}")
+        }
+    }
+
+    private fun onSignInSuccess(user: com.google.firebase.auth.FirebaseUser) {
+        // Add implementation for onSignInSuccess
+    }
+
+    private fun onSignInError(message: String) {
+        // Add implementation for onSignInError
     }
 }

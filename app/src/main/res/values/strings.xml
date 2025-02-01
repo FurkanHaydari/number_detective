@@ -4,7 +4,7 @@
 
     <!-- Game Activity -->
     <string name="guess_button">TAHMİN ET</string>
-    <string name="remaining_attempts">Kalan Hak: %1$d</string>
+    <string name="remaining_attempts">Kalan Hak: %d</string>
     <string name="hint_correct">Tebrikler! Doğru tahmin!</string>
     <string name="hint_partial">%1$d rakam doğru, %2$d rakam yanlış yerde</string>
     <string name="hint_wrong">Hiç eşleşme yok</string>
@@ -28,8 +28,8 @@
     <string name="error_showing_leaderboard">Liderlik tablosu gösterilirken bir hata oluştu</string>
 
     <!-- Main Activity -->
-    <string name="app_title">Brain Focus</string>
-    <string name="start_button">BEYNİNİ KORU!</string>
+    <string name="app_title">Number Detective</string>
+    <string name="start_button">OYUNA BAŞLA</string>
     <string name="quote_author">- %1$s</string>
 
     <!-- Dialog -->
@@ -37,16 +37,19 @@
     <string name="number_zero">0</string>
 
     <!-- Common -->
-    <string name="refresh">Refresh</string>
-    <string name="back">Back</string>
-    <string name="error">Error</string>
-    <string name="ok">OK</string>
-    <string name="cancel">Cancel</string>
+    <string name="refresh">Yenile</string>
+    <string name="back">Geri</string>
+    <string name="error">Hata</string>
+    <string name="ok">TAMAM</string>
+    <string name="cancel">İptal</string>
+    <string name="settings">AYARLAR</string>
     <string name="press_back_again_to_exit">Çıkmak için tekrar basın</string>
 
-    <string name="back_to_menu">Ana Menü</string>
-    <string name="play_again">Tekrar Oyna</string>
-    <string name="share">Paylaş</string>
+    <string name="back_to_menu">ANA MENÜ</string>
+    <string name="play_again">TEKRAR OYNA</string>
+    <string name="share">PAYLAŞ</string>
+
+    <string name="tahmin_et">TAHMİN ET</string>
 
     <string-array name="game_quotes">
         <item>"Düşünmek en büyük eylemdir." - Blaise Pascal</item>
@@ -92,12 +95,11 @@
         <item>"Zorluklar, yaratıcılığın anasıdır." - Plato</item>
     </string-array>
 
-    <string name="game_description">Üç basamaklı gizli sayıyı bulmak için ipuçlarını kullan! Her tahminden sonra doğru rakam ve yerleri hakkında bilgi alacaksın. Üç deneme hakkın var, puanın süreye göre azalıyor. Hadi başla!</string>
+    <string name="game_description">Sayıları tahmin et, ipuçlarını takip et ve en yüksek skoru yap!</string>
 
     <!-- Reklam ID'leri -->
     <string name="banner_ad_unit_id">ca-app-pub-3940256099942544/6300978111</string>
     <string name="interstitial_ad_unit_id">ca-app-pub-3940256099942544/1033173712</string>
-    <string name="test_banner_ad_unit_id">ca-app-pub-3940256099942544/6300978111</string>
 
     <!-- AdMob -->
     <string name="ad_unit_id">ca-app-pub-3940256099942544/6300978111</string>
@@ -106,19 +108,28 @@
     <string name="number_up_button">Sayıyı artır</string>
     <string name="number_down_button">Sayıyı azalt</string>
 
+    <!-- Permissions -->
+    <string name="location_permission_title">Konum İzni Gerekli</string>
+    <string name="location_permission_rationale">Number Detective oyununda size yakın oyuncuları görebilmeniz ve liderlik tablosunda yerinizi alabilmeniz için konum izninize ihtiyacımız var.</string>
+    <string name="location_permission_denied_message">Konum izni olmadan bazı özellikler sınırlı olarak çalışacak.</string>
+    <string name="bluetooth_permission_title">Bluetooth İzni Gerekli</string>
+    <string name="bluetooth_permission_rationale">Yakındaki oyuncularla etkileşim kurabilmek için Bluetooth izninize ihtiyacımız var.</string>
+    <string name="bluetooth_permission_denied_message">Bluetooth izni olmadan bazı özellikler sınırlı olarak çalışacak.</string>
+
     <!-- Google Play Games Services -->
     <string name="games_oauth_client_id" translatable="false">140671902567-i5jdqtncsdu1261n2bkpemh2kf04blt6.apps.googleusercontent.com</string>
     <string name="games_app_id" translatable="false">140671902567</string>
 
     <!-- Leaderboard -->
-    <string name="leaderboard_title">Sıralama</string>
+    <string name="leaderboard_title">SIRALAMA</string>
+    <string name="leaderboard_id" translatable="false">CgkIxZWJ8KYWEAIQAQ</string>
     <string name="high_score">En Yüksek Skor</string>
     <string name="total_games">Toplam Oyun</string>
     <string name="games_played">Oyun Sayısı</string>
     <string name="top_players">En İyi Oyuncular</string>
     <string name="nearby_players">Yakındaki Oyuncular</string>
     <string name="global_players">Tüm Oyuncular</string>
-    <string name="error_loading_leaderboard">Sıralama yüklenirken bir hata oluştu</string>
+    <string name="error_loading_leaderboard">Sıralama yüklenirken bir hata oluştu. Lütfen tekrar deneyin.</string>
     <string name="retry">Tekrar Dene</string>
     <string name="nearby_top_players">Çevrendeki En İyi Oyuncular</string>
     <string name="district_leaderboard">%s Bölgesi Sıralaması</string>
@@ -126,9 +137,9 @@
     <string name="location_required_message">Bölge sıralamasına katılmak için konum bilgilerinizi paylaşabilirsiniz</string>
     <string name="error_loading_data">Veriler yüklenirken bir hata oluştu. Lütfen tekrar deneyin</string>
     <string name="update_location">Konumu Güncelle</string>
-    <string name="location_permission_rationale">Bölge sıralamasını görebilmek için konum izni gerekiyor</string>
     <string name="location_permission_denied">Konum izni olmadan bölge sıralaması görüntülenemez</string>
     <string name="score_format">%d Puan</string>
     <string name="location_error">Konum bilgisi alınamadı</string>
     <string name="no_leaderboard_data">Bu bölgede henüz sıralama verisi yok</string>
+    <string name="player_icon">Oyuncu İkonu</string>
 </resources>

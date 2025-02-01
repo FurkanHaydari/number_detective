@@ -131,23 +131,32 @@ class NumberDetectiveGame {
         var correct = 0
         var misplaced = 0
         
-        // Doğru yerdeki rakamları say
+        // Mark used positions to avoid double counting
+        val usedSecret = BooleanArray(DIGITS) { false }
+        val usedGuess = BooleanArray(DIGITS) { false }
+        
+        // First pass: count correct positions
         for (i in secretChars.indices) {
             if (secretChars[i] == guessChars[i]) {
                 correct++
+                usedSecret[i] = true
+                usedGuess[i] = true
             }
         }
         
-        // Yanlış yerdeki rakamları say
-        val secretFreq = secretChars.groupBy { it }
-        val guessFreq = guessChars.groupBy { it }
-        
-        misplaced = guessFreq.keys.sumOf { digit ->
-            minOf(
-                guessFreq[digit]?.size ?: 0,
-                secretFreq[digit]?.size ?: 0
-            )
-        } - correct
+        // Second pass: count misplaced digits
+        for (i in guessChars.indices) {
+            if (!usedGuess[i]) {  // Skip if this position was already counted
+                for (j in secretChars.indices) {
+                    if (!usedSecret[j] && guessChars[i] == secretChars[j]) {
+                        misplaced++
+                        usedSecret[j] = true
+                        usedGuess[i] = true
+                        break
+                    }
+                }
+            }
+        }
         
         if (correct == DIGITS) {
             isGameWon = true

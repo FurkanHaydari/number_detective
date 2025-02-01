@@ -1,44 +1,40 @@
 package com.brainfocus.numberdetective.adapter
 
 import android.view.LayoutInflater
-import android.view.View
 import android.view.ViewGroup
-import android.widget.TextView
+import androidx.recyclerview.widget.DiffUtil
+import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
-import com.brainfocus.numberdetective.R
-import com.brainfocus.numberdetective.viewmodel.Hint
+import com.brainfocus.numberdetective.databinding.ItemHintSquaresBinding
+import com.brainfocus.numberdetective.model.Hint
 
-class HintAdapter : RecyclerView.Adapter<HintAdapter.HintViewHolder>() {
-    private var hints = mutableListOf<Hint>()
-
-    fun updateHints(newHints: List<Hint>) {
-        hints.clear()
-        hints.addAll(newHints)
-        notifyDataSetChanged()
-    }
-
-    fun getCurrentHints(): List<Hint> = hints.toList()
-
+class HintAdapter : ListAdapter<Hint, HintAdapter.HintViewHolder>(HintDiffCallback()) {
+    
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): HintViewHolder {
-        val view = LayoutInflater.from(parent.context)
-            .inflate(R.layout.hint_item, parent, false)
-        return HintViewHolder(view)
+        val binding = ItemHintSquaresBinding.inflate(LayoutInflater.from(parent.context), parent, false)
+        return HintViewHolder(binding)
     }
-
+    
     override fun onBindViewHolder(holder: HintViewHolder, position: Int) {
-        val hint = hints[position]
-        holder.bind(hint)
+        holder.bind(getItem(position))
     }
-
-    override fun getItemCount(): Int = hints.size
-
-    class HintViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
-        private val guessNumberText: TextView = itemView.findViewById(R.id.text_guess_number)
-        private val hintText: TextView = itemView.findViewById(R.id.text_hint)
-
+    
+    class HintViewHolder(private val binding: ItemHintSquaresBinding) : RecyclerView.ViewHolder(binding.root) {
         fun bind(hint: Hint) {
-            guessNumberText.text = hint.numbers.joinToString("  ")
-            hintText.text = hint.description
+            binding.square1.text = hint.guess[0].toString()
+            binding.square2.text = hint.guess[1].toString()
+            binding.square3.text = hint.guess[2].toString()
+            binding.hintDescription.text = hint.description
         }
+    }
+}
+
+private class HintDiffCallback : DiffUtil.ItemCallback<Hint>() {
+    override fun areItemsTheSame(oldItem: Hint, newItem: Hint): Boolean {
+        return oldItem.guess == newItem.guess
+    }
+    
+    override fun areContentsTheSame(oldItem: Hint, newItem: Hint): Boolean {
+        return oldItem == newItem
     }
 }

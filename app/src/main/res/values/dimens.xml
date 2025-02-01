@@ -14,6 +14,9 @@
     
     <!-- Picker margins -->
     <dimen name="picker_margin">8dp</dimen>
+    <dimen name="picker_container_padding">16dp</dimen>
+    <dimen name="picker_height">140dp</dimen>
+    <dimen name="picker_divider_height">2dp</dimen>
 
-    <dimen name="number_picker_text_size">28sp</dimen>
+    <dimen name="number_picker_text_size">20sp</dimen>
 </resources>

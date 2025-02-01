@@ -1,40 +1,57 @@
 package com.brainfocus.numberdetective
 
 import android.content.Intent
-import android.media.MediaPlayer
+import android.os.Build
 import android.os.Bundle
 import android.util.Log
 import android.view.View
+import android.view.WindowInsets
+import android.view.WindowInsetsController
+import android.widget.Toast
 import androidx.activity.OnBackPressedCallback
+import androidx.activity.result.ActivityResultLauncher
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
-import com.brainfocus.numberdetective.databinding.ActivityGameResultBinding
-import com.brainfocus.numberdetective.ui.leaderboard.LeaderboardFragment
+import androidx.lifecycle.lifecycleScope
 import com.brainfocus.numberdetective.ads.AdManager
-import com.google.firebase.database.DatabaseReference
-import com.google.firebase.database.FirebaseDatabase
+import com.brainfocus.numberdetective.databinding.ActivityGameResultBinding
+import com.brainfocus.numberdetective.sound.SoundManager
+import com.google.android.gms.ads.AdRequest
+import com.google.android.gms.auth.api.signin.GoogleSignIn
+import com.google.android.gms.games.Games
+import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.launch
+import javax.inject.Inject
 
+@AndroidEntryPoint
 class GameResultActivity : AppCompatActivity() {
     private lateinit var binding: ActivityGameResultBinding
-    private var mediaPlayer: MediaPlayer? = null
-    private lateinit var database: DatabaseReference
-    private lateinit var adManager: AdManager
+    @Inject
+    lateinit var adManager: AdManager
+    @Inject
+    lateinit var soundManager: SoundManager
     private var score = 0
     private var correctAnswer = ""
     private var guesses = listOf<String>()
     private var attempts = 0
     private var timeInSeconds = 0L
 
+    private lateinit var leaderboardLauncher: ActivityResultLauncher<Intent>
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityGameResultBinding.inflate(layoutInflater)
         setContentView(binding.root)
+        setupFullscreen()
+        setupLeaderboardLauncher()
 
-        // Initialize Firebase
-        database = FirebaseDatabase.getInstance().reference
+        // Initialize sound manager
+        soundManager.initialize()
 
         // Initialize AdManager
-        adManager = AdManager.getInstance(this)
         adManager.initialize()
+        val adRequest = AdRequest.Builder().build()
+        binding.adView.loadAd(adRequest)
         
         // Get game result data from intent
         score = intent.getIntExtra("score", 0)
@@ -49,6 +66,12 @@ class GameResultActivity : AppCompatActivity() {
         
         // Play sound effect
         playGameResultSound(true)
+    }
+
+    private fun setupLeaderboardLauncher() {
+        leaderboardLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
+            // Handle result if needed
+        }
     }
 
     private fun setupBackPressedCallback() {
@@ -66,7 +89,16 @@ class GameResultActivity : AppCompatActivity() {
             
             // İstatistik bilgileri
             correctAnswerText.text = correctAnswer
-            guessesText.text = guesses.joinToString(", ")
+            
+            // Tahminleri alt alta göster ve numaralandır
+            val guessesText = buildString {
+                guesses.forEachIndexed { index, guess ->
+                    if (index > 0) append("\n")
+                    append("${index + 1}. Tahmin: $guess")
+                }
+            }
+            binding.guessesText.text = guessesText
+            
             attemptsText.text = attempts.toString()
             timeText.text = formatTime(timeInSeconds)
             
@@ -99,11 +131,17 @@ class GameResultActivity : AppCompatActivity() {
     }
 
     private fun showLeaderboard() {
-        val fragment = LeaderboardFragment()
-        supportFragmentManager.beginTransaction()
-            .replace(android.R.id.content, fragment)
-            .addToBackStack(null)
-            .commit()
+        val account = GoogleSignIn.getLastSignedInAccount(this)
+        if (account != null) {
+            Games.getLeaderboardsClient(this, account)
+                .getLeaderboardIntent(getString(R.string.leaderboard_id))
+                .addOnSuccessListener { intent ->
+                    leaderboardLauncher.launch(intent)
+                }
+                .addOnFailureListener { e ->
+                    Log.e(TAG, "Error showing leaderboard", e)
+                }
+        }
     }
 
     private fun shareScore() {
@@ -125,7 +163,6 @@ class GameResultActivity : AppCompatActivity() {
     private fun loadAd() {
         try {
             binding.adView.visibility = View.VISIBLE
-            adManager.loadBannerAd(binding.adView)
         } catch (e: Exception) {
             Log.e(TAG, "Error loading ad: ${e.message}")
         }
@@ -133,20 +170,36 @@ class GameResultActivity : AppCompatActivity() {
 
     private fun playGameResultSound(isWin: Boolean) {
         try {
-            mediaPlayer = MediaPlayer.create(this, if (isWin) R.raw.win_sound else R.raw.lose_sound)
-            mediaPlayer?.start()
-            mediaPlayer?.setOnCompletionListener {
-                it.release()
+            if (isWin) {
+                soundManager.playWinSound()
+            } else {
+                soundManager.playWrongSound()
             }
         } catch (e: Exception) {
-            Log.e(TAG, "Error playing sound: ${e.message}")
+            Log.e(TAG, "Error playing sound: ${e.message}", e)
         }
+    }
+
+    private fun setupFullscreen() {
+        @Suppress("DEPRECATION")
+        window.decorView.systemUiVisibility = (View.SYSTEM_UI_FLAG_FULLSCREEN
+                or View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
+                or View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY)
+    }
+
+    override fun onResume() {
+        super.onResume()
+        adManager.onResume()
+    }
+
+    override fun onPause() {
+        super.onPause()
+        adManager.onPause()
     }
 
     override fun onDestroy() {
         super.onDestroy()
-        mediaPlayer?.release()
-        mediaPlayer = null
+        adManager.release()
     }
 
     companion object {

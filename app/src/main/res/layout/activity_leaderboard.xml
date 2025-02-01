@@ -69,7 +69,7 @@
                         android:layout_width="64dp"
                         android:layout_height="64dp"
                         android:scaleType="centerCrop"
-                        app:shapeAppearanceOverlay="@style/CircularImageView"
+                        app:shapeAppearanceOverlay="@style/CircleImageView"
                         android:src="@drawable/default_avatar"/>
 
                     <LinearLayout

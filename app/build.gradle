@@ -1,12 +1,27 @@
 plugins {
     id 'com.android.application'
-    id 'org.jetbrains.kotlin.android'
+    id 'kotlin-android'
     id 'com.google.gms.google-services'
+    id 'kotlin-kapt'
+    id 'dagger.hilt.android.plugin'
 }
 
 android {
     namespace = 'com.brainfocus.numberdetective'
     compileSdk = 34
+
+    sourceSets {
+        main {
+            java.srcDirs = ['src/main/kotlin']
+            resources.srcDirs = ['src/main/res']
+        }
+        test {
+            java.srcDirs = ['src/test/kotlin']
+        }
+        androidTest {
+            java.srcDirs = ['src/androidTest/kotlin']
+        }
+    }
 
     defaultConfig {
         applicationId = "com.brainfocus.numberdetective"
@@ -16,7 +31,6 @@ android {
         versionName = "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
-        
         buildConfigField "String", "WEB_CLIENT_ID", "\"140671902567-i5jdqtncsdu1261n2bkpemh2kf04blt6.apps.googleusercontent.com\""
     }
 
@@ -35,8 +49,10 @@ android {
 
     kotlinOptions {
         jvmTarget = '17'
-        languageVersion = '2.1'
-        apiVersion = '2.1'
+        freeCompilerArgs += [
+            "-opt-in=kotlin.RequiresOptIn",
+            "-opt-in=kotlinx.coroutines.ExperimentalCoroutinesApi"
+        ]
     }
 
     buildFeatures {
@@ -47,9 +63,26 @@ android {
     lint {
         checkReleaseBuilds = false
     }
+
+    kapt {
+        correctErrorTypes true
+    }
 }
 
 dependencies {
+    def hilt_version = "2.48"
+    def kotlin_version = "1.9.0"
+
+    // Kotlin
+    implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
+    implementation "org.jetbrains.kotlin:kotlin-reflect:$kotlin_version"
+
+    // Hilt
+    implementation "com.google.dagger:hilt-android:$hilt_version"
+    kapt "com.google.dagger:hilt-android-compiler:$hilt_version"
+    kapt "androidx.hilt:hilt-compiler:1.1.0"
+
+    // AndroidX
     implementation 'androidx.core:core-ktx:1.12.0'
     implementation 'androidx.appcompat:appcompat:1.6.1'
     implementation 'com.google.android.material:material:1.11.0'
@@ -70,10 +103,16 @@ dependencies {
     implementation 'com.google.firebase:firebase-auth-ktx'
     implementation 'com.google.firebase:firebase-database-ktx'
     
-    // Google Play Services
-    implementation 'com.google.android.gms:play-services-auth:20.7.0'
-    implementation 'com.google.android.gms:play-services-games:23.1.0'
+    // Glide
+    implementation 'com.github.bumptech.glide:glide:4.16.0'
+    kapt 'com.github.bumptech.glide:compiler:4.16.0'
+    
+    // Location
     implementation 'com.google.android.gms:play-services-location:21.0.1'
+    
+    // Google Play Services
+    implementation 'com.google.android.gms:play-services-games:23.1.0'
+    implementation 'com.google.android.gms:play-services-auth:20.7.0'
     
     // AdMob
     implementation 'com.google.android.gms:play-services-ads:22.6.0'
@@ -82,10 +121,14 @@ dependencies {
     implementation 'com.airbnb.android:lottie:6.3.0'
     implementation 'com.github.PhilJay:MPAndroidChart:v3.1.0'
     
-    // Dependency Injection
-    implementation 'io.insert-koin:koin-android:3.4.3'
-    implementation 'io.insert-koin:koin-android-compat:3.4.3'
-    implementation 'io.insert-koin:koin-androidx-workmanager:3.4.3'
+    // Animation and Window Management
+    implementation 'androidx.window:window:1.2.0'
+    implementation 'androidx.dynamicanimation:dynamicanimation:1.0.0'
+    implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3'
+    implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-play-services:1.7.3'
+    
+    // SwipeRefreshLayout
+    implementation 'androidx.swiperefreshlayout:swiperefreshlayout:1.1.0'
     
     // Testing
     testImplementation 'junit:junit:4.13.2'

@@ -1,59 +1,78 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<com.google.android.material.card.MaterialCardView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:orientation="vertical"
-    android:gravity="center"
-    android:padding="8dp">
+    android:layout_marginHorizontal="8dp"
+    android:layout_marginVertical="4dp"
+    app:cardCornerRadius="24dp"
+    app:cardElevation="0dp"
+    app:cardBackgroundColor="#26FFFFFF"
+    android:alpha="0.95"
+    app:strokeColor="#33FFFFFF"
+    app:strokeWidth="0dp">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal"
+        android:orientation="vertical"
         android:gravity="center"
-        android:layout_marginBottom="4dp">
+        android:padding="12dp">
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center"
+            android:layout_marginBottom="8dp">
+
+            <TextView
+                android:id="@+id/square1"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:background="@drawable/hint_square_background"
+                android:layout_margin="4dp"
+                android:gravity="center"
+                android:textSize="20sp"
+                android:textStyle="bold"
+                android:fontFamily="@font/poppins_medium"
+                android:textColor="@android:color/white" />
+
+            <TextView
+                android:id="@+id/square2"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:background="@drawable/hint_square_background"
+                android:layout_margin="4dp"
+                android:gravity="center"
+                android:textSize="20sp"
+                android:textStyle="bold"
+                android:fontFamily="@font/poppins_medium"
+                android:textColor="@android:color/white" />
+
+            <TextView
+                android:id="@+id/square3"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:background="@drawable/hint_square_background"
+                android:layout_margin="4dp"
+                android:gravity="center"
+                android:textSize="20sp"
+                android:textStyle="bold"
+                android:fontFamily="@font/poppins_medium"
+                android:textColor="@android:color/white" />
+        </LinearLayout>
 
         <TextView
-            android:id="@+id/square1"
-            android:layout_width="48dp"
-            android:layout_height="48dp"
-            android:background="@drawable/hint_square_background"
-            android:layout_margin="4dp"
-            android:gravity="center"
-            android:textSize="24sp"
-            android:textStyle="bold"
-            android:textColor="@android:color/black" />
+            android:id="@+id/hintDescription"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="14sp"
+            android:textColor="@android:color/white"
+            android:fontFamily="@font/poppins_regular"
+            android:alpha="0.85"
+            android:gravity="center" />
 
-        <TextView
-            android:id="@+id/square2"
-            android:layout_width="48dp"
-            android:layout_height="48dp"
-            android:background="@drawable/hint_square_background"
-            android:layout_margin="4dp"
-            android:gravity="center"
-            android:textSize="24sp"
-            android:textStyle="bold"
-            android:textColor="@android:color/black" />
-
-        <TextView
-            android:id="@+id/square3"
-            android:layout_width="48dp"
-            android:layout_height="48dp"
-            android:background="@drawable/hint_square_background"
-            android:layout_margin="4dp"
-            android:gravity="center"
-            android:textSize="24sp"
-            android:textStyle="bold"
-            android:textColor="@android:color/black" />
     </LinearLayout>
-
-    <TextView
-        android:id="@+id/hintDescription"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:textSize="14sp"
-        android:textColor="@android:color/white"
-        android:gravity="center"
-        android:layout_marginBottom="8dp" />
-
-</LinearLayout>
+</com.google.android.material.card.MaterialCardView>
