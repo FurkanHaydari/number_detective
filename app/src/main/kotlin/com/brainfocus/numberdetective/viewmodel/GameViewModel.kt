@@ -1,13 +1,17 @@
 package com.brainfocus.numberdetective.viewmodel
 
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import com.brainfocus.numberdetective.game.NumberDetectiveGame
 import com.brainfocus.numberdetective.model.GameState
 import com.brainfocus.numberdetective.model.GuessResult
 import com.brainfocus.numberdetective.model.Hint
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
@@ -33,11 +37,19 @@ class GameViewModel @Inject constructor(
     private val _hints = MutableStateFlow<List<Hint>>(emptyList())
     val hints: StateFlow<List<Hint>> = _hints
     
-    private val _score = MutableStateFlow(1000)
+    private val _score = MutableStateFlow(0)
     val score: StateFlow<Int> = _score
     
     private val _correctAnswer = MutableStateFlow("")
     val correctAnswer: StateFlow<String> = _correctAnswer
+
+    private val _currentLevel = MutableStateFlow(1)
+    val currentLevel: StateFlow<Int> = _currentLevel
+
+    private val _remainingTime = MutableStateFlow(180) // 3 minutes in seconds
+    val remainingTime: StateFlow<Int> = _remainingTime
+
+    private var timerJob: Job? = null
 
     val attempts: Int
         get() = _attempts
@@ -46,27 +58,70 @@ class GameViewModel @Inject constructor(
         startNewGame()
     }
 
-    fun startNewGame() {
-        _attempts = 0
-        _wrongAttempts.value = 0
-        _remainingAttempts.value = MAX_ATTEMPTS
-        _score.value = 1000
-        startTime = System.currentTimeMillis()
+    fun startNewGame(isFirstGame: Boolean = true) {
+        if (isFirstGame) {
+            _attempts = 0
+            _wrongAttempts.value = 0
+            _remainingAttempts.value = MAX_ATTEMPTS
+            _score.value = 0  // Başlangıç skoru 0
+            startTime = System.currentTimeMillis()
+            _remainingTime.value = 180 // Reset timer to 3 minutes
+            _currentLevel.value = 1
+        }
+        
         _guesses.value = emptyList()
-        game.startNewGame()
+        game.startNewGame(_currentLevel.value)  // Level'ı game'e geçiriyoruz
         _correctAnswer.value = game.getCorrectAnswer()
         _gameState.value = GameState.Playing
         
-        // Generate all hints at once
-        _hints.value = listOf(
-            Hint(game.firstHint, 1, 0, "Bir rakam doğru ama yanlış yerde"),
-            Hint(game.secondHint, 1, 0, "Bir rakam doğru ve doğru yerde"),
-            Hint(game.thirdHint, 0, 2, "İki rakam doğru ama yanlış yerde"),
-            Hint(game.fourthHint, 0, 2, "İki rakam doğru ama yanlış yerde"),
-            Hint(game.fifthHint, 1, 1, "İki rakam doğru ve bir tanesi doğru yerde")
-        )
+        // Print correct answer to logcat for testing
+        android.util.Log.d("GameViewModel", "Correct answer for level ${_currentLevel.value}: ${_correctAnswer.value}")
         
-        updateScore()
+        // Generate all hints and shuffle them
+        val hintList = mutableListOf<Hint>()
+        
+        if (_currentLevel.value == 3) {
+            // Level 3 için 4 hint
+            hintList.addAll(listOf(
+                Hint(game.firstHint, 2, 0, getHintDescription(3, 1)),
+                Hint(game.secondHint, 1, 1, getHintDescription(3, 2)),
+                Hint(game.thirdHint, 1, 1, getHintDescription(3, 3)),
+                Hint(game.fourthHint, 1, 0, getHintDescription(3, 4))
+            ))
+        } else {
+            // Level 1-2 için 5 hint
+            hintList.addAll(listOf(
+                Hint(game.firstHint, 1, 0, getHintDescription(_currentLevel.value, 1)),
+                Hint(game.secondHint, 1, 0, getHintDescription(_currentLevel.value, 2)),
+                Hint(game.thirdHint, 0, 2, getHintDescription(_currentLevel.value, 3)),
+                Hint(game.fifthHint, 1, 1, getHintDescription(_currentLevel.value, 5))
+            ))
+            
+            // Level 2 hariç fourthHint'i ekle
+            if (_currentLevel.value != 2) {
+                hintList.add(Hint(game.fourthHint, 0, 2, getHintDescription(_currentLevel.value, 4)))
+            }
+        }
+        
+        _hints.value = hintList.shuffled()
+        
+        if (isFirstGame) {
+            startTimer()
+        }
+    }
+
+    fun nextLevel() {
+        if (_currentLevel.value >= MAX_LEVELS) {
+            _gameState.value = GameState.Win(_score.value)
+            timerJob?.cancel()
+            return
+        }
+        
+        _currentLevel.value++
+        _remainingAttempts.value = MAX_ATTEMPTS // Reset attempts for new level
+        _attempts = 0 // Reset attempts counter
+        _wrongAttempts.value = 0 // Reset wrong attempts
+        startNewGame(false) // Continue game without resetting score and timer
     }
 
     fun makeGuess(guess: String): GuessResult {
@@ -82,40 +137,100 @@ class GameViewModel @Inject constructor(
 
         val result = game.makeGuess(guess)
         
+        // Check if the guess is correct based on the current level
+        val requiredDigits = if (_currentLevel.value == 3) 4 else 3
+        
         // Always increment wrong attempts unless it's a complete match
-        if (result.correct != 3) {
+        if (result.correct != requiredDigits) {
             _wrongAttempts.value = _wrongAttempts.value + 1
         }
         
         val guessResult = when {
-            result.correct == 3 -> {
-                _gameState.value = GameState.Win(_score.value)
+            result.correct == requiredDigits -> {
+                calculateLevelScore()
+                if (_currentLevel.value >= MAX_LEVELS) {
+                    _gameState.value = GameState.Win(_score.value)
+                    timerJob?.cancel()
+                }
                 GuessResult.Correct
             }
             _wrongAttempts.value >= MAX_ATTEMPTS -> {
                 _gameState.value = GameState.GameOver(_score.value)
+                timerJob?.cancel()
                 GuessResult.Wrong
             }
             else -> GuessResult.Partial(result.correct, result.misplaced)
         }
         
-        updateScore()
         return guessResult
     }
-    
-    private fun updateScore() {
-        val timePenalty = ((System.currentTimeMillis() - startTime) / 1000 * TIME_PENALTY).toInt()
-        val attemptsPenalty = _attempts * ATTEMPT_PENALTY
-        _score.value = maxOf(0, 1000 - timePenalty - attemptsPenalty)
+
+    private fun calculateLevelScore() {
+        val maxScorePerLevel = 1000 // Her level için maksimum puan
+        
+        // Süre bazlı düşüş (180 saniye üzerinden)
+        val timePenalty = (180 - _remainingTime.value) * 2 // Her saniye için 2 puan düşüş
+        
+        // Deneme sayısı bazlı düşüş
+        val attemptsPenalty = _attempts * 50 // Her deneme için 50 puan düşüş
+        
+        // Level skoru hesaplama
+        val levelScore = maxOf(0, maxScorePerLevel - timePenalty - attemptsPenalty)
+        
+        // Toplam skora ekleme
+        _score.value += levelScore
+        
+        android.util.Log.d("GameViewModel", """
+            Level ${_currentLevel.value} Score Calculation:
+            Base Score: $maxScorePerLevel
+            Time Penalty: $timePenalty (${180 - _remainingTime.value} seconds used)
+            Attempts Penalty: $attemptsPenalty (${_attempts} attempts used)
+            Level Score: $levelScore
+            Total Score: ${_score.value}
+        """.trimIndent())
     }
-    
-    fun getCorrectAnswer(): String = _correctAnswer.value
-    
-    fun getTimeInSeconds(): Long = (System.currentTimeMillis() - startTime) / 1000
-    
+
+    private fun startTimer() {
+        timerJob?.cancel()
+        timerJob = viewModelScope.launch {
+            while (_remainingTime.value > 0 && _gameState.value is GameState.Playing) {
+                delay(1000)
+                _remainingTime.value = _remainingTime.value - 1
+                
+                if (_remainingTime.value == 0) {
+                    _gameState.value = GameState.GameOver(_score.value)
+                }
+            }
+        }
+    }
+
+    fun getTimeInSeconds(): Int {
+        return ((System.currentTimeMillis() - startTime) / 1000).toInt()
+    }
+
+    private fun getHintDescription(level: Int, hintNumber: Int): String {
+        return if (level == 3) {
+            when (hintNumber) {
+                1 -> "İlk ve üçüncü rakam doğru yerde"
+                2 -> "Son rakam doğru yerde, ilk rakam var ama yanlış yerde"
+                3 -> "İkinci rakam doğru yerde, son rakam var ama yanlış yerde"
+                4 -> "Sadece son rakam doğru yerde"
+                else -> ""
+            }
+        } else {
+            when (hintNumber) {
+                1 -> "Bir rakam doğru ama yanlış yerde"
+                2 -> "Bir rakam doğru ve doğru yerde"
+                3 -> "İki rakam doğru ama yanlış yerde"
+                4 -> "İki rakam doğru ama yanlış yerde"
+                5 -> "İki rakam doğru ve bir tanesi doğru yerde"
+                else -> ""
+            }
+        }
+    }
+
     companion object {
-        private const val MAX_ATTEMPTS = 3
-        private const val TIME_PENALTY = 0.5
-        private const val ATTEMPT_PENALTY = 50
+        const val MAX_ATTEMPTS = 3
+        const val MAX_LEVELS = 3  // Maximum 3 level
     }
 }
