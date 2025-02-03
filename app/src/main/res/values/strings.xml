@@ -28,7 +28,7 @@
     <string name="error_showing_leaderboard">Liderlik tablosu gösterilirken bir hata oluştu</string>
 
     <!-- Main Activity -->
-    <string name="app_title">Number Detective</string>
+    <string name="app_title">Sayı Dedektifi</string>
     <string name="start_button">OYUNA BAŞLA</string>
     <string name="quote_author">- %1$s</string>
 
@@ -95,8 +95,6 @@
         <item>"Zorluklar, yaratıcılığın anasıdır." - Plato</item>
     </string-array>
 
-    <string name="game_description">Sayıları tahmin et, ipuçlarını takip et ve en yüksek skoru yap!</string>
-
     <!-- Reklam ID'leri -->
     <string name="banner_ad_unit_id">ca-app-pub-3940256099942544/6300978111</string>
     <string name="interstitial_ad_unit_id">ca-app-pub-3940256099942544/1033173712</string>
@@ -142,4 +140,7 @@
     <string name="location_error">Konum bilgisi alınamadı</string>
     <string name="no_leaderboard_data">Bu bölgede henüz sıralama verisi yok</string>
     <string name="player_icon">Oyuncu İkonu</string>
+
+    <string name="brain_rot_title">Beyin Sağlığınız İçin Egzersiz Zamanı!</string>
+    <string name="brain_rot_message">Sosyal medyanın kısa içerikleri beynimizi tehdit ediyor! Araştırmalar, sürekli kısa içeriklere maruz kalmanın \'Brain Rot\' (Beyin Çürümesi) riskini artırdığını gösteriyor.\n\nSayı Dedektifi ile beyninizi zinde tutun, mantık yürütme ve problem çözme yeteneklerinizi geliştirin!</string>
 </resources>

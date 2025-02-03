@@ -172,14 +172,6 @@ class MainActivity : AppCompatActivity() {
                 soundPool?.play(buttonClickSound, 1f, 1f, 1, 0, 1f)
                 startActivity(Intent(this@MainActivity, GameActivity::class.java))
             }
-
-            // Setup description text
-            descriptionText.apply {
-                visibility = View.VISIBLE
-                text = getString(R.string.game_description)
-                setTextColor(getColor(R.color.white))
-                alpha = 0.9f
-            }
         }
     }
 

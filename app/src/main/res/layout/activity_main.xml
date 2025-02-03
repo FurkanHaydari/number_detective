@@ -112,46 +112,57 @@
 
     </LinearLayout>
 
-    <LinearLayout
-        android:id="@+id/descriptionContainer"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:gravity="center"
-        android:layout_marginHorizontal="16dp"
-        android:layout_marginTop="24dp"
-        app:layout_constraintTop_toBottomOf="@id/featuresContainer">
-
-        <TextView
-            android:id="@+id/descriptionText"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="@string/game_description"
-            android:textColor="@color/white"
-            android:textSize="15sp"
-            android:fontFamily="@font/poppins_medium"
-            android:lineSpacingMultiplier="1.4"
-            android:letterSpacing="0.02"
-            android:gravity="center"
-            android:paddingHorizontal="8dp"
-            android:shadowColor="#80000000"
-            android:shadowDx="1"
-            android:shadowDy="1"
-            android:shadowRadius="4"/>
-
-    </LinearLayout>
-
     <com.airbnb.lottie.LottieAnimationView
         android:id="@+id/brainAnimation"
         android:layout_width="200dp"
         android:layout_height="200dp"
-        app:lottie_autoPlay="true"
-        app:lottie_loop="true"
-        app:lottie_rawRes="@raw/brain_animation"
-        app:layout_constraintTop_toBottomOf="@id/descriptionContainer"
+        app:layout_constraintTop_toBottomOf="@id/featuresContainer"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
-        android:layout_marginTop="16dp"/>
+        android:layout_marginTop="16dp"
+        app:lottie_autoPlay="true"
+        app:lottie_loop="true"
+        app:lottie_rawRes="@raw/brain_animation"/>
+
+    <androidx.cardview.widget.CardView
+        android:id="@+id/brainRotContainer"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="32dp"
+        android:layout_marginBottom="24dp"
+        app:cardCornerRadius="20dp"
+        app:cardBackgroundColor="#1AFFFFFF"
+        app:cardElevation="0dp"
+        app:layout_constraintBottom_toTopOf="@id/startGameButton">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="16dp">
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/brain_rot_title"
+                android:textColor="@color/white"
+                android:textSize="18sp"
+                android:textStyle="bold"
+                android:gravity="center"
+                android:layout_marginBottom="8dp"/>
+
+            <TextView
+                android:id="@+id/brainRotMessage"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/brain_rot_message"
+                android:textColor="@color/white"
+                android:textSize="15sp"
+                android:letterSpacing="0.02"
+                android:gravity="center"
+                android:lineSpacingExtra="4dp"/>
+        </LinearLayout>
+    </androidx.cardview.widget.CardView>
 
     <com.google.android.material.button.MaterialButton
         android:id="@+id/startGameButton"
