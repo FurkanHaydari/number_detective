@@ -1,7 +1,9 @@
 package com.brainfocus.numberdetective.viewmodel
 
-import androidx.lifecycle.ViewModel
+import android.app.Application
+import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
+import com.brainfocus.numberdetective.R
 import com.brainfocus.numberdetective.game.NumberDetectiveGame
 import com.brainfocus.numberdetective.model.GameState
 import com.brainfocus.numberdetective.model.GuessResult
@@ -16,8 +18,9 @@ import javax.inject.Inject
 
 @HiltViewModel
 class GameViewModel @Inject constructor(
+    application: Application,
     private val game: NumberDetectiveGame
-) : ViewModel() {
+) : AndroidViewModel(application) {
     private var _attempts = 0
     private val _wrongAttempts = MutableStateFlow(0)
     val wrongAttempts: StateFlow<Int> = _wrongAttempts
@@ -209,24 +212,25 @@ class GameViewModel @Inject constructor(
     }
 
     private fun getHintDescription(level: Int, hintNumber: Int): String {
-        return if (level == 3) {
+        val resId = if (level == 3) {
             when (hintNumber) {
-                1 -> "İlk ve üçüncü rakam doğru yerde"
-                2 -> "Son rakam doğru yerde, ilk rakam var ama yanlış yerde"
-                3 -> "İkinci rakam doğru yerde, son rakam var ama yanlış yerde"
-                4 -> "Sadece son rakam doğru yerde"
-                else -> ""
+                1 -> R.string.hint_l3_1
+                2 -> R.string.hint_l3_2
+                3 -> R.string.hint_l3_3
+                4 -> R.string.hint_l3_4
+                else -> null
             }
         } else {
             when (hintNumber) {
-                1 -> "Bir rakam doğru ama yanlış yerde"
-                2 -> "Bir rakam doğru ve doğru yerde"
-                3 -> "İki rakam doğru ama yanlış yerde"
-                4 -> "İki rakam doğru ama yanlış yerde"
-                5 -> "İki rakam doğru ve bir tanesi doğru yerde"
-                else -> ""
+                1 -> R.string.hint_1
+                2 -> R.string.hint_2
+                3 -> R.string.hint_3
+                4 -> R.string.hint_4
+                5 -> R.string.hint_5
+                else -> null
             }
         }
+        return resId?.let { getApplication<Application>().getString(it) } ?: ""
     }
 
     companion object {

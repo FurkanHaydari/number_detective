@@ -85,22 +85,34 @@ class GameResultActivity : AppCompatActivity() {
     private fun setupViews() {
         binding.apply {
             // Skor ve başlık bilgileri
-            scoreText.text = "Skor: $score"
+            scoreText.text = getString(R.string.score_text, score)
+            
+            // Win durumu kontrolü
+            if (score >= 2000) {
+                gameOverText.text = getString(R.string.win_text)
+                gameOverText.setTextColor(getColor(android.R.color.white))
+                encouragementText.text = getString(R.string.win_motivation)
+            } else {
+                gameOverText.text = getString(R.string.game_over_text)
+                gameOverText.setTextColor(getColor(android.R.color.white))
+                encouragementText.text = getString(R.string.lose_motivation)
+            }
             
             // İstatistik bilgileri
             correctAnswerText.text = correctAnswer
+            attemptsText.text = attempts.toString()
             
             // Tahminleri alt alta göster ve numaralandır
-            val guessesText = buildString {
+            val guessesString = buildString {
                 guesses.forEachIndexed { index, guess ->
                     if (index > 0) append("\n")
-                    append("${index + 1}. Tahmin: $guess")
+                    append("${index + 1}. $guess")
                 }
             }
-            binding.guessesText.text = guessesText
+            guessesText.text = guessesString
             
-            attemptsText.text = attempts.toString()
-            timeText.text = formatTime(timeInSeconds)
+            // Süre bilgisi
+            timeText.text = getString(R.string.time_text, timeInSeconds)
             
             // Buton tıklamaları
             leaderboardButton.setOnClickListener {

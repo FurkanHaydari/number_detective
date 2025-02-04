@@ -3,144 +3,154 @@
     <string name="app_name">Number Detective</string>
 
     <!-- Game Activity -->
-    <string name="guess_button">TAHMİN ET</string>
-    <string name="remaining_attempts">Kalan Hak: %d</string>
-    <string name="hint_correct">Tebrikler! Doğru tahmin!</string>
-    <string name="hint_partial">%1$d rakam doğru, %2$d rakam yanlış yerde</string>
-    <string name="hint_wrong">Hiç eşleşme yok</string>
+    <string name="guess_button">GUESS</string>
+
+    <!-- Level 3 Hints -->
+    <string name="hint_l3_1">First and third digits are in correct positions</string>
+    <string name="hint_l3_2">Last digit is in correct position, first digit exists but in wrong position</string>
+    <string name="hint_l3_3">Second digit is in correct position, last digit exists but in wrong position</string>
+    <string name="hint_l3_4">Only the last digit is in correct position</string>
+
+    <!-- Other Level Hints -->
+    <string name="hint_1">One digit is correct but in wrong position</string>
+    <string name="hint_2">One digit is correct and in correct position</string>
+    <string name="hint_3">Two digits are correct but in wrong positions</string>
+    <string name="hint_4">Two digits are correct but in wrong positions</string>
+    <string name="hint_5">Two digits are correct and one is in correct position</string>
+    <string name="remaining_attempts">Remaining Attempts: %d</string>
+    <string name="hint_correct">Congratulations! Correct guess!</string>
+    <string name="hint_partial">%1$d digit(s) correct, %2$d digit(s) in the wrong place</string>
+    <string name="hint_wrong">No matches</string>
 
     <!-- Game Result Activity -->
-    <string name="result_congrats">Tebrikler!</string>
-    <string name="result_try_again">Tekrar Dene!</string>
-    <string name="score_text">Skor: %1$d</string>
-    <string name="attempts_text">Deneme: %1$d</string>
-    <string name="time_text">Süre: %1$ds</string>
-    <string name="share_button">Paylaş</string>
-    <string name="play_again_button">Tekrar Oyna</string>
-    <string name="share_score_text">Number Detective oyununda %1$d puan kazandım!</string>
-    <string name="win_text">Tebrikler!</string>
-    <string name="game_over_text">Oyun Bitti!</string>
-    <string name="win_motivation">Harika bir oyun! Devam et!</string>
-    <string name="lose_motivation">Daha iyisini yapabilirsin! Tekrar dene!</string>
-    <string name="share_win_text">🎉 Number Detective\'de kazandım! Skorum: %1$d 🎮</string>
-    <string name="share_lose_text">🎮 Number Detective\'de skorumu geçebilir misin? Skorum: %1$d</string>
-    <string name="share_title">Sonucu Paylaş</string>
-    <string name="error_showing_leaderboard">Liderlik tablosu gösterilirken bir hata oluştu</string>
+    <string name="result_congrats">Congratulations!</string>
+    <string name="result_try_again">Try Again!</string>
+    <string name="score_text">Score: %1$d</string>
+    <string name="attempts_text">Attempts: %1$d</string>
+    <string name="time_text">Time: %1$ds</string>
+    <string name="share_button">Share</string>
+    <string name="play_again_button">Play Again</string>
+    <string name="share_score_text">I scored %1$d points in Number Detective!</string>
+    <string name="win_text">CONGRATULATIONS!</string>
+    <string name="game_over_text">Game Over!</string>
+    <string name="win_motivation">Great game! Keep going!</string>
+    <string name="lose_motivation">You can do better! Try again!</string>
+    <string name="share_win_text">🎉 I won in Number Detective! My score: %1$d 🎮</string>
+    <string name="share_lose_text">🎮 Can you beat my score in Number Detective? My score: %1$d</string>
+    <string name="share_title">Share Result</string>
+    <string name="error_showing_leaderboard">An error occurred while displaying the leaderboard</string>
 
     <!-- Main Activity -->
-    <string name="app_title">Sayı Dedektifi</string>
-    <string name="start_button">OYUNA BAŞLA</string>
+    <string name="app_title_1">Number</string>
+    <string name="app_title_2">Detective</string>
+    <string name="start_button">START GAME</string>
+    
+    <!-- Features -->
+    <string name="feature_attention">Attention</string>
+    <string name="feature_memory">Memory</string>
+    <string name="feature_logic">Logic</string>
     <string name="quote_author">- %1$s</string>
 
     <!-- Dialog -->
-    <string name="dialog_ok">TAMAM</string>
+    <string name="dialog_ok">OK</string>
     <string name="number_zero">0</string>
 
     <!-- Common -->
-    <string name="refresh">Yenile</string>
-    <string name="back">Geri</string>
-    <string name="error">Hata</string>
-    <string name="ok">TAMAM</string>
-    <string name="cancel">İptal</string>
-    <string name="settings">AYARLAR</string>
-    <string name="press_back_again_to_exit">Çıkmak için tekrar basın</string>
+    <string name="refresh">Refresh</string>
+    <string name="back">Back</string>
+    <string name="error">Error</string>
+    <string name="ok">OK</string>
+    <string name="cancel">Cancel</string>
+    <string name="settings">SETTINGS</string>
+    <string name="press_back_again_to_exit">Press again to exit</string>
 
-    <string name="back_to_menu">ANA MENÜ</string>
-    <string name="play_again">TEKRAR OYNA</string>
-    <string name="share">PAYLAŞ</string>
+    <string name="back_to_menu">MAIN MENU</string>
+    <string name="play_again">PLAY AGAIN</string>
+    <string name="share">SHARE</string>
 
-    <string name="tahmin_et">TAHMİN ET</string>
+    <string name="tahmin_et">GUESS</string>
 
     <string-array name="game_quotes">
-        <item>"Düşünmek en büyük eylemdir." - Blaise Pascal</item>
-        <item>"Zeka, değişime uyum sağlama yeteneğidir." - Stephen Hawking</item>
-        <item>"Her başarısızlık, yeni bir başlangıçtır." - Nikola Tesla</item>
-        <item>"Basitlik en üstün zerafettir." - Leonardo da Vinci</item>
-        <item>"Soru sormak, cevap vermekten daha önemlidir." - Albert Einstein</item>
-        <item>"Beyin bir kas gibidir, kullandıkça güçlenir." - Thomas Edison</item>
-        <item>"Düşünmeden öğrenmek faydasız, öğrenmeden düşünmek tehlikelidir." - Konfüçyus</item>
-        <item>"En büyük zafer, insanın kendini yenmesidir." - Platon</item>
-        <item>"Bilgi, insanı kuşkudan; erdem, insanı korkudan kurtarır." - Konfüçyus</item>
-        <item>"Büyük işler başarmak için yalnızca harekete geçmek yeterli değildir; ne yapılması gerektiğini de düşünmeliyiz." - Aristoteles</item>
-        <item>"Zihin, bir kez yeni bir fikri kabul ettiğinde asla eski boyutlarına dönemez." - Oliver Wendell Holmes</item>
-        <item>"Düşünen insanlar, dünyayı değiştiren insanlardır." - Mahatma Gandhi</item>
-        <item>"Problemlere odaklanırsanız, daha fazla problem görürsünüz. Çözümlere odaklanırsanız, daha fazla fırsat görürsünüz." - Albert Einstein</item>
-        <item>"Merak, bilginin kıvılcımıdır." - Neil deGrasse Tyson</item>
-        <item>"Ne kadar çok bilirsen, o kadar çok hayal edebilirsin." - Albert Einstein</item>
-        <item>"Sorunun kendisi, çözümün ilk adımıdır." - Carl Jung</item>
-        <item>"Düşünmek, insanı güçlü kılar; merak, insanı ileriye taşır." - Marie Curie</item>
-        <item>"Sınırlarımızı sadece kendi zihnimiz belirler." - Napoleon Hill</item>
-        <item>"Bilgi, uygulamaya dökülmedikçe güçsüzdür." - Peter Drucker</item>
-        <item>"Bir şeyin imkansız olduğunu düşünürseniz, o şeyin imkansız olmasını sağlarsınız." - Bruce Lee</item>
-        <item>"Eğer hiçbir hata yapmıyorsanız, yeni bir şey denemiyorsunuz demektir." - Albert Einstein</item>
-        <item>"Doğru soruyu sormak, bir problemin yarısını çözmektir." - Charles Kettering</item>
-        <item>"Beyin, en büyük laboratuvardır. Onu keşfetmekten korkmayın." - Carl Sagan</item>
-        <item>"Hayal gücü, bilginin çok ötesindedir." - Albert Einstein</item>
-        <item>"İnovasyon, hayal gücüyle başlar." - Walt Disney</item>
-        <item>"Öğrenmenin sonu yoktur, hayat boyu devam eder." - Mahatma Gandhi</item>
-        <item>"Geçmişteki tüm büyük işler, bir zamanlar imkansız olarak kabul edilirdi." - Thomas Carlyle</item>
-        <item>"Bilim, sonsuz bir merakla başlar." - Richard Feynman</item>
-        <item>"Hayatın anlamı, anlam yaratmaktır." - Viktor Frankl</item>
-        <item>"Bir insanın büyüklüğü, düşüncelerinin büyüklüğüyle ölçülür." - Ralph Waldo Emerson</item>
-        <item>"Her yeni fikir, başlangıçta delilik olarak görülür." - George Bernard Shaw</item>
-        <item>"Hayatta önemli olan, hep ileriye bakmaktır." - Walt Whitman</item>
-        <item>"Bilgi güçtür, ancak bilgelik her şeydir." - Francis Bacon</item>
-        <item>"Bir sorunu çözmenin en iyi yolu, onu anlamaktır." - Albert Einstein</item>
-        <item>"Hayatta başarı, korkularımızla yüzleşmekten geçer." - Oprah Winfrey</item>
-        <item>"Dünyayı değiştiren fikirler, cesur adımlarla başlar." - Steve Jobs</item>
-        <item>"Başarı, cesaretin başka bir adıdır." - Winston Churchill</item>
-        <item>"Eğer hayal edebiliyorsan, yapabilirsin." - Walt Disney</item>
-        <item>"Hiçbir şey öğrenmiyorsanız, hiçbir şey bilmiyorsunuzdur." - Socrates</item>
-        <item>"Kendini tanımak, bilgeliktir." - Lao Tzu</item>
-        <item>"Zorluklar, yaratıcılığın anasıdır." - Plato</item>
+        <item>"Thinking is the greatest action." - Blaise Pascal</item>
+        <item>"Intelligence is the ability to adapt to change." - Stephen Hawking</item>
+        <item>"Every failure is a new beginning." - Nikola Tesla</item>
+        <item>"Simplicity is the ultimate sophistication." - Leonardo da Vinci</item>
+        <item>"Asking questions is more important than answering them." - Albert Einstein</item>
+        <item>"The brain is like a muscle; it strengthens with use." - Thomas Edison</item>
+        <item>"Learning without thought is useless; thinking without learning is dangerous." - Confucius</item>
+        <item>"The greatest victory is to conquer oneself." - Plato</item>
+        <item>"Knowledge frees man from doubt; virtue frees man from fear." - Confucius</item>
+        <item>"To accomplish great things, we must not only act but also think about what needs to be done." - Aristotle</item>
+        <item>"Once the mind accepts a new idea, it never returns to its original size." - Oliver Wendell Holmes</item>
+        <item>"Thinking people are the ones who change the world." - Mahatma Gandhi</item>
+        <item>"If you focus on problems, you will see more problems. If you focus on solutions, you will see more opportunities." - Albert Einstein</item>
+        <item>"Curiosity is the spark of knowledge." - Neil deGrasse Tyson</item>
+        <item>"The more you know, the more you can imagine." - Albert Einstein</item>
+        <item>"The problem itself is the first step toward the solution." - Carl Jung</item>
+        <item>"Thinking makes one strong; curiosity drives progress." - Marie Curie</item>
+        <item>"Only our minds set our limits." - Napoleon Hill</item>
+        <item>"Knowledge is powerless unless applied." - Peter Drucker</item>
+        <item>"If you think something is impossible, you make it impossible." - Bruce Lee</item>
+        <item>"If you're not making mistakes, you're not trying anything new." - Albert Einstein</item>
+        <item>"Asking the right question is half the solution." - Charles Kettering</item>
+        <item>"The brain is the greatest laboratory. Don't be afraid to explore it." - Carl Sagan</item>
+        <item>"Imagination is far beyond knowledge." - Albert Einstein</item>
+        <item>"Innovation starts with imagination." - Walt Disney</item>
+        <item>"Learning never ends; it lasts a lifetime." - Mahatma Gandhi</item>
+        <item>"All great achievements in the past were once considered impossible." - Thomas Carlyle</item>
+        <item>"Science begins with endless curiosity." - Richard Feynman</item>
+        <item>"The meaning of life is to create meaning." - Viktor Frankl</item>
+        <item>"A person’s greatness is measured by the greatness of their thoughts." - Ralph Waldo Emerson</item>
+        <item>"Every new idea is first seen as madness." - George Bernard Shaw</item>
+        <item>"What matters in life is always looking forward." - Walt Whitman</item>
+        <item>"Knowledge is power, but wisdom is everything." - Francis Bacon</item>
+        <item>"The best way to solve a problem is to understand it." - Albert Einstein</item>
+        <item>"Success in life comes from facing our fears." - Oprah Winfrey</item>
+        <item>"Ideas that change the world start with bold steps." - Steve Jobs</item>
+        <item>"Success is another name for courage." - Winston Churchill</item>
+        <item>"If you can imagine it, you can do it." - Walt Disney</item>
+        <item>"If you're not learning anything, you know nothing." - Socrates</item>
+        <item>"Knowing yourself is wisdom." - Lao Tzu</item>
+        <item>"Challenges are the mother of creativity." - Plato</item>
     </string-array>
 
-    <!-- Reklam ID'leri -->
-    <string name="banner_ad_unit_id">ca-app-pub-3940256099942544/6300978111</string>
-    <string name="interstitial_ad_unit_id">ca-app-pub-3940256099942544/1033173712</string>
-
-    <!-- AdMob -->
-    <string name="ad_unit_id">ca-app-pub-3940256099942544/6300978111</string>
-
-    <string name="hint_icon_description">İpucu ikonu</string>
-    <string name="number_up_button">Sayıyı artır</string>
-    <string name="number_down_button">Sayıyı azalt</string>
-
     <!-- Permissions -->
-    <string name="location_permission_title">Konum İzni Gerekli</string>
-    <string name="location_permission_rationale">Number Detective oyununda size yakın oyuncuları görebilmeniz ve liderlik tablosunda yerinizi alabilmeniz için konum izninize ihtiyacımız var.</string>
-    <string name="location_permission_denied_message">Konum izni olmadan bazı özellikler sınırlı olarak çalışacak.</string>
-    <string name="bluetooth_permission_title">Bluetooth İzni Gerekli</string>
-    <string name="bluetooth_permission_rationale">Yakındaki oyuncularla etkileşim kurabilmek için Bluetooth izninize ihtiyacımız var.</string>
-    <string name="bluetooth_permission_denied_message">Bluetooth izni olmadan bazı özellikler sınırlı olarak çalışacak.</string>
+    <string name="location_permission_title">Location Permission Required</string>
+    <string name="location_permission_rationale">We need your location permission so you can see nearby players and secure your place on the leaderboard in Number Detective.</string>
+    <string name="location_permission_denied_message">Some features will be limited without location permission.</string>
+    <string name="bluetooth_permission_title">Bluetooth Permission Required</string>
+    <string name="bluetooth_permission_rationale">We need your Bluetooth permission to interact with nearby players.</string>
+    <string name="bluetooth_permission_denied_message">Some features will be limited without Bluetooth permission.</string>
 
-    <!-- Google Play Games Services -->
-    <string name="games_oauth_client_id" translatable="false">140671902567-i5jdqtncsdu1261n2bkpemh2kf04blt6.apps.googleusercontent.com</string>
-    <string name="games_app_id" translatable="false">140671902567</string>
+    <!-- Result Screen -->
+    <string name="correct_answer">Correct Answer</string>
+    <string name="attempts">Attempts</string>
+    <string name="your_guesses">Your Guesses</string>
+    <string name="time">Time</string>
 
     <!-- Leaderboard -->
-    <string name="leaderboard_title">SIRALAMA</string>
-    <string name="leaderboard_id" translatable="false">CgkIxZWJ8KYWEAIQAQ</string>
-    <string name="high_score">En Yüksek Skor</string>
-    <string name="total_games">Toplam Oyun</string>
-    <string name="games_played">Oyun Sayısı</string>
-    <string name="top_players">En İyi Oyuncular</string>
-    <string name="nearby_players">Yakındaki Oyuncular</string>
-    <string name="global_players">Tüm Oyuncular</string>
-    <string name="error_loading_leaderboard">Sıralama yüklenirken bir hata oluştu. Lütfen tekrar deneyin.</string>
-    <string name="retry">Tekrar Dene</string>
-    <string name="nearby_top_players">Çevrendeki En İyi Oyuncular</string>
-    <string name="district_leaderboard">%s Bölgesi Sıralaması</string>
-    <string name="no_location_title">Bölge Sıralaması</string>
-    <string name="location_required_message">Bölge sıralamasına katılmak için konum bilgilerinizi paylaşabilirsiniz</string>
-    <string name="error_loading_data">Veriler yüklenirken bir hata oluştu. Lütfen tekrar deneyin</string>
-    <string name="update_location">Konumu Güncelle</string>
-    <string name="location_permission_denied">Konum izni olmadan bölge sıralaması görüntülenemez</string>
-    <string name="score_format">%d Puan</string>
-    <string name="location_error">Konum bilgisi alınamadı</string>
-    <string name="no_leaderboard_data">Bu bölgede henüz sıralama verisi yok</string>
-    <string name="player_icon">Oyuncu İkonu</string>
+    <string name="leaderboard_title">LEADERBOARD</string>
+<string name="high_score">High Score</string>
+<string name="total_games">Total Games</string>
+<string name="games_played">Games Played</string>
+<string name="top_players">Top Players</string>
+<string name="nearby_players">Nearby Players</string>
+<string name="global_players">Global Players</string>
+<string name="error_loading_leaderboard">An error occurred while loading the leaderboard. Please try again.</string>
+<string name="retry">Retry</string>
+<string name="nearby_top_players">Top Players Nearby</string>
+<string name="district_leaderboard">%s Regional Leaderboard</string>
+<string name="no_location_title">Regional Leaderboard</string>
+<string name="location_required_message">You can share your location to participate in the regional leaderboard.</string>
+<string name="error_loading_data">An error occurred while loading data. Please try again.</string>
+<string name="update_location">Update Location</string>
+<string name="location_permission_denied">Regional leaderboard cannot be displayed without location permission.</string>
+<string name="score_format">%d Points</string>
+<string name="location_error">Location data could not be retrieved.</string>
+<string name="no_leaderboard_data">No leaderboard data available for this region yet.</string>
+<string name="player_icon">Player Icon</string>
 
-    <string name="brain_rot_title">Beyin Sağlığınız İçin Egzersiz Zamanı!</string>
-    <string name="brain_rot_message">Sosyal medyanın kısa içerikleri beynimizi tehdit ediyor! Araştırmalar, sürekli kısa içeriklere maruz kalmanın \'Brain Rot\' (Beyin Çürümesi) riskini artırdığını gösteriyor.\n\nSayı Dedektifi ile beyninizi zinde tutun, mantık yürütme ve problem çözme yeteneklerinizi geliştirin!</string>
+<string name="brain_rot_title">Time to Exercise Your Brain!</string>
+<string name="brain_rot_message">Short-form content on social media is threatening our brains! Research shows that constant exposure to short content increases the risk of \'Brain Rot.\'\n\nKeep your mind sharp with Number Detective, and improve your logical thinking and problem-solving skills!</string>
+
 </resources>

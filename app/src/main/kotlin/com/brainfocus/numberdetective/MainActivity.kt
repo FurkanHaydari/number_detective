@@ -1,5 +1,6 @@
 package com.brainfocus.numberdetective
 
+import android.content.Context
 import android.content.Intent
 import android.media.AudioAttributes
 import android.media.SoundPool
@@ -28,6 +29,7 @@ import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import com.brainfocus.numberdetective.utils.LocaleHelper
 import javax.inject.Inject
 
 @AndroidEntryPoint
@@ -95,6 +97,7 @@ class MainActivity : AppCompatActivity() {
                 setupViews()
                 setupAnimations()
                 setupBackPressHandler()
+                setupLanguageButtons()
 
                 // Load and show content
                 loadQuotes()
@@ -114,7 +117,11 @@ class MainActivity : AppCompatActivity() {
             val quotes = resources.getStringArray(R.array.game_quotes)
             if (quotes.isNotEmpty()) {
                 val randomQuote = quotes.random()
-                binding.quoteText.text = randomQuote
+                val parts = randomQuote.split(" - ")
+                if (parts.size == 2) {
+                    binding.quoteText.text = parts[0].trim()
+                    binding.quoteAuthor.text = "\n" + "-" + parts[1].trim()
+                }
                 binding.quoteContainer.apply {
                     visibility = View.VISIBLE
                     alpha = 0f
@@ -138,19 +145,19 @@ class MainActivity : AppCompatActivity() {
                 // Set up each feature item
                 binding.dikkatFeature.root.apply {
                     findViewById<ImageView>(R.id.featureIcon).setImageResource(R.drawable.ic_dikkat)
-                    findViewById<TextView>(R.id.featureTitle).text = "Dikkat"
+                    findViewById<TextView>(R.id.featureTitle).text = getString(R.string.feature_attention)
                     visibility = View.VISIBLE
                 }
 
                 binding.hafizaFeature.root.apply {
                     findViewById<ImageView>(R.id.featureIcon).setImageResource(R.drawable.ic_hafiza)
-                    findViewById<TextView>(R.id.featureTitle).text = "Hafıza"
+                    findViewById<TextView>(R.id.featureTitle).text = getString(R.string.feature_memory)
                     visibility = View.VISIBLE
                 }
 
                 binding.mantikFeature.root.apply {
                     findViewById<ImageView>(R.id.featureIcon).setImageResource(R.drawable.ic_mantik)
-                    findViewById<TextView>(R.id.featureTitle).text = "Mantık"
+                    findViewById<TextView>(R.id.featureTitle).text = getString(R.string.feature_logic)
                     visibility = View.VISIBLE
                 }
 
@@ -231,5 +238,33 @@ class MainActivity : AppCompatActivity() {
         soundPool?.release()
         soundPool = null
         adManager.release()
+    }
+
+    private fun setupLanguageButtons() {
+        binding.turkishButton.setOnClickListener {
+            setLocale("tr")
+        }
+
+        binding.englishButton.setOnClickListener {
+            setLocale("en")
+        }
+
+        // Set initial button states
+        updateLanguageButtonStates(LocaleHelper.getLanguage(this))
+    }
+
+    private fun setLocale(languageCode: String) {
+        LocaleHelper.setLocale(this, languageCode)
+        updateLanguageButtonStates(languageCode)
+        recreate()
+    }
+
+    private fun updateLanguageButtonStates(selectedLanguage: String) {
+        binding.turkishButton.alpha = if (selectedLanguage == "tr") 1.0f else 0.5f
+        binding.englishButton.alpha = if (selectedLanguage == "en") 1.0f else 0.5f
+    }
+
+    override fun attachBaseContext(newBase: Context) {
+        super.attachBaseContext(LocaleHelper.onAttach(newBase))
     }
 }
