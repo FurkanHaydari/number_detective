@@ -314,7 +314,7 @@ class GameActivity : AppCompatActivity(), NumberPicker.OnValueChangeListener {
                     soundManager.playWrongSound()
                     Toast.makeText(this, "Yanlış tahmin! $remainingAttempts hakkınız kaldı", Toast.LENGTH_SHORT).show()
                 }
-                if (viewModel.wrongAttempts.value >= 3 || remainingAttempts <= 0) {
+                if (viewModel.wrongAttempts.value >= 3) {
                     // Burada ses çalmıyoruz, GameResult'ta çalacak
                     Toast.makeText(this, "Oyun bitti! Doğru cevap: ${viewModel.correctAnswer.value}", Toast.LENGTH_LONG).show()
                     navigateToGameResult(false)
