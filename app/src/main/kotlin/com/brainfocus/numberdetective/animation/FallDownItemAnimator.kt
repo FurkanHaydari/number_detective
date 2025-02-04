@@ -9,43 +9,73 @@ import androidx.recyclerview.widget.DefaultItemAnimator
 import androidx.recyclerview.widget.RecyclerView
 
 class FallDownItemAnimator : DefaultItemAnimator() {
+    init {
+        // Reduce animation duration for better performance
+        addDuration = 200
+        removeDuration = 200
+        // Disable change animations for better performance
+        supportsChangeAnimations = false
+    }
+
     override fun animateAdd(holder: RecyclerView.ViewHolder): Boolean {
+        dispatchAddStarting(holder)
+        
+        // Reset view properties
         holder.itemView.alpha = 0f
-        holder.itemView.translationY = -holder.itemView.height * 0.2f
-        holder.itemView.scaleX = 1.05f
-        holder.itemView.scaleY = 1.05f
+        holder.itemView.translationY = -holder.itemView.height * 0.15f
 
-        val animatorSet = android.animation.AnimatorSet()
+        // Use a single ValueAnimator for better performance
+        val animator = ObjectAnimator.ofFloat(holder.itemView, View.TRANSLATION_Y, 0f).apply {
+            duration = addDuration
+            interpolator = DecelerateInterpolator()
+        }
         
-        val translateAnimator = ObjectAnimator.ofFloat(holder.itemView, View.TRANSLATION_Y, 0f)
-        translateAnimator.interpolator = DecelerateInterpolator()
-        
-        val alphaAnimator = ObjectAnimator.ofFloat(holder.itemView, View.ALPHA, 1f)
-        alphaAnimator.interpolator = DecelerateInterpolator()
-        
-        val scaleXAnimator = ObjectAnimator.ofFloat(holder.itemView, View.SCALE_X, 1f)
-        scaleXAnimator.interpolator = DecelerateInterpolator()
-        
-        val scaleYAnimator = ObjectAnimator.ofFloat(holder.itemView, View.SCALE_Y, 1f)
-        scaleYAnimator.interpolator = DecelerateInterpolator()
+        val alphaAnimator = ObjectAnimator.ofFloat(holder.itemView, View.ALPHA, 1f).apply {
+            duration = addDuration
+            interpolator = DecelerateInterpolator()
+        }
 
-        animatorSet.playTogether(translateAnimator, alphaAnimator, scaleXAnimator, scaleYAnimator)
-        animatorSet.duration = 300
+        val animatorSet = android.animation.AnimatorSet().apply {
+            playTogether(animator, alphaAnimator)
+            addListener(object : AnimatorListenerAdapter() {
+                override fun onAnimationEnd(animation: Animator) {
+                    dispatchAddFinished(holder)
+                }
+                override fun onAnimationCancel(animation: Animator) {
+                    clearAnimatedValues(holder.itemView)
+                }
+            })
+        }
         
-        animatorSet.addListener(object : AnimatorListenerAdapter() {
-            override fun onAnimationStart(animation: Animator) {
-                dispatchAddStarting(holder)
-            }
+        animatorSet.start()
+        return true
+    }
 
-            override fun onAnimationEnd(animation: Animator) {
-                dispatchAddFinished(holder)
-            }
+    override fun animateRemove(holder: RecyclerView.ViewHolder): Boolean {
+        dispatchRemoveStarting(holder)
+        
+        val animator = ObjectAnimator.ofFloat(holder.itemView, View.TRANSLATION_Y, holder.itemView.height.toFloat()).apply {
+            duration = removeDuration
+            interpolator = DecelerateInterpolator()
+        }
+        
+        val alphaAnimator = ObjectAnimator.ofFloat(holder.itemView, View.ALPHA, 0f).apply {
+            duration = removeDuration
+            interpolator = DecelerateInterpolator()
+        }
 
-            override fun onAnimationCancel(animation: Animator) {
-                clearAnimatedValues(holder.itemView)
-            }
-        })
-
+        val animatorSet = android.animation.AnimatorSet().apply {
+            playTogether(animator, alphaAnimator)
+            addListener(object : AnimatorListenerAdapter() {
+                override fun onAnimationEnd(animation: Animator) {
+                    dispatchRemoveFinished(holder)
+                }
+                override fun onAnimationCancel(animation: Animator) {
+                    clearAnimatedValues(holder.itemView)
+                }
+            })
+        }
+        
         animatorSet.start()
         return true
     }
@@ -55,10 +85,5 @@ class FallDownItemAnimator : DefaultItemAnimator() {
         view.translationY = 0f
         view.scaleX = 1f
         view.scaleY = 1f
-    }
-
-    override fun animateRemove(holder: RecyclerView.ViewHolder): Boolean {
-        dispatchRemoveFinished(holder)
-        return false
     }
 }

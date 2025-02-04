@@ -44,7 +44,7 @@ class GameActivity : AppCompatActivity(), NumberPicker.OnValueChangeListener {
     private val viewModel: GameViewModel by viewModels()
     private lateinit var hintAdapter: HintAdapter
     private var isAnimating = false
-    private lateinit var numberPickers: List<NumberPicker>
+    private var numberPickers: List<NumberPicker> = emptyList()
 
     @Inject
     lateinit var soundManager: SoundManager
@@ -56,13 +56,23 @@ class GameActivity : AppCompatActivity(), NumberPicker.OnValueChangeListener {
         makeFullScreen()
 
         lifecycleScope.launch {
-            withContext(kotlinx.coroutines.Dispatchers.IO) {
-                soundManager.initialize()
+            try {
+                withContext(kotlinx.coroutines.Dispatchers.IO) {
+                    soundManager.initialize()
+                }
+            } catch (e: Exception) {
+                android.util.Log.e("GameActivity", "Error initializing sound manager", e)
             }
             withContext(kotlinx.coroutines.Dispatchers.Main) {
-                setupViews()
+                android.util.Log.d("GameActivity", "Starting initial setup")
                 setupUI()
                 setupObservers()
+                // Wait for initial currentLevel value
+                viewModel.currentLevel.value // Access to ensure flow is initialized
+                android.util.Log.d("GameActivity", "Initial currentLevel: ${viewModel.currentLevel.value}")
+                // Initial view setup with cleanup
+                cleanupViews()
+                setupViews()
             }
         }
     }
@@ -100,62 +110,109 @@ class GameActivity : AppCompatActivity(), NumberPicker.OnValueChangeListener {
         binding.hintDetailCard.setOnClickListener { }
     }
 
-    private fun setupViews() {
-        val container = LinearLayout(this).apply {
-            orientation = LinearLayout.HORIZONTAL
-            weightSum = if (viewModel.currentLevel.value == 3) 4f else 3f
-            alpha = 0f
-            scaleX = 0.8f
-            scaleY = 0.8f
-        }
-
-        val numPickers = if (viewModel.currentLevel.value == 3) 4 else 3
-        
-        numberPickers = List(numPickers) { 
-            NumberPicker(this).apply {
-                id = View.generateViewId()
-                minValue = 0
-                maxValue = 9
-                setOnValueChangedListener(this@GameActivity)
-                wrapSelectorWheel = true 
-                layoutParams = LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f)
-            }
-        }
-
+    private fun cleanupViews() {
+        // Remove all number pickers from their parents
         numberPickers.forEach { picker ->
-            container.addView(picker)
+            (picker.parent as? ViewGroup)?.removeView(picker)
         }
+        // Clear the list
+        numberPickers = emptyList()
+        // Clear the container
+        binding.numberPickerContainer.removeAllViews()
+    }
 
-        binding.numberPickerContainer.addView(container)
+    private fun setupViews() {
+        android.util.Log.d("GameActivity", "Setting up views, current level: ${viewModel.currentLevel.value}")
+        lifecycleScope.launch(kotlinx.coroutines.Dispatchers.Default) {
+            // First cleanup on main thread
+            withContext(kotlinx.coroutines.Dispatchers.Main) {
+                cleanupViews()
+            }
 
-        binding.apply {
-            submitButton.alpha = 0f
-            submitButton.translationY = 100f
-            hintsCard.alpha = 0f
-            hintsCard.translationX = -100f
+            // Create views on background thread
+            val container = LinearLayout(this@GameActivity).apply {
+                orientation = LinearLayout.HORIZONTAL
+                weightSum = if (viewModel.currentLevel.value == 3) 4f else 3f
+                alpha = 0f
+                scaleX = 0.8f
+                scaleY = 0.8f
+            }
 
-            container.animate()
-                .alpha(1f)
-                .scaleX(1f)
-                .scaleY(1f)
-                .setDuration(500)
-                .setInterpolator(DecelerateInterpolator())
-                .withEndAction {
-                    hintsCard.animate()
-                        .alpha(1f)
-                        .translationX(0f)
-                        .setDuration(400)
-                        .setInterpolator(DecelerateInterpolator())
-                        .start()
-                    
-                    submitButton.animate()
-                        .alpha(1f)
-                        .translationY(0f)
-                        .setDuration(400)
-                        .setInterpolator(DecelerateInterpolator())
-                        .start()
+            val numPickers = if (viewModel.currentLevel.value == 3) 4 else 3
+            android.util.Log.d("GameActivity", "Creating $numPickers number pickers")
+            
+            val newPickers = List(numPickers) { 
+                NumberPicker(this@GameActivity).apply {
+                    id = View.generateViewId()
+                    minValue = 0
+                    maxValue = 9
+                    setOnValueChangedListener(this@GameActivity)
+                    wrapSelectorWheel = true 
+                    layoutParams = LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f)
                 }
-                .start()
+            }
+
+            withContext(kotlinx.coroutines.Dispatchers.Main) {
+                android.util.Log.d("GameActivity", "Setting up views on main thread")
+                numberPickers = newPickers
+                
+                // Add views on main thread
+                android.util.Log.d("GameActivity", "Adding ${numberPickers.size} pickers to container")
+                numberPickers.forEach { picker ->
+                    container.addView(picker)
+                }
+                android.util.Log.d("GameActivity", "Adding container to numberPickerContainer")
+                binding.numberPickerContainer.addView(container)
+
+                // Setup initial states
+                binding.apply {
+                    submitButton.alpha = 0f
+                    submitButton.translationY = 100f
+                    hintsCard.alpha = 0f
+                    hintsCard.translationX = -100f
+                }
+
+                // Start animations with a slight delay to let layout settle
+                kotlinx.coroutines.delay(100)
+
+                // Use property animation for smoother performance
+                val containerAnimator = ValueAnimator.ofFloat(0f, 1f).apply {
+                    duration = 500
+                    interpolator = DecelerateInterpolator()
+                    addUpdateListener { animator ->
+                        val value = animator.animatedValue as Float
+                        container.alpha = value
+                        container.scaleX = 0.8f + (0.2f * value)
+                        container.scaleY = 0.8f + (0.2f * value)
+                    }
+                }
+
+                val hintsAnimator = ValueAnimator.ofFloat(0f, 1f).apply {
+                    duration = 400
+                    startDelay = 500
+                    interpolator = DecelerateInterpolator()
+                    addUpdateListener { animator ->
+                        val value = animator.animatedValue as Float
+                        binding.hintsCard.alpha = value
+                        binding.hintsCard.translationX = -100f + (100f * value)
+                    }
+                }
+
+                val submitAnimator = ValueAnimator.ofFloat(0f, 1f).apply {
+                    duration = 400
+                    startDelay = 500
+                    interpolator = DecelerateInterpolator()
+                    addUpdateListener { animator ->
+                        val value = animator.animatedValue as Float
+                        binding.submitButton.alpha = value
+                        binding.submitButton.translationY = 100f - (100f * value)
+                    }
+                }
+
+                containerAnimator.start()
+                hintsAnimator.start()
+                submitAnimator.start()
+            }
         }
 
         binding.submitButton.setOnClickListener {
@@ -168,6 +225,7 @@ class GameActivity : AppCompatActivity(), NumberPicker.OnValueChangeListener {
         // Boş tahmin kontrolü
         if (guess.isBlank()) {
             Toast.makeText(this, "Lütfen bir tahmin girin", Toast.LENGTH_SHORT).show()
+            soundManager.playButtonClick()
             return
         }
 
@@ -175,6 +233,7 @@ class GameActivity : AppCompatActivity(), NumberPicker.OnValueChangeListener {
         if (!isValidGuess(guess)) {
             Toast.makeText(this, "Geçersiz tahmin! Her rakam farklı olmalı", Toast.LENGTH_SHORT).show()
             binding.numberPickerCard.performHapticFeedback(HapticFeedbackConstants.LONG_PRESS)
+            soundManager.playButtonClick()
             return
         }
 
@@ -182,6 +241,7 @@ class GameActivity : AppCompatActivity(), NumberPicker.OnValueChangeListener {
         val expectedLength = if (viewModel.currentLevel.value == 3) 4 else 3
         if (guess.length != expectedLength) {
             Toast.makeText(this, "Tahmin $expectedLength basamaklı olmalıdır", Toast.LENGTH_SHORT).show()
+            soundManager.playButtonClick()
             return
         }
 
@@ -189,6 +249,7 @@ class GameActivity : AppCompatActivity(), NumberPicker.OnValueChangeListener {
         if (viewModel.guesses.value.contains(guess)) {
             Toast.makeText(this, "Bu tahmini daha önce yaptınız", Toast.LENGTH_SHORT).show()
             binding.numberPickerCard.performHapticFeedback(HapticFeedbackConstants.LONG_PRESS)
+            soundManager.playButtonClick()
             return
         }
 
@@ -206,30 +267,38 @@ class GameActivity : AppCompatActivity(), NumberPicker.OnValueChangeListener {
                 }
             }
             is GuessResult.Wrong -> {
-                soundManager.playWrongSound()
                 binding.numberPickerCard.performHapticFeedback(HapticFeedbackConstants.LONG_PRESS)
                 val remainingAttempts = viewModel.remainingAttempts.value
                 if (remainingAttempts > 0) {
+                    soundManager.playWrongSound()
                     Toast.makeText(this, "Yanlış tahmin! $remainingAttempts hakkınız kaldı", Toast.LENGTH_SHORT).show()
                 }
                 if (viewModel.wrongAttempts.value >= 3 || remainingAttempts <= 0) {
+                    soundManager.playLoseSound()
                     Toast.makeText(this, "Oyun bitti! Doğru cevap: ${viewModel.correctAnswer.value}", Toast.LENGTH_LONG).show()
                     navigateToGameResult(false)
                     return
                 }
             }
             is GuessResult.Partial -> {
-                soundManager.playWrongSound()
                 binding.numberPickerCard.performHapticFeedback(HapticFeedbackConstants.LONG_PRESS)
                 val message = when {
-                    result.correctDigits > 0 && result.wrongPositionDigits > 0 -> 
+                    result.correctDigits > 0 && result.wrongPositionDigits > 0 -> {
+                        soundManager.playCorrectSound()
                         "${result.correctDigits} rakam doğru yerde, ${result.wrongPositionDigits} rakam yanlış yerde"
-                    result.correctDigits > 0 -> 
+                    }
+                    result.correctDigits > 0 -> {
+                        soundManager.playCorrectSound()
                         "${result.correctDigits} rakam doğru yerde"
-                    result.wrongPositionDigits > 0 -> 
+                    }
+                    result.wrongPositionDigits > 0 -> {
+                        soundManager.playCorrectSound()
                         "${result.wrongPositionDigits} rakam yanlış yerde"
-                    else -> 
+                    }
+                    else -> {
+                        soundManager.playWrongSound()
                         "Hiç eşleşme yok"
+                    }
                 }
                 Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
             }
@@ -262,10 +331,16 @@ class GameActivity : AppCompatActivity(), NumberPicker.OnValueChangeListener {
 
                 launch {
                     viewModel.currentLevel.collect { level ->
+                        android.util.Log.d("GameActivity", "Level changed to: $level")
                         binding.levelText.text = "Level $level"
-                        // Level değiştiğinde number picker'ları güncelle
-                        binding.numberPickerContainer.removeAllViews()
-                        setupViews()
+                        // Only update views if not in initial setup
+                        if (binding.numberPickerContainer.childCount > 0) {
+                            android.util.Log.d("GameActivity", "Updating views for level change")
+                            cleanupViews()
+                            setupViews()
+                        } else {
+                            android.util.Log.d("GameActivity", "Skipping view update - initial setup")
+                        }
                     }
                 }
 
@@ -335,7 +410,11 @@ class GameActivity : AppCompatActivity(), NumberPicker.OnValueChangeListener {
 
     override fun onDestroy() {
         super.onDestroy()
-        soundManager.release()
+        try {
+            soundManager.release()
+        } catch (e: Exception) {
+            android.util.Log.e("GameActivity", "Error releasing sound manager", e)
+        }
     }
 
     private fun showHintDetail(hint: Hint) {

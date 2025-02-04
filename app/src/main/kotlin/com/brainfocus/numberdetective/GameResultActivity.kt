@@ -104,18 +104,22 @@ class GameResultActivity : AppCompatActivity() {
             
             // Buton tıklamaları
             leaderboardButton.setOnClickListener {
+                soundManager.playButtonClick()
                 showLeaderboard()
             }
             
             shareButton.setOnClickListener {
+                soundManager.playButtonClick()
                 shareScore()
             }
             
             mainMenuButton.setOnClickListener {
+                soundManager.playButtonClick()
                 finish()
             }
             
             playAgainButton.setOnClickListener {
+                soundManager.playButtonClick()
                 startNewGame()
             }
             
@@ -173,7 +177,7 @@ class GameResultActivity : AppCompatActivity() {
             if (isWin) {
                 soundManager.playWinSound()
             } else {
-                soundManager.playWrongSound()
+                soundManager.playLoseSound()
             }
         } catch (e: Exception) {
             Log.e(TAG, "Error playing sound: ${e.message}", e)

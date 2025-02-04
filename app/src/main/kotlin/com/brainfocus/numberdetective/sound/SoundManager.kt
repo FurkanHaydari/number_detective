@@ -16,49 +16,252 @@ class SoundManager @Inject constructor(
     private var tickSoundId: Int = 0
     private var winSoundId: Int = 0
     private var wrongSoundId: Int = 0
-    private var partialSoundId: Int = 0
+    private var correctSoundId: Int = 0
+    private var buttonClickId: Int = 0
+    private var loseSoundId: Int = 0
     private var isInitialized = false
+    private var loadedSounds = 0
+    private var totalSounds = 6
     
     fun initialize() {
         if (isInitialized) return
         
-        val attributes = AudioAttributes.Builder()
-            .setUsage(AudioAttributes.USAGE_GAME)
-            .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
-            .build()
-        
-        soundPool = SoundPool.Builder()
-            .setMaxStreams(5)
-            .setAudioAttributes(attributes)
-            .build()
-        
-        tickSoundId = soundPool?.load(context, R.raw.tick_sound, 1) ?: 0
-        winSoundId = soundPool?.load(context, R.raw.win_sound, 1) ?: 0
-        wrongSoundId = soundPool?.load(context, R.raw.wrong_guess, 1) ?: 0
-        partialSoundId = soundPool?.load(context, R.raw.correct_guess, 1) ?: 0
-        
-        isInitialized = true
+        try {
+            android.util.Log.d("SoundManager", "Initializing SoundManager...")
+            
+            val attributes = AudioAttributes.Builder()
+                .setUsage(AudioAttributes.USAGE_GAME)
+                .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
+                .build()
+            
+            soundPool = SoundPool.Builder()
+                .setMaxStreams(10)
+                .setAudioAttributes(attributes)
+                .build()
+            
+            // Verify resources exist before loading
+            val resourceIds = listOf(
+                R.raw.tick_sound to "tick_sound",
+                R.raw.win_sound to "win_sound",
+                R.raw.wrong_guess to "wrong_guess",
+                R.raw.correct_guess to "correct_guess",
+                R.raw.button_click to "button_click",
+                R.raw.lose_sound to "lose_sound"
+            )
+            
+            for ((id, name) in resourceIds) {
+                try {
+                    val resourceType = context.resources.getResourceTypeName(id)
+                    val resourceName = context.resources.getResourceEntryName(id)
+                    android.util.Log.d("SoundManager", "Found resource: $name ($resourceType/$resourceName) with ID: $id")
+                } catch (e: Exception) {
+                    android.util.Log.e("SoundManager", "Resource not found: $name (ID: $id)")
+                }
+            }
+            
+            soundPool?.setOnLoadCompleteListener { _, sampleId, status ->
+                synchronized(this) {
+                    if (status == 0) {
+                        loadedSounds++
+                        android.util.Log.d("SoundManager", "Sound loaded successfully: $sampleId, Total: $loadedSounds/$totalSounds")
+                        if (loadedSounds == totalSounds) {
+                            isInitialized = true
+                            android.util.Log.d("SoundManager", "All sounds loaded successfully")
+                        }
+                    } else {
+                        android.util.Log.e("SoundManager", "Failed to load sound $sampleId with status $status")
+                    }
+                }
+            }
+            
+            // Reset counters and IDs
+            loadedSounds = 0
+            isInitialized = false
+            tickSoundId = 0
+            winSoundId = 0
+            wrongSoundId = 0
+            
+            android.util.Log.d("SoundManager", "Starting to load sounds...")
+            
+            // Load all sounds
+            tickSoundId = loadSound(R.raw.tick_sound)
+            winSoundId = loadSound(R.raw.win_sound)
+            wrongSoundId = loadSound(R.raw.wrong_guess)
+            correctSoundId = loadSound(R.raw.correct_guess)
+            buttonClickId = loadSound(R.raw.button_click)
+            loseSoundId = loadSound(R.raw.lose_sound)
+            
+            android.util.Log.d("SoundManager", "Sound loading initiated")
+            
+        } catch (e: Exception) {
+            android.util.Log.e("SoundManager", "Error initializing SoundManager", e)
+            release()
+        }
     }
     
     fun playTickSound() {
-        soundPool?.play(tickSoundId, 0.5f, 0.5f, 0, 0, 1f)
+        if (!isInitialized) {
+            android.util.Log.w("SoundManager", "Attempted to play tick sound when not initialized")
+            return
+        }
+        if (tickSoundId == 0) {
+            android.util.Log.e("SoundManager", "Invalid tick sound ID")
+            return
+        }
+        try {
+            val streamId = soundPool?.play(tickSoundId, 0.5f, 0.5f, 1, 0, 1f)
+            if (streamId == 0) {
+                android.util.Log.e("SoundManager", "Failed to play tick sound")
+            } else {
+                android.util.Log.d("SoundManager", "Playing tick sound on stream: $streamId")
+            }
+        } catch (e: Exception) {
+            android.util.Log.e("SoundManager", "Error playing tick sound", e)
+        }
     }
     
     fun playWinSound() {
-        soundPool?.play(winSoundId, 1f, 1f, 0, 0, 1f)
+        if (!isInitialized) {
+            android.util.Log.w("SoundManager", "Attempted to play win sound when not initialized")
+            return
+        }
+        if (winSoundId == 0) {
+            android.util.Log.e("SoundManager", "Invalid win sound ID")
+            return
+        }
+        try {
+            val streamId = soundPool?.play(winSoundId, 1f, 1f, 1, 0, 1f)
+            if (streamId == 0) {
+                android.util.Log.e("SoundManager", "Failed to play win sound")
+            } else {
+                android.util.Log.d("SoundManager", "Playing win sound on stream: $streamId")
+            }
+        } catch (e: Exception) {
+            android.util.Log.e("SoundManager", "Error playing win sound", e)
+        }
     }
     
     fun playWrongSound() {
-        soundPool?.play(wrongSoundId, 1f, 1f, 0, 0, 1f)
+        if (!isInitialized) {
+            android.util.Log.w("SoundManager", "Attempted to play wrong sound when not initialized")
+            return
+        }
+        if (wrongSoundId == 0) {
+            android.util.Log.e("SoundManager", "Invalid wrong sound ID")
+            return
+        }
+        try {
+            val streamId = soundPool?.play(wrongSoundId, 1f, 1f, 1, 0, 1f)
+            if (streamId == 0) {
+                android.util.Log.e("SoundManager", "Failed to play wrong sound")
+            } else {
+                android.util.Log.d("SoundManager", "Playing wrong sound on stream: $streamId")
+            }
+        } catch (e: Exception) {
+            android.util.Log.e("SoundManager", "Error playing wrong sound", e)
+        }
     }
     
-    fun playPartialSound() {
-        soundPool?.play(partialSoundId, 0.7f, 0.7f, 0, 0, 1f)
+    fun playCorrectSound() {
+        if (!isInitialized) {
+            android.util.Log.w("SoundManager", "Attempted to play correct sound when not initialized")
+            return
+        }
+        if (correctSoundId == 0) {
+            android.util.Log.e("SoundManager", "Invalid correct sound ID")
+            return
+        }
+        try {
+            val streamId = soundPool?.play(correctSoundId, 0.7f, 0.7f, 1, 0, 1f)
+            if (streamId == 0) {
+                android.util.Log.e("SoundManager", "Failed to play correct sound")
+            } else {
+                android.util.Log.d("SoundManager", "Playing correct sound on stream: $streamId")
+            }
+        } catch (e: Exception) {
+            android.util.Log.e("SoundManager", "Error playing correct sound", e)
+        }
+    }
+
+    fun playButtonClick() {
+        if (!isInitialized) {
+            android.util.Log.w("SoundManager", "Attempted to play button click sound when not initialized")
+            return
+        }
+        if (buttonClickId == 0) {
+            android.util.Log.e("SoundManager", "Invalid button click sound ID")
+            return
+        }
+        try {
+            val streamId = soundPool?.play(buttonClickId, 0.5f, 0.5f, 1, 0, 1f)
+            if (streamId == 0) {
+                android.util.Log.e("SoundManager", "Failed to play button click sound")
+            } else {
+                android.util.Log.d("SoundManager", "Playing button click sound on stream: $streamId")
+            }
+        } catch (e: Exception) {
+            android.util.Log.e("SoundManager", "Error playing button click sound", e)
+        }
+    }
+
+    fun playLoseSound() {
+        if (!isInitialized) {
+            android.util.Log.w("SoundManager", "Attempted to play lose sound when not initialized")
+            return
+        }
+        if (loseSoundId == 0) {
+            android.util.Log.e("SoundManager", "Invalid lose sound ID")
+            return
+        }
+        try {
+            val streamId = soundPool?.play(loseSoundId, 1f, 1f, 1, 0, 1f)
+            if (streamId == 0) {
+                android.util.Log.e("SoundManager", "Failed to play lose sound")
+            } else {
+                android.util.Log.d("SoundManager", "Playing lose sound on stream: $streamId")
+            }
+        } catch (e: Exception) {
+            android.util.Log.e("SoundManager", "Error playing lose sound", e)
+        }
+    }
+
+    private fun loadSound(resId: Int): Int {
+        return try {
+            // Validate resource exists
+            val resourceName = context.resources.getResourceEntryName(resId)
+            val resourceType = context.resources.getResourceTypeName(resId)
+            
+            android.util.Log.d("SoundManager", "Attempting to load sound: name=$resourceName, type=$resourceType, id=$resId")
+            
+            // Load using resource ID
+            val soundId = soundPool?.load(context, resId, 1) ?: 0
+            if (soundId == 0) {
+                android.util.Log.e("SoundManager", "Failed to load sound: $resourceName (ID: $resId)")
+            } else {
+                android.util.Log.d("SoundManager", "Successfully loaded sound: $resourceName (ID: $resId) => $soundId")
+            }
+            soundId
+        } catch (e: android.content.res.Resources.NotFoundException) {
+            android.util.Log.e("SoundManager", "Resource not found: $resId")
+            0
+        } catch (e: Exception) {
+            android.util.Log.e("SoundManager", "Error loading sound $resId: ${e.message}")
+            0
+        }
     }
     
     fun release() {
-        soundPool?.release()
-        soundPool = null
-        isInitialized = false
+        try {
+            soundPool?.release()
+        } catch (e: Exception) {
+            android.util.Log.e("SoundManager", "Error releasing SoundPool", e)
+        } finally {
+            soundPool = null
+            isInitialized = false
+            loadedSounds = 0
+            tickSoundId = 0
+            winSoundId = 0
+            wrongSoundId = 0
+        }
     }
 }
