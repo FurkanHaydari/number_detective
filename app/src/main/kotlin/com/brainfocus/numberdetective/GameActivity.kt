@@ -2,7 +2,11 @@ package com.brainfocus.numberdetective
 
 import android.animation.ValueAnimator
 import android.content.Intent
+import android.graphics.Color
 import android.os.Build
+import androidx.core.content.ContextCompat
+import androidx.core.content.res.ResourcesCompat
+import android.widget.TextView
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
@@ -13,7 +17,7 @@ import android.view.WindowInsets
 import android.view.WindowInsetsController
 import android.view.animation.DecelerateInterpolator
 import android.widget.LinearLayout
-import android.widget.NumberPicker
+import com.shawnlin.numberpicker.NumberPicker
 import android.widget.Toast
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
@@ -130,12 +134,33 @@ class GameActivity : AppCompatActivity(), NumberPicker.OnValueChangeListener {
             }
 
             // Create views on background thread
-            val container = LinearLayout(this@GameActivity).apply {
-                orientation = LinearLayout.HORIZONTAL
-                weightSum = if (viewModel.currentLevel.value == 3) 4f else 3f
+            val mainContainer = LinearLayout(this@GameActivity).apply {
+                orientation = LinearLayout.VERTICAL
+                gravity = android.view.Gravity.CENTER
                 alpha = 0f
                 scaleX = 0.8f
                 scaleY = 0.8f
+            }
+            
+            // Add title
+            val titleText = TextView(this@GameActivity).apply {
+                text = "Gizli Sayı"
+                setTextColor(Color.WHITE)
+                textSize = resources.getDimension(R.dimen.picker_title_text_size) / resources.displayMetrics.density
+                gravity = android.view.Gravity.CENTER
+                alpha = 0.9f
+                typeface = ResourcesCompat.getFont(context, R.font.poppins_medium)
+                layoutParams = LinearLayout.LayoutParams(
+                    LinearLayout.LayoutParams.WRAP_CONTENT,
+                    LinearLayout.LayoutParams.WRAP_CONTENT
+                ).apply {
+                    bottomMargin = resources.getDimensionPixelSize(R.dimen.picker_title_margin_bottom)
+                }
+            }
+            
+            val numberPickersContainer = LinearLayout(this@GameActivity).apply {
+                orientation = LinearLayout.HORIZONTAL
+                weightSum = if (viewModel.currentLevel.value == 3) 4f else 3f
             }
 
             val numPickers = if (viewModel.currentLevel.value == 3) 4 else 3
@@ -147,8 +172,20 @@ class GameActivity : AppCompatActivity(), NumberPicker.OnValueChangeListener {
                     minValue = 0
                     maxValue = 9
                     setOnValueChangedListener(this@GameActivity)
-                    wrapSelectorWheel = true 
-                    layoutParams = LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f)
+                    wrapSelectorWheel = true
+                    setSelectedTextColor(getColor(android.R.color.white))
+                    setTextColor(Color.parseColor("#CCFFFFFF")) // Yarı saydam beyaz
+                    setDividerColor(Color.parseColor("#33FFFFFF")) // Çok hafif beyaz çizgi
+                    setSelectedTextSize(resources.getDimension(R.dimen.selected_text_size))
+                    setTextSize(resources.getDimension(R.dimen.text_size))
+                    setDividerThickness(resources.getDimension(R.dimen.divider_thickness).toInt())
+                    setWheelItemCount(3) // Daha kompakt görünüm için
+                    background = ContextCompat.getDrawable(context, R.drawable.number_picker_glass_background)
+                    elevation = resources.getDimension(R.dimen.picker_elevation)
+                    layoutParams = LinearLayout.LayoutParams(0, resources.getDimensionPixelSize(R.dimen.picker_height), 1f).apply {
+                        marginStart = resources.getDimensionPixelSize(R.dimen.picker_margin)
+                        marginEnd = resources.getDimensionPixelSize(R.dimen.picker_margin)
+                    }
                 }
             }
 
@@ -156,13 +193,14 @@ class GameActivity : AppCompatActivity(), NumberPicker.OnValueChangeListener {
                 android.util.Log.d("GameActivity", "Setting up views on main thread")
                 numberPickers = newPickers
                 
-                // Add views on main thread
-                android.util.Log.d("GameActivity", "Adding ${numberPickers.size} pickers to container")
+                // Add views to containers
                 numberPickers.forEach { picker ->
-                    container.addView(picker)
+                    numberPickersContainer.addView(picker)
                 }
-                android.util.Log.d("GameActivity", "Adding container to numberPickerContainer")
-                binding.numberPickerContainer.addView(container)
+                
+                mainContainer.addView(titleText)
+                mainContainer.addView(numberPickersContainer)
+                binding.numberPickerContainer.addView(mainContainer)
 
                 // Setup initial states
                 binding.apply {
@@ -171,20 +209,23 @@ class GameActivity : AppCompatActivity(), NumberPicker.OnValueChangeListener {
                     hintsCard.alpha = 0f
                     hintsCard.translationX = -100f
                 }
+                
+                // Add shadow to main container
+                mainContainer.elevation = resources.getDimension(R.dimen.picker_elevation)
 
                 // Start animations with a slight delay to let layout settle
                 kotlinx.coroutines.delay(100)
 
-                // Use property animation for smoother performance
-                val containerAnimator = ValueAnimator.ofFloat(0f, 1f).apply {
-                    duration = 500
-                    interpolator = DecelerateInterpolator()
-                    addUpdateListener { animator ->
-                        val value = animator.animatedValue as Float
-                        container.alpha = value
-                        container.scaleX = 0.8f + (0.2f * value)
-                        container.scaleY = 0.8f + (0.2f * value)
-                    }
+    // Use property animation for smoother performance
+    val containerAnimator = ValueAnimator.ofFloat(0f, 1f).apply {
+        duration = 500
+        interpolator = DecelerateInterpolator()
+        addUpdateListener { animator ->
+            val value = animator.animatedValue as Float
+            mainContainer.alpha = value
+            mainContainer.scaleX = 0.8f + (0.2f * value)
+            mainContainer.scaleY = 0.8f + (0.2f * value)
+        }
                 }
 
                 val hintsAnimator = ValueAnimator.ofFloat(0f, 1f).apply {
