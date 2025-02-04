@@ -114,6 +114,7 @@ class SoundManager @Inject constructor(
                 android.util.Log.e("SoundManager", "Failed to play tick sound")
             } else {
                 android.util.Log.d("SoundManager", "Playing tick sound on stream: $streamId")
+                trackStreamId(streamId)
             }
         } catch (e: Exception) {
             android.util.Log.e("SoundManager", "Error playing tick sound", e)
@@ -135,6 +136,7 @@ class SoundManager @Inject constructor(
                 android.util.Log.e("SoundManager", "Failed to play win sound")
             } else {
                 android.util.Log.d("SoundManager", "Playing win sound on stream: $streamId")
+                trackStreamId(streamId)
             }
         } catch (e: Exception) {
             android.util.Log.e("SoundManager", "Error playing win sound", e)
@@ -156,6 +158,7 @@ class SoundManager @Inject constructor(
                 android.util.Log.e("SoundManager", "Failed to play wrong sound")
             } else {
                 android.util.Log.d("SoundManager", "Playing wrong sound on stream: $streamId")
+                trackStreamId(streamId)
             }
         } catch (e: Exception) {
             android.util.Log.e("SoundManager", "Error playing wrong sound", e)
@@ -177,6 +180,7 @@ class SoundManager @Inject constructor(
                 android.util.Log.e("SoundManager", "Failed to play correct sound")
             } else {
                 android.util.Log.d("SoundManager", "Playing correct sound on stream: $streamId")
+                trackStreamId(streamId)
             }
         } catch (e: Exception) {
             android.util.Log.e("SoundManager", "Error playing correct sound", e)
@@ -198,6 +202,7 @@ class SoundManager @Inject constructor(
                 android.util.Log.e("SoundManager", "Failed to play button click sound")
             } else {
                 android.util.Log.d("SoundManager", "Playing button click sound on stream: $streamId")
+                trackStreamId(streamId)
             }
         } catch (e: Exception) {
             android.util.Log.e("SoundManager", "Error playing button click sound", e)
@@ -219,6 +224,7 @@ class SoundManager @Inject constructor(
                 android.util.Log.e("SoundManager", "Failed to play lose sound")
             } else {
                 android.util.Log.d("SoundManager", "Playing lose sound on stream: $streamId")
+                trackStreamId(streamId)
             }
         } catch (e: Exception) {
             android.util.Log.e("SoundManager", "Error playing lose sound", e)
@@ -250,8 +256,41 @@ class SoundManager @Inject constructor(
         }
     }
     
+    private var activeStreamIds = mutableSetOf<Int>()
+
+    private fun trackStreamId(streamId: Int?) {
+        if (streamId != null && streamId != 0) {
+            synchronized(activeStreamIds) {
+                activeStreamIds.add(streamId)
+            }
+            // Stream tamamlandığında ID'yi kaldır
+            soundPool?.setOnLoadCompleteListener { _, sid, _ ->
+                if (sid == streamId) {
+                    synchronized(activeStreamIds) {
+                        activeStreamIds.remove(streamId)
+                    }
+                }
+            }
+        }
+    }
+
     fun release() {
         try {
+            // Aktif stream'lerin bitmesini bekle
+            var waitCount = 0
+            while (activeStreamIds.isNotEmpty() && waitCount < 50) { // max 5 saniye bekle
+                Thread.sleep(100)
+                waitCount++
+            }
+
+            // Tüm aktif stream'leri durdur
+            synchronized(activeStreamIds) {
+                activeStreamIds.forEach { streamId ->
+                    soundPool?.stop(streamId)
+                }
+                activeStreamIds.clear()
+            }
+
             soundPool?.release()
         } catch (e: Exception) {
             android.util.Log.e("SoundManager", "Error releasing SoundPool", e)
@@ -262,6 +301,9 @@ class SoundManager @Inject constructor(
             tickSoundId = 0
             winSoundId = 0
             wrongSoundId = 0
+            correctSoundId = 0
+            buttonClickId = 0
+            loseSoundId = 0
         }
     }
 }
