@@ -4,6 +4,7 @@ import android.animation.ValueAnimator
 import android.content.Intent
 import android.graphics.Color
 import android.os.Build
+import android.util.Log
 import androidx.core.content.ContextCompat
 import androidx.core.content.res.ResourcesCompat
 import android.widget.TextView
@@ -44,6 +45,8 @@ import javax.inject.Inject
 
 @AndroidEntryPoint
 class GameActivity : AppCompatActivity(), NumberPicker.OnValueChangeListener {
+    @Inject
+    lateinit var playGamesManager: PlayGamesManager
     private lateinit var binding: ActivityGameBinding
     private val viewModel: GameViewModel by viewModels()
     private lateinit var hintAdapter: HintAdapter
@@ -60,6 +63,11 @@ class GameActivity : AppCompatActivity(), NumberPicker.OnValueChangeListener {
         makeFullScreen()
 
         lifecycleScope.launch {
+            try {
+                playGamesManager.initialize(this@GameActivity)
+            } catch (e: Exception) {
+                Log.e("GameActivity", "Error initializing Play Games", e)
+            }
             try {
                 withContext(kotlinx.coroutines.Dispatchers.IO) {
                     soundManager.initialize()
@@ -142,21 +150,6 @@ class GameActivity : AppCompatActivity(), NumberPicker.OnValueChangeListener {
                 scaleY = 0.8f
             }
             
-            // Add title
-            val titleText = TextView(this@GameActivity).apply {
-                text = "Gizli Sayı"
-                setTextColor(Color.WHITE)
-                textSize = resources.getDimension(R.dimen.picker_title_text_size) / resources.displayMetrics.density
-                gravity = android.view.Gravity.CENTER
-                alpha = 0.9f
-                typeface = ResourcesCompat.getFont(context, R.font.poppins_medium)
-                layoutParams = LinearLayout.LayoutParams(
-                    LinearLayout.LayoutParams.WRAP_CONTENT,
-                    LinearLayout.LayoutParams.WRAP_CONTENT
-                ).apply {
-                    bottomMargin = resources.getDimensionPixelSize(R.dimen.picker_title_margin_bottom)
-                }
-            }
             
             val numberPickersContainer = LinearLayout(this@GameActivity).apply {
                 orientation = LinearLayout.HORIZONTAL
@@ -198,7 +191,6 @@ class GameActivity : AppCompatActivity(), NumberPicker.OnValueChangeListener {
                     numberPickersContainer.addView(picker)
                 }
                 
-                mainContainer.addView(titleText)
                 mainContainer.addView(numberPickersContainer)
                 binding.numberPickerContainer.addView(mainContainer)
 
@@ -357,6 +349,15 @@ class GameActivity : AppCompatActivity(), NumberPicker.OnValueChangeListener {
     }
 
     private fun navigateToGameResult(isWin: Boolean) {
+        // Submit score to leaderboards
+        lifecycleScope.launch {
+            try {
+                playGamesManager.submitScore(viewModel.score.value.toLong())
+            } catch (e: Exception) {
+                Toast.makeText(this@GameActivity, "Skor kaydedilemedi", Toast.LENGTH_SHORT).show()
+            }
+        }
+
         val intent = Intent(this, GameResultActivity::class.java).apply {
             putExtra("score", viewModel.score.value)
             putExtra("isWin", isWin)

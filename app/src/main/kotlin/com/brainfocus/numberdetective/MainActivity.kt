@@ -59,6 +59,21 @@ class MainActivity : AppCompatActivity() {
         private const val LEADERBOARD_ID = "CgkIxZWJ8KYWEAIQAQ"
     }
 
+    private val locationPermissionRequest = registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { permissions ->
+        when {
+            permissions[android.Manifest.permission.ACCESS_FINE_LOCATION] == true ||
+            permissions[android.Manifest.permission.ACCESS_COARSE_LOCATION] == true -> {
+                // Konum izni verildi, oyunu başlat
+                checkPlayGamesSignIn()
+            }
+            else -> {
+                // Konum izni reddedildi
+                Toast.makeText(this, getString(R.string.error_location_permission), Toast.LENGTH_LONG).show()
+                finish()
+            }
+        }
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setupFullscreen()
@@ -86,8 +101,10 @@ class MainActivity : AppCompatActivity() {
                 buttonClickSound = loadSound(R.raw.button_click)
 
                 // Initialize components
-                signInManager.initialize(this@MainActivity)
                 adManager.initialize()
+                
+                // Konum iznini kontrol et
+                checkLocationPermission()
 
                 // Load test ad
                 val adRequest = com.google.android.gms.ads.AdRequest.Builder().build()
@@ -172,10 +189,48 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    private fun checkLocationPermission() {
+        locationPermissionRequest.launch(arrayOf(
+            android.Manifest.permission.ACCESS_FINE_LOCATION,
+            android.Manifest.permission.ACCESS_COARSE_LOCATION
+        ))
+    }
+
+    private fun checkPlayGamesSignIn() {
+        lifecycleScope.launch {
+            try {
+                val signInResult = signInManager.signInSilently()
+                if (signInResult) {
+                    isSignedIn = true
+                    setupViews()
+                } else {
+                    // Sessiz giriş başarısız, kullanıcıdan açık giriş iste
+                    signInManager.signIn(this@MainActivity) { success ->
+                        if (success) {
+                            isSignedIn = true
+                            setupViews()
+                        } else {
+                            Toast.makeText(this@MainActivity, getString(R.string.error_play_games_required), Toast.LENGTH_LONG).show()
+                            finish()
+                        }
+                    }
+                }
+            } catch (e: Exception) {
+                Toast.makeText(this@MainActivity, getString(R.string.error_sign_in, e.message), Toast.LENGTH_LONG).show()
+                finish()
+            }
+        }
+    }
+
     private fun setupViews() {
         binding.apply {
             // Setup start game button
             startGameButton.setOnClickListener {
+                if (!isSignedIn) {
+                    Toast.makeText(this@MainActivity, getString(R.string.error_play_games_sign_in_first), Toast.LENGTH_SHORT).show()
+                    checkPlayGamesSignIn()
+                    return@setOnClickListener
+                }
                 soundPool?.play(buttonClickSound, 1f, 1f, 1, 0, 1f)
                 startActivity(Intent(this@MainActivity, GameActivity::class.java))
             }

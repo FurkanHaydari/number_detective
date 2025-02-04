@@ -5,13 +5,17 @@
     <string name="interstitial_ad_unit_id" translatable="false">ca-app-pub-3940256099942544/1033173712</string>
     <string name="ad_unit_id" translatable="false">ca-app-pub-3940256099942544/6300978111</string>
 
-    <!-- UI Constants -->
-    <string name="hint_icon_description" translatable="false">Hint icon</string>
-    <string name="number_up_button" translatable="false">Increase Number</string>
-    <string name="number_down_button" translatable="false">Decrease Number</string>
-
     <!-- Google Play Games Services -->
     <string name="games_oauth_client_id" translatable="false">140671902567-i5jdqtncsdu1261n2bkpemh2kf04blt6.apps.googleusercontent.com</string>
     <string name="games_app_id" translatable="false">140671902567</string>
-    <string name="leaderboard_id" translatable="false">CgkIxZWJ8KYWEAIQAQ</string>
+
+    <!-- Google Play Games Leaderboard IDs -->
+    <string name="leaderboard_location_based">CgkI58bLhYwEEAIQBA</string>
+    <string name="leaderboard_global_all_time">CgkI58bLhYwEEAIQAg</string>
+
+    <!-- Location Service Constants -->
+    <integer name="location_update_interval">60000</integer>  <!-- 1 minute in milliseconds -->
+    <integer name="location_fastest_interval">30000</integer> <!-- 30 seconds in milliseconds -->
+    <integer name="nearby_players_limit">25</integer>         <!-- Number of nearby players to show -->
+    <integer name="location_distance_limit">10000</integer>   <!-- 10km in meters -->
 </resources>

@@ -1,29 +1,25 @@
-package com.brainfocus.numberdetective.ui.leaderboard
+package com.brainfocus.numberdetective.fragment
 
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
-import androidx.fragment.app.viewModels
+import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import androidx.recyclerview.widget.LinearLayoutManager
-import com.brainfocus.numberdetective.R
-import com.brainfocus.numberdetective.databinding.FragmentLeaderboardBinding
-import com.brainfocus.numberdetective.ui.leaderboard.LeaderboardAdapter
+import com.brainfocus.numberdetective.adapter.LeaderboardAdapter
+import com.brainfocus.numberdetective.databinding.FragmentLeaderboardListBinding
 import com.brainfocus.numberdetective.viewmodel.LeaderboardViewModel
 import com.google.android.material.snackbar.Snackbar
-import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 
-@AndroidEntryPoint
-class LeaderboardFragment : Fragment() {
-    private var _binding: FragmentLeaderboardBinding? = null
+class LocalLeaderboardFragment : Fragment() {
+    private var _binding: FragmentLeaderboardListBinding? = null
     private val binding get() = _binding!!
-
-    private val viewModel: LeaderboardViewModel by viewModels()
+    private val viewModel: LeaderboardViewModel by activityViewModels()
     private lateinit var leaderboardAdapter: LeaderboardAdapter
 
     override fun onCreateView(
@@ -31,7 +27,7 @@ class LeaderboardFragment : Fragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        _binding = FragmentLeaderboardBinding.inflate(inflater, container, false)
+        _binding = FragmentLeaderboardListBinding.inflate(inflater, container, false)
         return binding.root
     }
 
@@ -61,7 +57,7 @@ class LeaderboardFragment : Fragment() {
                 }
 
                 launch {
-                    viewModel.isLoading.collect { isLoading ->
+                    viewModel.loading.collect { isLoading ->
                         binding.progressBar.visibility = if (isLoading) View.VISIBLE else View.GONE
                     }
                 }
@@ -78,8 +74,10 @@ class LeaderboardFragment : Fragment() {
     }
 
     private fun loadLeaderboard() {
-        requireActivity().let { activity ->
-            viewModel.loadLeaderboard(activity)
+        viewLifecycleOwner.lifecycleScope.launch {
+            requireActivity().let { activity ->
+                viewModel.loadLocalLeaderboard(activity)
+            }
         }
     }
 

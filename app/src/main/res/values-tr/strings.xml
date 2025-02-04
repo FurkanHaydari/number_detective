@@ -28,7 +28,7 @@
     <string name="score_text">Skor: %1$d</string>
     <string name="attempts_text">Deneme: %1$d</string>
     <string name="time_text">Süre: %1$ds</string>
-    <string name="share_button">Paylaş</string>
+    <string name="share_button">Yakınımdakiler</string>
     <string name="play_again_button">Tekrar Oyna</string>
     <string name="share_score_text">Number Detective oyununda %1$d puan kazandım!</string>
     <string name="win_text">TEBRİKLER!</string>
@@ -66,7 +66,7 @@
 
     <string name="back_to_menu">ANA MENÜ</string>
     <string name="play_again">TEKRAR OYNA</string>
-    <string name="share">PAYLAŞ</string>
+    <string name="share">MAHALLEMDE KAÇINCI SIRADAYIM</string>
 
     <string name="tahmin_et">TAHMİN ET</string>
 
@@ -149,6 +149,13 @@
     <string name="location_error">Konum bilgisi alınamadı</string>
     <string name="no_leaderboard_data">Bu bölgede henüz sıralama verisi yok</string>
     <string name="player_icon">Oyuncu İkonu</string>
+    <string name="global_leaderboard">Küresel Sıralama</string>
+    <string name="nearby_leaderboard">Yakınımdakiler</string>
+    <string name="error_submitting_score">Skor kaydedilemedi</string>
+    <string name="error_location_permission">Oyun için konum izni gereklidir</string>
+    <string name="error_play_games_required">Google Play Games girişi gereklidir</string>
+    <string name="error_sign_in">Giriş hatası: %1$s</string>
+    <string name="error_play_games_sign_in_first">Lütfen önce Google Play Games\'e giriş yapın</string>
 
     <string name="brain_rot_title">Beyin Sağlığınız İçin Egzersiz Zamanı!</string>
     <string name="brain_rot_message">Sosyal medyanın kısa içerikleri beynimizi tehdit ediyor! Araştırmalar, sürekli kısa içeriklere maruz kalmanın \'Brain Rot\' (Beyin Çürümesi) riskini artırdığını gösteriyor.\n\nSayı Dedektifi ile beyninizi zinde tutun, mantık yürütme ve problem çözme yeteneklerinizi geliştirin!</string>

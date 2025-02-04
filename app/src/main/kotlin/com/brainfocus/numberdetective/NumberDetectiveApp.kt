@@ -4,6 +4,7 @@ import android.app.Application
 import android.content.Context
 import com.brainfocus.numberdetective.utils.LocaleHelper
 import com.google.android.gms.ads.MobileAds
+import com.google.android.gms.games.PlayGamesSdk
 import com.google.firebase.FirebaseApp
 import dagger.hilt.android.HiltAndroidApp
 
@@ -13,6 +14,7 @@ class NumberDetectiveApp : Application() {
         super.onCreate()
         FirebaseApp.initializeApp(this)
         MobileAds.initialize(this)
+        PlayGamesSdk.initialize(this)
     }
 
     override fun attachBaseContext(base: Context) {

@@ -3,6 +3,7 @@ package com.brainfocus.numberdetective
 import android.content.Intent
 import android.os.Build
 import android.os.Bundle
+import com.google.android.gms.games.PlayGames
 import android.util.Log
 import android.view.View
 import android.view.WindowInsets
@@ -17,14 +18,16 @@ import com.brainfocus.numberdetective.ads.AdManager
 import com.brainfocus.numberdetective.databinding.ActivityGameResultBinding
 import com.brainfocus.numberdetective.sound.SoundManager
 import com.google.android.gms.ads.AdRequest
-import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.games.Games
+import com.google.android.gms.games.LeaderboardsClient
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @AndroidEntryPoint
 class GameResultActivity : AppCompatActivity() {
+    @Inject
+    lateinit var playGamesManager: PlayGamesManager
     private lateinit var binding: ActivityGameResultBinding
     @Inject
     lateinit var adManager: AdManager
@@ -66,6 +69,15 @@ class GameResultActivity : AppCompatActivity() {
         
         // Play sound effect
         playGameResultSound(true)
+
+        // Submit score
+        lifecycleScope.launch {
+            try {
+                playGamesManager.submitScore(score.toLong())
+            } catch (e: Exception) {
+                Log.e(TAG, "Error submitting score", e)
+            }
+        }
     }
 
     private fun setupLeaderboardLauncher() {
@@ -122,7 +134,7 @@ class GameResultActivity : AppCompatActivity() {
             
             shareButton.setOnClickListener {
                 soundManager.playButtonClick()
-                shareScore()
+                showNearbyLeaderboard()
             }
             
             mainMenuButton.setOnClickListener {
@@ -147,28 +159,27 @@ class GameResultActivity : AppCompatActivity() {
     }
 
     private fun showLeaderboard() {
-        val account = GoogleSignIn.getLastSignedInAccount(this)
-        if (account != null) {
-            Games.getLeaderboardsClient(this, account)
-                .getLeaderboardIntent(getString(R.string.leaderboard_id))
-                .addOnSuccessListener { intent ->
-                    leaderboardLauncher.launch(intent)
-                }
-                .addOnFailureListener { e ->
-                    Log.e(TAG, "Error showing leaderboard", e)
-                }
-        }
+        PlayGames.getLeaderboardsClient(this)
+            .getLeaderboardIntent(getString(R.string.leaderboard_global_all_time))
+            .addOnSuccessListener { intent: Intent ->
+                leaderboardLauncher.launch(intent)
+            }
+            .addOnFailureListener { e: Exception ->
+                Log.e(TAG, "Error showing leaderboard", e)
+                Toast.makeText(this, getString(R.string.error_showing_leaderboard), Toast.LENGTH_SHORT).show()
+            }
     }
 
-    private fun shareScore() {
-        val shareText = "Number Detective oyununda $score puan aldım! Sen de dene!"
-
-        val shareIntent = Intent().apply {
-            action = Intent.ACTION_SEND
-            putExtra(Intent.EXTRA_TEXT, shareText)
-            type = "text/plain"
-        }
-        startActivity(Intent.createChooser(shareIntent, getString(R.string.share_title)))
+    private fun showNearbyLeaderboard() {
+        PlayGames.getLeaderboardsClient(this)
+            .getLeaderboardIntent(getString(R.string.leaderboard_location_based))
+            .addOnSuccessListener { intent: Intent ->
+                leaderboardLauncher.launch(intent)
+            }
+            .addOnFailureListener { e: Exception ->
+                Log.e(TAG, "Error showing nearby leaderboard", e)
+                Toast.makeText(this, getString(R.string.error_showing_leaderboard), Toast.LENGTH_SHORT).show()
+            }
     }
 
     private fun startNewGame() {

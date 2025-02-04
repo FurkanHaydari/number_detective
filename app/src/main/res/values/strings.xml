@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string translatable="false" name="game_services_project_id">@string/app_id</string>
     <string name="app_name">Number Detective</string>
 
     <!-- Game Activity -->
@@ -39,6 +40,13 @@
     <string name="share_lose_text">🎮 Can you beat my score in Number Detective? My score: %1$d</string>
     <string name="share_title">Share Result</string>
     <string name="error_showing_leaderboard">An error occurred while displaying the leaderboard</string>
+    <string name="global_leaderboard">Global Scores</string>
+    <string name="nearby_leaderboard">Near You</string>
+    <string name="error_submitting_score">Failed to submit score</string>
+    <string name="error_location_permission">Location permission is required for the game</string>
+    <string name="error_play_games_required">Google Play Games sign-in is required</string>
+    <string name="error_sign_in">Sign-in error: %1$s</string>
+    <string name="error_play_games_sign_in_first">Please sign in to Google Play Games first</string>
 
     <!-- Main Activity -->
     <string name="app_title_1">Number</string>
@@ -64,9 +72,13 @@
     <string name="settings">SETTINGS</string>
     <string name="press_back_again_to_exit">Press again to exit</string>
 
+    <!-- Number Input Buttons -->
+    <string name="number_up_button">Increase</string>
+    <string name="number_down_button">Decrease</string>
+
     <string name="back_to_menu">MAIN MENU</string>
     <string name="play_again">PLAY AGAIN</string>
-    <string name="share">SHARE</string>
+    <string name="share">NEARBY PLAYERS</string>
 
     <string name="tahmin_et">GUESS</string>
 
