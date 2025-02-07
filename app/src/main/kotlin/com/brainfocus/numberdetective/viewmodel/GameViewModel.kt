@@ -8,6 +8,7 @@ import com.brainfocus.numberdetective.game.NumberDetectiveGame
 import com.brainfocus.numberdetective.model.GameState
 import com.brainfocus.numberdetective.model.GuessResult
 import com.brainfocus.numberdetective.model.Hint
+import com.brainfocus.numberdetective.sound.SoundManager
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -16,10 +17,12 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
+
 @HiltViewModel
 class GameViewModel @Inject constructor(
     application: Application,
-    private val game: NumberDetectiveGame
+    private val game: NumberDetectiveGame,
+    private val soundManager: SoundManager
 ) : AndroidViewModel(application) {
     private var _attempts = 0
     private val _wrongAttempts = MutableStateFlow(0)
@@ -114,20 +117,52 @@ class GameViewModel @Inject constructor(
     }
 
     fun nextLevel() {
-        if (_currentLevel.value >= MAX_LEVELS) {
+        if (_gameState.value !is GameState.Playing) {
+            return
+        }
+        val currentLevel = _currentLevel.value
+        if (currentLevel >= MAX_LEVELS) {
             _gameState.value = GameState.Win(_score.value)
             timerJob?.cancel()
             return
         }
         
-        _currentLevel.value++
-        _remainingAttempts.value = MAX_ATTEMPTS // Reset attempts for new level
-        _attempts = 0 // Reset attempts counter
-        _wrongAttempts.value = 0 // Reset wrong attempts
-        startNewGame(false) // Continue game without resetting score and timer
+        _currentLevel.value = currentLevel + 1
+        
+        // Level yükseldikçe ek can ve süre ver
+        when (_currentLevel.value) {
+            2 -> {
+                // 2. seviyeye geçişte 1 can
+                _remainingAttempts.value = _remainingAttempts.value + 2
+                // ve 40 saniye
+                _remainingTime.value = _remainingTime.value + 40
+            }
+            3 -> {
+                // 3. seviyeye geçişte 2 can
+                _remainingAttempts.value = _remainingAttempts.value + 3
+                // ve 80 saniye
+                _remainingTime.value += 80
+            }
+        }
+        
+        
+        // Oyun bitmemişse level up Müziğini çal
+        if (_gameState.value !is GameState.Win && _gameState.value !is GameState.GameOver) {
+            soundManager.playLevelUpSound()
+        }
+        
+        startNewGame(false)
     }
 
     fun makeGuess(guess: String): GuessResult {
+        // Input validasyonu ekle
+        if (guess.isBlank() || !guess.all { it.isDigit() }) {
+            return GuessResult.Invalid
+        }
+        val requiredLength = if (_currentLevel.value == 3) 4 else 3
+        if (guess.length != requiredLength) {
+            return GuessResult.Invalid
+        }
         _attempts++
         
         // Add the guess to the list
@@ -157,12 +192,16 @@ class GameViewModel @Inject constructor(
                 }
                 GuessResult.Correct
             }
-            _wrongAttempts.value >= MAX_ATTEMPTS -> {
+            _remainingAttempts.value <= 0 -> {  // wrongAttempts yerine remainingAttempts kontrolü
                 _gameState.value = GameState.GameOver(_score.value)
                 timerJob?.cancel()
+                soundManager.playWrongSound()
                 GuessResult.Wrong
             }
-            else -> GuessResult.Partial(result.correct, result.misplaced)
+            else -> {
+                soundManager.playPartialWrongSound()
+                GuessResult.Partial(result.correct, result.misplaced)
+            }
         }
         
         return guessResult
@@ -181,7 +220,7 @@ class GameViewModel @Inject constructor(
         val levelScore = maxOf(0, maxScorePerLevel - timePenalty - attemptsPenalty)
         
         // Toplam skora ekleme
-        _score.value += levelScore
+        _score.value = _score.value + levelScore
         
         android.util.Log.d("GameViewModel", """
             Level ${_currentLevel.value} Score Calculation:

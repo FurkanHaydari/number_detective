@@ -19,9 +19,11 @@ class SoundManager @Inject constructor(
     private var correctSoundId: Int = 0
     private var buttonClickId: Int = 0
     private var loseSoundId: Int = 0
+    private var levelUpSoundId: Int = 0
+    private var partialWrongSoundId: Int = 0
     private var isInitialized = false
     private var loadedSounds = 0
-    private var totalSounds = 6
+    private var totalSounds = 8
     
     fun initialize() {
         if (isInitialized) return
@@ -46,7 +48,9 @@ class SoundManager @Inject constructor(
                 R.raw.wrong_guess to "wrong_guess",
                 R.raw.correct_guess to "correct_guess",
                 R.raw.button_click to "button_click",
-                R.raw.lose_sound to "lose_sound"
+                R.raw.lose_sound to "lose_sound",
+                R.raw.level_up to "level_up",
+                R.raw.partial_or_wrong_guess to "partial_wrong"
             )
             
             for ((id, name) in resourceIds) {
@@ -80,6 +84,8 @@ class SoundManager @Inject constructor(
             tickSoundId = 0
             winSoundId = 0
             wrongSoundId = 0
+            levelUpSoundId = 0
+            partialWrongSoundId = 0
             
             android.util.Log.d("SoundManager", "Starting to load sounds...")
             
@@ -90,6 +96,8 @@ class SoundManager @Inject constructor(
             correctSoundId = loadSound(R.raw.correct_guess)
             buttonClickId = loadSound(R.raw.button_click)
             loseSoundId = loadSound(R.raw.lose_sound)
+            levelUpSoundId = loadSound(R.raw.level_up)
+            partialWrongSoundId = loadSound(R.raw.partial_or_wrong_guess)
             
             android.util.Log.d("SoundManager", "Sound loading initiated")
             
@@ -231,6 +239,50 @@ class SoundManager @Inject constructor(
         }
     }
 
+    fun playLevelUpSound() {
+        if (!isInitialized) {
+            android.util.Log.w("SoundManager", "Attempted to play level up sound when not initialized")
+            return
+        }
+        if (levelUpSoundId == 0) {
+            android.util.Log.e("SoundManager", "Invalid level up sound ID")
+            return
+        }
+        try {
+            val streamId = soundPool?.play(levelUpSoundId, 1f, 1f, 1, 0, 1f)
+            if (streamId == 0) {
+                android.util.Log.e("SoundManager", "Failed to play level up sound")
+            } else {
+                android.util.Log.d("SoundManager", "Playing level up sound on stream: $streamId")
+                trackStreamId(streamId)
+            }
+        } catch (e: Exception) {
+            android.util.Log.e("SoundManager", "Error playing level up sound", e)
+        }
+    }
+
+    fun playPartialWrongSound() {
+        if (!isInitialized) {
+            android.util.Log.w("SoundManager", "Attempted to play partial/wrong sound when not initialized")
+            return
+        }
+        if (partialWrongSoundId == 0) {
+            android.util.Log.e("SoundManager", "Invalid partial/wrong sound ID")
+            return
+        }
+        try {
+            val streamId = soundPool?.play(partialWrongSoundId, 1f, 1f, 1, 0, 1f)
+            if (streamId == 0) {
+                android.util.Log.e("SoundManager", "Failed to play partial/wrong sound")
+            } else {
+                android.util.Log.d("SoundManager", "Playing partial/wrong sound on stream: $streamId")
+                trackStreamId(streamId)
+            }
+        } catch (e: Exception) {
+            android.util.Log.e("SoundManager", "Error playing partial/wrong sound", e)
+        }
+    }
+
     private fun loadSound(resId: Int): Int {
         return try {
             // Validate resource exists
@@ -304,6 +356,8 @@ class SoundManager @Inject constructor(
             correctSoundId = 0
             buttonClickId = 0
             loseSoundId = 0
+            levelUpSoundId = 0
+            partialWrongSoundId = 0
         }
     }
 }

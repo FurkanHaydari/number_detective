@@ -48,6 +48,10 @@ class PlayGamesManager @Inject constructor(
 
     suspend fun submitScore(score: Long) {
         try {
+            if (score <= 300) {
+                Log.d(TAG, "Score is ztoo low, skipping submission")
+                return
+            }
             leaderboardsClient?.let { client ->
                 client.submitScoreImmediate(context.getString(R.string.leaderboard_global_all_time), score).await()
                 submitLocalScore(score)
@@ -132,6 +136,5 @@ class PlayGamesManager @Inject constructor(
             LOCATION_PERMISSION_REQUEST_CODE
         )
     }
-
 
 }

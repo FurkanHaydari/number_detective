@@ -159,4 +159,23 @@
 
     <string name="brain_rot_title">Beyin Sağlığınız İçin Egzersiz Zamanı!</string>
     <string name="brain_rot_message">Sosyal medyanın kısa içerikleri beynimizi tehdit ediyor! Araştırmalar, sürekli kısa içeriklere maruz kalmanın \'Brain Rot\' (Beyin Çürümesi) riskini artırdığını gösteriyor.\n\nSayı Dedektifi ile beyninizi zinde tutun, mantık yürütme ve problem çözme yeteneklerinizi geliştirin!</string>
+
+    <!-- Toast Messages -->
+    <string name="toast_enter_guess">Lütfen bir tahmin girin</string>
+    <string name="toast_invalid_guess">Geçersiz tahmin! Her rakam farklı olmalı</string>
+    <string name="toast_guess_length">Tahmin %d basamaklı olmalıdır</string>
+    <string name="toast_duplicate_guess">Bu tahmini daha önce yaptınız</string>
+    <string name="toast_remaining_attempts">Yanlış tahmin! %d hakkınız kaldı</string>
+    <string name="toast_game_over">Oyun bitti! Doğru cevap: %s</string>
+    <string name="toast_score_not_saved">Skor kaydedilemedi</string>
+    
+    <!-- Level Up Messages -->
+    <string name="toast_level_up_with_bonus">Tebrikler! %1$d. seviyeye geçtiniz\n+%2$d Can ve +%3$d saniye bonus!</string>
+    <string name="toast_level_up">Tebrikler! %d. seviyeye geçtiniz</string>
+    
+    <!-- Hint Messages -->
+    <string name="hint_correct_and_wrong">%1$d rakam doğru yerde, %2$d rakam yanlış yerde</string>
+    <string name="hint_correct_only">%d rakam doğru yerde</string>
+    <string name="hint_wrong_only">%d rakam yanlış yerde</string>
+    <string name="hint_no_match">Hiç eşleşme yok</string>
 </resources>

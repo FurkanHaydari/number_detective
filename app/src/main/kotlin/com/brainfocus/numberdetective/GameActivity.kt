@@ -257,14 +257,14 @@ class GameActivity : AppCompatActivity(), NumberPicker.OnValueChangeListener {
     private fun handleGuess(guess: String) {
         // Boş tahmin kontrolü
         if (guess.isBlank()) {
-            Toast.makeText(this, "Lütfen bir tahmin girin", Toast.LENGTH_SHORT).show()
+            Toast.makeText(this, getString(R.string.toast_enter_guess), Toast.LENGTH_SHORT).show()
             soundManager.playButtonClick()
             return
         }
 
         // Geçerli tahmin kontrolü
         if (!isValidGuess(guess)) {
-            Toast.makeText(this, "Geçersiz tahmin! Her rakam farklı olmalı", Toast.LENGTH_SHORT).show()
+            Toast.makeText(this, getString(R.string.toast_invalid_guess), Toast.LENGTH_SHORT).show()
             binding.numberPickerCard.performHapticFeedback(HapticFeedbackConstants.LONG_PRESS)
             soundManager.playButtonClick()
             return
@@ -273,42 +273,44 @@ class GameActivity : AppCompatActivity(), NumberPicker.OnValueChangeListener {
         // Tahmin uzunluğu kontrolü
         val expectedLength = if (viewModel.currentLevel.value == 3) 4 else 3
         if (guess.length != expectedLength) {
-            Toast.makeText(this, "Tahmin $expectedLength basamaklı olmalıdır", Toast.LENGTH_SHORT).show()
+            Toast.makeText(this, getString(R.string.toast_guess_length, expectedLength), Toast.LENGTH_SHORT).show()
             soundManager.playButtonClick()
             return
         }
 
         // Tekrar eden tahmin kontrolü
         if (viewModel.guesses.value.contains(guess)) {
-            Toast.makeText(this, "Bu tahmini daha önce yaptınız", Toast.LENGTH_SHORT).show()
+            Toast.makeText(this, getString(R.string.toast_duplicate_guess), Toast.LENGTH_SHORT).show()
             binding.numberPickerCard.performHapticFeedback(HapticFeedbackConstants.LONG_PRESS)
             soundManager.playButtonClick()
             return
         }
 
-        // Tahmin sonucunu işle
         val result = viewModel.makeGuess(guess)
         when (result) {
             is GuessResult.Correct -> {
                 if (viewModel.currentLevel.value >= GameViewModel.MAX_LEVELS) {
-                    // Son levelde ses çalmıyoruz, GameResult'ta çalacak
                     navigateToGameResult(true)
                 } else {
-                    soundManager.playWinSound()
+                    val nextLevel = viewModel.currentLevel.value + 1
+                    val bonusMessage = when (nextLevel) {
+                        2 -> getString(R.string.toast_level_up_with_bonus, 2, 1, 40)
+                        3 -> getString(R.string.toast_level_up_with_bonus, 3, 2, 80)
+                        else -> getString(R.string.toast_level_up, nextLevel)
+                    }
                     viewModel.nextLevel()
-                    Toast.makeText(this, "Tebrikler! ${viewModel.currentLevel.value}. seviyeye geçtiniz", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(this, bonusMessage, Toast.LENGTH_LONG).show()
                 }
             }
             is GuessResult.Wrong -> {
                 binding.numberPickerCard.performHapticFeedback(HapticFeedbackConstants.LONG_PRESS)
                 val remainingAttempts = viewModel.remainingAttempts.value
                 if (remainingAttempts > 0) {
-                    soundManager.playWrongSound()
-                    Toast.makeText(this, "Yanlış tahmin! $remainingAttempts hakkınız kaldı", Toast.LENGTH_SHORT).show()
-                }
-                if (viewModel.wrongAttempts.value >= 3) {
-                    // Burada ses çalmıyoruz, GameResult'ta çalacak
-                    Toast.makeText(this, "Oyun bitti! Doğru cevap: ${viewModel.correctAnswer.value}", Toast.LENGTH_LONG).show()
+                    soundManager.playPartialWrongSound()
+                    Toast.makeText(this, getString(R.string.toast_remaining_attempts, remainingAttempts), Toast.LENGTH_SHORT).show()
+                } else {
+                    soundManager.playWrongSound()  // Son hak bittiğinde sadece wrong sound çal
+                    Toast.makeText(this, getString(R.string.toast_game_over, viewModel.correctAnswer.value), Toast.LENGTH_LONG).show()
                     navigateToGameResult(false)
                     return
                 }
@@ -319,42 +321,47 @@ class GameActivity : AppCompatActivity(), NumberPicker.OnValueChangeListener {
                 
                 val message = when {
                     result.correctDigits > 0 && result.wrongPositionDigits > 0 -> {
-                        if (remainingAttempts > 1) soundManager.playCorrectSound()
-                        "${result.correctDigits} rakam doğru yerde, ${result.wrongPositionDigits} rakam yanlış yerde"
+                        if (remainingAttempts > 1) soundManager.playPartialWrongSound()
+                        getString(R.string.hint_correct_and_wrong, result.correctDigits, result.wrongPositionDigits)
                     }
                     result.correctDigits > 0 -> {
-                        if (remainingAttempts > 1) soundManager.playCorrectSound()
-                        "${result.correctDigits} rakam doğru yerde"
+                        if (remainingAttempts > 1) soundManager.playPartialWrongSound()
+                        getString(R.string.hint_correct_only, result.correctDigits)
                     }
                     result.wrongPositionDigits > 0 -> {
-                        if (remainingAttempts > 1) soundManager.playCorrectSound()
-                        "${result.wrongPositionDigits} rakam yanlış yerde"
+                        if (remainingAttempts > 1) soundManager.playPartialWrongSound()
+                        getString(R.string.hint_wrong_only, result.wrongPositionDigits)
                     }
                     else -> {
-                        if (remainingAttempts > 1) soundManager.playWrongSound()
-                        "Hiç eşleşme yok"
+                        if (remainingAttempts > 1) soundManager.playPartialWrongSound()
+                        getString(R.string.hint_no_match)
                     }
                 }
                 Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
-            
-                // Son tahmin hakkıysa game result'a geç
-                if (remainingAttempts <= 1) {
-                    Toast.makeText(this, "Oyun bitti! Doğru cevap: ${viewModel.correctAnswer.value}", Toast.LENGTH_LONG).show()
+
+                if (remainingAttempts <= 0) {
+                    soundManager.playWrongSound()  // Son hak bittiğinde sadece wrong sound çal
+                    Toast.makeText(this, getString(R.string.toast_game_over, viewModel.correctAnswer.value), Toast.LENGTH_LONG).show()
                     navigateToGameResult(false)
                     return
                 }
+            }
+            is GuessResult.Invalid -> {
+                Toast.makeText(this, getString(R.string.toast_invalid_guess), Toast.LENGTH_SHORT).show()
+                binding.numberPickerCard.performHapticFeedback(HapticFeedbackConstants.LONG_PRESS)
+                soundManager.playButtonClick()
+                return
             }
         }
         animateNumberPickers()
     }
 
     private fun navigateToGameResult(isWin: Boolean) {
-        // Submit score to leaderboards
         lifecycleScope.launch {
             try {
                 playGamesManager.submitScore(viewModel.score.value.toLong())
             } catch (e: Exception) {
-                Toast.makeText(this@GameActivity, "Skor kaydedilemedi", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this@GameActivity, getString(R.string.toast_score_not_saved), Toast.LENGTH_SHORT).show()
             }
         }
 

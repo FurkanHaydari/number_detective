@@ -112,7 +112,7 @@
         <item>"All great achievements in the past were once considered impossible." - Thomas Carlyle</item>
         <item>"Science begins with endless curiosity." - Richard Feynman</item>
         <item>"The meaning of life is to create meaning." - Viktor Frankl</item>
-        <item>"A person’s greatness is measured by the greatness of their thoughts." - Ralph Waldo Emerson</item>
+        <item>"A person's greatness is measured by the greatness of their thoughts." - Ralph Waldo Emerson</item>
         <item>"Every new idea is first seen as madness." - George Bernard Shaw</item>
         <item>"What matters in life is always looking forward." - Walt Whitman</item>
         <item>"Knowledge is power, but wisdom is everything." - Francis Bacon</item>
@@ -142,27 +142,45 @@
 
     <!-- Leaderboard -->
     <string name="leaderboard_title">LEADERBOARD</string>
-<string name="high_score">High Score</string>
-<string name="total_games">Total Games</string>
-<string name="games_played">Games Played</string>
-<string name="top_players">Top Players</string>
-<string name="nearby_players">Nearby Players</string>
-<string name="global_players">Global Players</string>
-<string name="error_loading_leaderboard">An error occurred while loading the leaderboard. Please try again.</string>
-<string name="retry">Retry</string>
-<string name="nearby_top_players">Top Players Nearby</string>
-<string name="district_leaderboard">%s Regional Leaderboard</string>
-<string name="no_location_title">Regional Leaderboard</string>
-<string name="location_required_message">You can share your location to participate in the regional leaderboard.</string>
-<string name="error_loading_data">An error occurred while loading data. Please try again.</string>
-<string name="update_location">Update Location</string>
-<string name="location_permission_denied">Regional leaderboard cannot be displayed without location permission.</string>
-<string name="score_format">%d Points</string>
-<string name="location_error">Location data could not be retrieved.</string>
-<string name="no_leaderboard_data">No leaderboard data available for this region yet.</string>
-<string name="player_icon">Player Icon</string>
+    <string name="high_score">High Score</string>
+    <string name="total_games">Total Games</string>
+    <string name="games_played">Games Played</string>
+    <string name="top_players">Top Players</string>
+    <string name="nearby_players">Nearby Players</string>
+    <string name="global_players">Global Players</string>
+    <string name="error_loading_leaderboard">An error occurred while loading the leaderboard. Please try again.</string>
+    <string name="retry">Retry</string>
+    <string name="nearby_top_players">Top Players Nearby</string>
+    <string name="district_leaderboard">%s Regional Leaderboard</string>
+    <string name="no_location_title">Regional Leaderboard</string>
+    <string name="location_required_message">You can share your location to participate in the regional leaderboard.</string>
+    <string name="error_loading_data">An error occurred while loading data. Please try again.</string>
+    <string name="update_location">Update Location</string>
+    <string name="location_permission_denied">Regional leaderboard cannot be displayed without location permission.</string>
+    <string name="score_format">%d Points</string>
+    <string name="location_error">Location data could not be retrieved.</string>
+    <string name="no_leaderboard_data">No leaderboard data available for this region yet.</string>
+    <string name="player_icon">Player Icon</string>
 
-<string name="brain_rot_title">Time to Exercise Your Brain!</string>
+    <string name="brain_rot_title">Time to Exercise Your Brain!</string>
 <string name="brain_rot_message">Short-form content on social media is threatening our brains! Research shows that constant exposure to short content increases the risk of \'Brain Rot.\'\n\nKeep your mind sharp with Number Detective, and improve your logical thinking and problem-solving skills!</string>
 
+    <!-- Toast Messages -->
+    <string name="toast_enter_guess">Please enter a guess</string>
+    <string name="toast_invalid_guess">Invalid guess! Each digit must be different</string>
+    <string name="toast_guess_length">Guess must be %d digits</string>
+    <string name="toast_duplicate_guess">You\'ve already made this guess</string>
+    <string name="toast_remaining_attempts">Wrong guess! %d attempts remaining</string>
+    <string name="toast_game_over">Game Over! Correct answer: %s</string>
+    <string name="toast_score_not_saved">Score could not be saved</string>
+    
+    <!-- Level Up Messages -->
+    <string name="toast_level_up_with_bonus">Congratulations! Level %1$d\n+%2$d Lives and +%3$d seconds bonus!</string>
+    <string name="toast_level_up">Congratulations! Level %d</string>
+    
+    <!-- Hint Messages -->
+    <string name="hint_correct_and_wrong">%1$d digits in correct position, %2$d digits in wrong position</string>
+    <string name="hint_correct_only">%d digits in correct position</string>
+    <string name="hint_wrong_only">%d digits in wrong position</string>
+    <string name="hint_no_match">No matching digits</string>
 </resources>
