@@ -10,12 +10,6 @@
     <string name="games_app_id" translatable="false">140671902567</string>
 
     <!-- Google Play Games Leaderboard IDs -->
-    <string name="leaderboard_location_based">CgkI58bLhYwEEAIQBA</string>
     <string name="leaderboard_global_all_time">CgkI58bLhYwEEAIQAg</string>
 
-    <!-- Location Service Constants -->
-    <integer name="location_update_interval">60000</integer>  <!-- 1 minute in milliseconds -->
-    <integer name="location_fastest_interval">30000</integer> <!-- 30 seconds in milliseconds -->
-    <integer name="nearby_players_limit">25</integer>         <!-- Number of nearby players to show -->
-    <integer name="location_distance_limit">10000</integer>   <!-- 10km in meters -->
 </resources>

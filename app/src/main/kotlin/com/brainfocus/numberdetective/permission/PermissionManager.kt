@@ -17,18 +17,12 @@ class PermissionManager @Inject constructor(
 ) {
     companion object {
         const val BLUETOOTH_PERMISSION_REQUEST_CODE = 1001
-        const val LOCATION_PERMISSION_REQUEST_CODE = 1002
         
         val BLUETOOTH_PERMISSIONS = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
             arrayOf(Manifest.permission.BLUETOOTH_CONNECT)
         } else {
             arrayOf()
         }
-        
-        val LOCATION_PERMISSIONS = arrayOf(
-            Manifest.permission.ACCESS_FINE_LOCATION,
-            Manifest.permission.ACCESS_COARSE_LOCATION
-        )
     }
 
     fun hasBluetoothPermissions(): Boolean {
@@ -38,12 +32,6 @@ class PermissionManager @Inject constructor(
             }
         }
         return true
-    }
-
-    fun hasLocationPermissions(): Boolean {
-        return LOCATION_PERMISSIONS.all {
-            ContextCompat.checkSelfPermission(context, it) == PackageManager.PERMISSION_GRANTED
-        }
     }
 
     fun requestBluetoothPermissions(activity: Activity) {
@@ -56,40 +44,19 @@ class PermissionManager @Inject constructor(
         }
     }
 
-    fun requestLocationPermissions(activity: Activity) {
-        if (!hasLocationPermissions()) {
-            ActivityCompat.requestPermissions(
-                activity,
-                LOCATION_PERMISSIONS,
-                LOCATION_PERMISSION_REQUEST_CODE
-            )
-        }
-    }
-
-    fun shouldShowLocationPermissionRationale(activity: Activity): Boolean {
-        return LOCATION_PERMISSIONS.any {
-            ActivityCompat.shouldShowRequestPermissionRationale(activity, it)
-        }
-    }
-
     fun requestAllPermissions(activity: Activity) {
         val neededPermissions = mutableListOf<String>()
         
-        // Bluetooth izinleri
+        // Only check Bluetooth permissions
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S && !hasBluetoothPermissions()) {
             neededPermissions.addAll(BLUETOOTH_PERMISSIONS)
-        }
-        
-        // Konum izinleri
-        if (!hasLocationPermissions()) {
-            neededPermissions.addAll(LOCATION_PERMISSIONS)
         }
         
         if (neededPermissions.isNotEmpty()) {
             ActivityCompat.requestPermissions(
                 activity,
                 neededPermissions.toTypedArray(),
-                LOCATION_PERMISSION_REQUEST_CODE // Ana permission code olarak location'ı kullanalım
+                BLUETOOTH_PERMISSION_REQUEST_CODE
             )
         }
     }

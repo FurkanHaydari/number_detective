@@ -43,7 +43,6 @@
     <string name="global_leaderboard">Global Scores</string>
     <string name="nearby_leaderboard">Near You</string>
     <string name="error_submitting_score">Failed to submit score</string>
-    <string name="error_location_permission">Location permission is required for the game</string>
     <string name="error_play_games_required">Google Play Games sign-in is required</string>
     <string name="error_sign_in">Sign-in error: %1$s</string>
     <string name="error_play_games_sign_in_first">Please sign in to Google Play Games first</string>
@@ -78,7 +77,7 @@
 
     <string name="back_to_menu">MAIN MENU</string>
     <string name="play_again">PLAY AGAIN</string>
-    <string name="share">NEARBY PLAYERS</string>
+    <string name="share">SHARE</string>
 
     <string name="tahmin_et">GUESS</string>
 
@@ -183,4 +182,7 @@
     <string name="hint_correct_only">%d digits in correct position</string>
     <string name="hint_wrong_only">%d digits in wrong position</string>
     <string name="hint_no_match">No matching digits</string>
+
+    <string name="share_score_message">I scored %1$d points in Number Detective! Used %2$d attempts in %3$s. Can you beat my score? 🎮</string>
+    <string name="share_score_title">Share Score</string>
 </resources>

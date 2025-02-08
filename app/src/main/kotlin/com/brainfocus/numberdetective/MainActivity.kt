@@ -22,7 +22,6 @@ import androidx.lifecycle.lifecycleScope
 import com.brainfocus.numberdetective.ads.AdManager
 import com.brainfocus.numberdetective.auth.GameSignInManager
 import com.brainfocus.numberdetective.databinding.ActivityMainBinding
-import com.brainfocus.numberdetective.location.LocationManager
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.games.Games
 import dagger.hilt.android.AndroidEntryPoint
@@ -34,13 +33,9 @@ import javax.inject.Inject
 
 @AndroidEntryPoint
 class MainActivity : AppCompatActivity() {
-
-    @Inject
-    lateinit var locationManager: LocationManager
-
     @Inject
     lateinit var signInManager: GameSignInManager
-
+    
     @Inject
     lateinit var adManager: AdManager
 
@@ -50,32 +45,49 @@ class MainActivity : AppCompatActivity() {
     private var isSignedIn = false
     private var doubleBackToExitPressedOnce = false
 
-    private val leaderboardLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
-        // Leaderboard was closed
-    }
-
     companion object {
         private const val TAG = "MainActivity"
-        private const val LEADERBOARD_ID = "CgkIxZWJ8KYWEAIQAQ"
     }
 
-    private val locationPermissionRequest = registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { permissions ->
-        when {
-            permissions[android.Manifest.permission.ACCESS_FINE_LOCATION] == true ||
-            permissions[android.Manifest.permission.ACCESS_COARSE_LOCATION] == true -> {
-                // Konum izni verildi, oyunu başlat
-                checkPlayGamesSignIn()
+
+
+
+    private fun handleSignInResult(result: GameSignInManager.SignInResult) {
+        when (result) {
+            is GameSignInManager.SignInResult.Success -> {
+                isSignedIn = true
+                Log.d(TAG, "Sign in success")
+                // The welcome popup will be shown automatically by the SDK
             }
-            else -> {
-                // Konum izni reddedildi
-                Toast.makeText(this, getString(R.string.error_location_permission), Toast.LENGTH_LONG).show()
-                finish()
+            is GameSignInManager.SignInResult.Cancelled -> {
+                Log.d(TAG, "Sign in cancelled")
+                // Try sign-in again since it's required
+                startSignIn()
             }
+            is GameSignInManager.SignInResult.Error -> {
+                Log.e(TAG, "Sign in error", result.exception)
+                Toast.makeText(this, "Sign in failed: ${result.exception.message}", Toast.LENGTH_SHORT).show()
+                // Try sign-in again since it's required
+                startSignIn()
+            }
+        }
+    }
+
+    private fun startSignIn() {
+        lifecycleScope.launch {
+            val result = signInManager.signIn(this@MainActivity)
+            handleSignInResult(result)
         }
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        
+        // Try silent sign-in on startup
+        lifecycleScope.launch {
+            val result = signInManager.signInSilently(this@MainActivity)
+            handleSignInResult(result)
+        }
         setupFullscreen()
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
@@ -103,8 +115,8 @@ class MainActivity : AppCompatActivity() {
                 // Initialize components
                 adManager.initialize()
                 
-                // Konum iznini kontrol et
-                checkLocationPermission()
+                // Remove location permission check and directly check Play Games sign in
+                checkPlayGamesSignIn()
 
                 // Load test ad
                 val adRequest = com.google.android.gms.ads.AdRequest.Builder().build()
@@ -189,35 +201,36 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private fun checkLocationPermission() {
-        locationPermissionRequest.launch(arrayOf(
-            android.Manifest.permission.ACCESS_FINE_LOCATION,
-            android.Manifest.permission.ACCESS_COARSE_LOCATION
-        ))
-    }
-
     private fun checkPlayGamesSignIn() {
         lifecycleScope.launch {
             try {
-                val signInResult = signInManager.signInSilently()
-                if (signInResult) {
-                    isSignedIn = true
-                    setupViews()
-                } else {
-                    // Sessiz giriş başarısız, kullanıcıdan açık giriş iste
-                    signInManager.signIn(this@MainActivity) { success ->
-                        if (success) {
-                            isSignedIn = true
-                            setupViews()
-                        } else {
-                            Toast.makeText(this@MainActivity, getString(R.string.error_play_games_required), Toast.LENGTH_LONG).show()
-                            finish()
+                when (val result = signInManager.signInSilently(this@MainActivity)) {
+                    is GameSignInManager.SignInResult.Success -> {
+                        isSignedIn = true
+                        setupViews()
+                    }
+                    is GameSignInManager.SignInResult.Cancelled -> {
+                        val signInResult = signInManager.signIn(this@MainActivity)
+                        when (signInResult) {
+                            is GameSignInManager.SignInResult.Success -> {
+                                isSignedIn = true
+                                setupViews()
+                            }
+                            else -> {
+                                Toast.makeText(this@MainActivity, getString(R.string.error_play_games_required), Toast.LENGTH_LONG).show()
+                                binding.startGameButton.isEnabled = false
+                            }
                         }
+                    }
+                    is GameSignInManager.SignInResult.Error -> {
+                        Toast.makeText(this@MainActivity, getString(R.string.error_sign_in, result.exception.message), Toast.LENGTH_LONG).show()
+                        binding.startGameButton.isEnabled = false
                     }
                 }
             } catch (e: Exception) {
+                Log.e(TAG, "Sign-in error", e)
                 Toast.makeText(this@MainActivity, getString(R.string.error_sign_in, e.message), Toast.LENGTH_LONG).show()
-                finish()
+                binding.startGameButton.isEnabled = false
             }
         }
     }

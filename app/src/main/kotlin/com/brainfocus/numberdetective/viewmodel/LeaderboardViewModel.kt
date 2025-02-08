@@ -71,38 +71,6 @@ class LeaderboardViewModel @Inject constructor(
         }
     }
 
-    suspend fun loadLocalLeaderboard(activity: Activity) {
-        _loading.value = true
-        _error.value = null
-
-        try {
-            val leaderboardsClient = PlayGames.getLeaderboardsClient(activity)
-            val leaderboardScores = leaderboardsClient.loadTopScores(
-                activity.getString(R.string.leaderboard_location_based),
-                LeaderboardVariant.TIME_SPAN_ALL_TIME,
-                LeaderboardVariant.COLLECTION_PUBLIC,
-                MAX_SCORES
-            ).await()
-
-            val scores = leaderboardScores.get()?.scores
-            val playerScores = scores?.map { score ->
-                PlayerScore(
-                    id = score.scoreHolderDisplayName,
-                    name = score.scoreHolderDisplayName,
-                    score = score.rawScore,
-                    rank = score.rank,
-                    playerIcon = score.scoreHolderIconImageUri
-                )
-            } ?: emptyList()
-
-            _scores.value = playerScores
-        } catch (e: Exception) {
-            Log.e(TAG, "Error loading local leaderboard", e)
-            _error.value = e.message
-        } finally {
-            _loading.value = false
-        }
-    }
 
     fun submitScore(activity: Activity, score: Long) {
         viewModelScope.launch {
@@ -113,12 +81,7 @@ class LeaderboardViewModel @Inject constructor(
                     activity.getString(R.string.leaderboard_global_all_time),
                     score
                 ).await()
-                
-                // Submit to location-based leaderboard
-                leaderboardsClient.submitScoreImmediate(
-                    activity.getString(R.string.leaderboard_location_based),
-                    score
-                ).await()
+            
                 
                 loadGlobalLeaderboard(activity) // Refresh global leaderboard after submitting new score
             } catch (e: Exception) {

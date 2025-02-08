@@ -134,7 +134,7 @@ class GameResultActivity : AppCompatActivity() {
             
             shareButton.setOnClickListener {
                 soundManager.playButtonClick()
-                showNearbyLeaderboard()
+                shareScore()
             }
             
             mainMenuButton.setOnClickListener {
@@ -170,18 +170,6 @@ class GameResultActivity : AppCompatActivity() {
             }
     }
 
-    private fun showNearbyLeaderboard() {
-        PlayGames.getLeaderboardsClient(this)
-            .getLeaderboardIntent(getString(R.string.leaderboard_location_based))
-            .addOnSuccessListener { intent: Intent ->
-                leaderboardLauncher.launch(intent)
-            }
-            .addOnFailureListener { e: Exception ->
-                Log.e(TAG, "Error showing nearby leaderboard", e)
-                Toast.makeText(this, getString(R.string.error_showing_leaderboard), Toast.LENGTH_SHORT).show()
-            }
-    }
-
     private fun startNewGame() {
         startActivity(Intent(this@GameResultActivity, GameActivity::class.java))
         finish()
@@ -205,6 +193,21 @@ class GameResultActivity : AppCompatActivity() {
         } catch (e: Exception) {
             Log.e(TAG, "Error playing sound: ${e.message}", e)
         }
+    }
+
+    private fun shareScore() {
+        val shareIntent = Intent().apply {
+            action = Intent.ACTION_SEND
+            type = "text/plain"
+            val message = getString(
+                R.string.share_score_message,
+                score,
+                attempts,
+                formatTime(timeInSeconds)
+            )
+            putExtra(Intent.EXTRA_TEXT, message)
+        }
+        startActivity(Intent.createChooser(shareIntent, getString(R.string.share_score_title)))
     }
 
     private fun setupFullscreen() {
