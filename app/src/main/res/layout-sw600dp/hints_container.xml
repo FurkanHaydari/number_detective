@@ -3,9 +3,8 @@
     android:id="@+id/hintsRecyclerView"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_marginHorizontal="@dimen/margin_normal"
-    android:layout_marginTop="@dimen/margin_normal"
-    android:layout_marginBottom="@dimen/margin_normal"
+    android:layout_marginHorizontal="@dimen/margin_large"
+    android:layout_marginVertical="@dimen/margin_normal"
     android:padding="@dimen/padding_small"
     android:clipToPadding="false"
     android:background="@drawable/hints_container_background" />

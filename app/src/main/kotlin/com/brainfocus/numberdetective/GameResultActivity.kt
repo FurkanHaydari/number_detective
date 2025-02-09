@@ -54,7 +54,7 @@ class GameResultActivity : AppCompatActivity() {
         // Initialize AdManager
         adManager.initialize()
         val adRequest = AdRequest.Builder().build()
-        binding.adView.loadAd(adRequest)
+        binding.adView?.loadAd(adRequest)
         
         // Get game result data from intent
         score = intent.getIntExtra("score", 0)
@@ -177,7 +177,7 @@ class GameResultActivity : AppCompatActivity() {
 
     private fun loadAd() {
         try {
-            binding.adView.visibility = View.VISIBLE
+            binding.adView?.visibility = View.VISIBLE
         } catch (e: Exception) {
             Log.e(TAG, "Error loading ad: ${e.message}")
         }

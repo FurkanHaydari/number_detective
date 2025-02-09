@@ -42,6 +42,9 @@ import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
+import android.view.animation.ScaleAnimation
+import android.view.animation.Animation
+import android.view.animation.OvershootInterpolator
 
 @AndroidEntryPoint
 class GameActivity : AppCompatActivity(), NumberPicker.OnValueChangeListener {
@@ -90,9 +93,11 @@ class GameActivity : AppCompatActivity(), NumberPicker.OnValueChangeListener {
     }
 
     private fun setupUI() {
-        hintAdapter = HintAdapter { hint ->
-            showHintDetail(hint)
-        }
+        val isTablet = resources.getBoolean(R.bool.isTablet)
+        hintAdapter = HintAdapter(
+            onHintClick = { hint -> showHintDetail(hint) },
+            isTablet = isTablet
+        )
         binding.hintsContainer.apply {
             adapter = hintAdapter
             layoutManager = LinearLayoutManager(this@GameActivity)
@@ -108,18 +113,18 @@ class GameActivity : AppCompatActivity(), NumberPicker.OnValueChangeListener {
             }
         }
 
-        binding.submitButton.setOnClickListener {
+        binding.submitButton?.setOnClickListener {
             val guess = numberPickers.joinToString("") { it.value.toString() }
             handleGuess(guess)
         }
 
         // Overlay'e tıklandığında detay görünümünü kapat
-        binding.hintDetailOverlay.setOnClickListener {
+        binding.hintDetailOverlay?.setOnClickListener {
             hideHintDetail()
         }
 
         // Detay kartına tıklandığında olayın overlay'e geçmesini engelle
-        binding.hintDetailCard.setOnClickListener { }
+        binding.hintDetailCard?.setOnClickListener { }
     }
 
     private fun cleanupViews() {
@@ -130,7 +135,7 @@ class GameActivity : AppCompatActivity(), NumberPicker.OnValueChangeListener {
         // Clear the list
         numberPickers = emptyList()
         // Clear the container
-        binding.numberPickerContainer.removeAllViews()
+        binding.numberPickerContainer?.removeAllViews()
     }
 
     private fun setupViews() {
@@ -144,7 +149,7 @@ class GameActivity : AppCompatActivity(), NumberPicker.OnValueChangeListener {
             // Create views on background thread
             val mainContainer = LinearLayout(this@GameActivity).apply {
                 orientation = LinearLayout.VERTICAL
-                gravity = android.view.Gravity.CENTER
+                gravity = android.view.Gravity.BOTTOM or android.view.Gravity.CENTER_HORIZONTAL
                 alpha = 0f
                 scaleX = 0.8f
                 scaleY = 0.8f
@@ -154,6 +159,9 @@ class GameActivity : AppCompatActivity(), NumberPicker.OnValueChangeListener {
             val numberPickersContainer = LinearLayout(this@GameActivity).apply {
                 orientation = LinearLayout.HORIZONTAL
                 weightSum = if (viewModel.currentLevel.value == 3) 4f else 3f
+                layoutParams = LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT).apply {
+                    bottomMargin = (0 * resources.displayMetrics.density).toInt()
+                }
             }
 
             val numPickers = if (viewModel.currentLevel.value == 3) 4 else 3
@@ -169,16 +177,30 @@ class GameActivity : AppCompatActivity(), NumberPicker.OnValueChangeListener {
                     setSelectedTextColor(getColor(android.R.color.white))
                     setTextColor(Color.parseColor("#CCFFFFFF")) // Yarı saydam beyaz
                     setDividerColor(Color.parseColor("#33FFFFFF")) // Çok hafif beyaz çizgi
-                    setSelectedTextSize(resources.getDimension(R.dimen.selected_text_size))
-                    setTextSize(resources.getDimension(R.dimen.text_size))
-                    setDividerThickness(resources.getDimension(R.dimen.divider_thickness).toInt())
-                    setWheelItemCount(3) // Daha kompakt görünüm için
-                    background = ContextCompat.getDrawable(context, R.drawable.number_picker_glass_background)
-                    elevation = resources.getDimension(R.dimen.picker_elevation)
-                    layoutParams = LinearLayout.LayoutParams(0, resources.getDimensionPixelSize(R.dimen.picker_height), 1f).apply {
-                        marginStart = resources.getDimensionPixelSize(R.dimen.picker_margin)
-                        marginEnd = resources.getDimensionPixelSize(R.dimen.picker_margin)
+                    val isTablet = resources.getBoolean(R.bool.isTablet)
+                    if (isTablet) {
+                        setSelectedTextSize(64f * resources.displayMetrics.scaledDensity)
+                        setTextSize(22f * resources.displayMetrics.scaledDensity)
+                        setDividerThickness((1f * resources.displayMetrics.density).toInt())
+                        setWheelItemCount(3)
+                        val size = (160 * resources.displayMetrics.density).toInt()
+                        val margin = (8 * resources.displayMetrics.density).toInt()
+                        layoutParams = LinearLayout.LayoutParams(0, size, 1f).apply {
+                            marginStart = margin
+                            marginEnd = margin
+                        }
+                    } else {
+                        setSelectedTextSize(resources.getDimension(R.dimen.selected_text_size))
+                        setTextSize(resources.getDimension(R.dimen.text_size))
+                        setDividerThickness(resources.getDimension(R.dimen.divider_thickness).toInt())
+                        setWheelItemCount(3)
+                        layoutParams = LinearLayout.LayoutParams(0, resources.getDimensionPixelSize(R.dimen.picker_height), 1f).apply {
+                            marginStart = resources.getDimensionPixelSize(R.dimen.picker_margin)
+                            marginEnd = resources.getDimensionPixelSize(R.dimen.picker_margin)
+                        }
                     }
+                    background = ContextCompat.getDrawable(context, R.drawable.number_picker_glass_background)
+                    elevation = if (isTablet) 8f * resources.displayMetrics.density else resources.getDimension(R.dimen.picker_elevation)
                 }
             }
 
@@ -192,14 +214,14 @@ class GameActivity : AppCompatActivity(), NumberPicker.OnValueChangeListener {
                 }
                 
                 mainContainer.addView(numberPickersContainer)
-                binding.numberPickerContainer.addView(mainContainer)
+                binding.numberPickerContainer?.addView(mainContainer)
 
                 // Setup initial states
                 binding.apply {
-                    submitButton.alpha = 0f
-                    submitButton.translationY = 100f
-                    hintsCard.alpha = 0f
-                    hintsCard.translationX = -100f
+                    submitButton?.alpha = 0f
+                    submitButton?.translationY = 100f
+                    hintsCard?.alpha = 0f
+                    hintsCard?.translationX = -100f
                 }
                 
                 // Add shadow to main container
@@ -237,8 +259,8 @@ class GameActivity : AppCompatActivity(), NumberPicker.OnValueChangeListener {
                     interpolator = DecelerateInterpolator()
                     addUpdateListener { animator ->
                         val value = animator.animatedValue as Float
-                        binding.submitButton.alpha = value
-                        binding.submitButton.translationY = 100f - (100f * value)
+                        binding.submitButton?.alpha = value
+                        binding.submitButton?.translationY = 100f - (100f * value)
                     }
                 }
 
@@ -248,7 +270,7 @@ class GameActivity : AppCompatActivity(), NumberPicker.OnValueChangeListener {
             }
         }
 
-        binding.submitButton.setOnClickListener {
+        binding.submitButton?.setOnClickListener {
             val guess = numberPickers.joinToString("") { it.value.toString() }
             handleGuess(guess)
         }
@@ -391,7 +413,7 @@ class GameActivity : AppCompatActivity(), NumberPicker.OnValueChangeListener {
                         android.util.Log.d("GameActivity", "Level changed to: $level")
                         binding.levelText.text = "Level $level"
                         // Only update views if not in initial setup
-                        if (binding.numberPickerContainer.childCount > 0) {
+                        if (binding.numberPickerContainer?.childCount ?: 0 > 0) {
                             android.util.Log.d("GameActivity", "Updating views for level change")
                             cleanupViews()
                             setupViews()
@@ -462,6 +484,26 @@ class GameActivity : AppCompatActivity(), NumberPicker.OnValueChangeListener {
     }
 
     override fun onValueChange(picker: NumberPicker?, oldVal: Int, newVal: Int) {
+        // Mevcut animasyonu iptal et
+        picker?.clearAnimation()
+        
+        // Yeni değere geçiş başlarken animasyonu uygula
+        val scaleAnimation = ScaleAnimation(
+            1f, 1.2f, // X ekseni başlangıç ve bitiş ölçeği
+            1f, 1.2f, // Y ekseni başlangıç ve bitiş ölçeği
+            Animation.RELATIVE_TO_SELF, 0.5f,
+            Animation.RELATIVE_TO_SELF, 0.5f
+        ).apply {
+            duration = 150 // Animasyon süresi
+            repeatMode = Animation.REVERSE
+            repeatCount = 1
+            interpolator = OvershootInterpolator(1.2f)
+        }
+        
+        // Animasyonu hemen başlat
+        picker?.startAnimation(scaleAnimation)
+        
+        // Ses efekti
         soundManager.playTickSound()
     }
 
@@ -476,7 +518,7 @@ class GameActivity : AppCompatActivity(), NumberPicker.OnValueChangeListener {
 
     private fun showHintDetail(hint: Hint) {
         // Detay kartını güncelle
-        binding.hintDetailCard.findViewById<ConstraintLayout>(R.id.container)?.removeAllViews()
+        binding.hintDetailCard?.findViewById<ConstraintLayout>(R.id.container)?.removeAllViews()
         val detailBinding = ItemHintSquaresBinding.inflate(layoutInflater)
         
         // Hint verilerini detay görünümüne aktar
@@ -491,6 +533,19 @@ class GameActivity : AppCompatActivity(), NumberPicker.OnValueChangeListener {
                 View.GONE
             }
             hintDescription.text = hint.description
+
+            // Tablet kontrolü
+            val isTablet = resources.getBoolean(R.bool.isTablet)
+            if (isTablet) {
+                // Square boyutlarını büyüt
+                listOf(square1, square2, square3, square4).forEach { square ->
+                    val size = (80 * resources.displayMetrics.density).toInt()
+                    square.layoutParams.width = size
+                    square.layoutParams.height = size
+                    square.textSize = 36f
+                }
+                hintDescription.textSize = 24f
+            }
 
             // Detay görünümü için boyutları ve görünümü ayarla
             val cardContainer = root
@@ -515,10 +570,10 @@ class GameActivity : AppCompatActivity(), NumberPicker.OnValueChangeListener {
                 0, 0)
         }
 
-        binding.hintDetailCard.findViewById<ConstraintLayout>(R.id.container)?.addView(detailBinding.root)
+        binding.hintDetailCard?.findViewById<ConstraintLayout>(R.id.container)?.addView(detailBinding.root)
 
         // Overlay'i göster ve animasyonla aç
-        binding.hintDetailOverlay.apply {
+        binding.hintDetailOverlay?.apply {
             alpha = 0f
             visibility = View.VISIBLE
             
@@ -527,7 +582,7 @@ class GameActivity : AppCompatActivity(), NumberPicker.OnValueChangeListener {
                 .setDuration(300)
                 .withStartAction {
                     // Detay kartını scale ve fade in animasyonu
-                    binding.hintDetailCard.apply {
+                    binding.hintDetailCard?.apply {
                         scaleX = 0.8f
                         scaleY = 0.8f
                         alpha = 0f
@@ -546,23 +601,23 @@ class GameActivity : AppCompatActivity(), NumberPicker.OnValueChangeListener {
 
     private fun hideHintDetail() {
         // Animasyonla kapat
-        binding.hintDetailOverlay.animate()
-            .alpha(0f)
-            .setDuration(250)
-            .withStartAction {
+        binding.hintDetailOverlay?.animate()
+            ?.alpha(0f)
+            ?.setDuration(250)
+            ?.withStartAction {
                 // Detay kartını scale ve fade out animasyonu
-                binding.hintDetailCard.animate()
-                    .scaleX(0.8f)
-                    .scaleY(0.8f)
-                    .alpha(0f)
-                    .setDuration(200)
-                    .setInterpolator(DecelerateInterpolator())
-                    .start()
+                binding.hintDetailCard?.animate()
+                    ?.scaleX(0.8f)
+                    ?.scaleY(0.8f)
+                    ?.alpha(0f)
+                    ?.setDuration(200)
+                    ?.setInterpolator(DecelerateInterpolator())
+                    ?.start()
             }
-            .withEndAction {
-                binding.hintDetailOverlay.visibility = View.GONE
-                binding.hintDetailCard.findViewById<ConstraintLayout>(R.id.container)?.removeAllViews()
+            ?.withEndAction {
+                binding.hintDetailOverlay?.visibility = View.GONE
+                binding.hintDetailCard?.findViewById<ConstraintLayout>(R.id.container)?.removeAllViews()
             }
-            .start()
+            ?.start()
     }
 }

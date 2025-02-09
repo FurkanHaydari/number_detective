@@ -5,7 +5,8 @@
     android:layout_height="wrap_content"
     android:gravity="center"
     android:orientation="horizontal"
-    android:padding="@dimen/padding_normal">
+    android:padding="72dp"
+    android:layout_margin="96dp">
 
     <!-- First Number -->
     <LinearLayout
@@ -17,10 +18,10 @@
             android:id="@+id/upButton1"
             android:layout_width="0dp"
             android:layout_height="0dp"
-            android:minWidth="48dp"
-            android:minHeight="48dp"
-            android:maxWidth="64dp"
-            android:maxHeight="64dp"
+            android:minWidth="140dp"
+            android:minHeight="140dp"
+            android:maxWidth="160dp"
+            android:maxHeight="160dp"
             android:layout_weight="1"
             android:src="@drawable/ic_arrow_up"
             android:background="@drawable/number_input_background"
@@ -31,14 +32,14 @@
             android:id="@+id/numberText1"
             android:layout_width="0dp"
             android:layout_height="0dp"
-            android:minWidth="48dp"
-            android:minHeight="48dp"
-            android:maxWidth="64dp"
-            android:maxHeight="64dp"
+            android:minWidth="140dp"
+            android:minHeight="140dp"
+            android:maxWidth="160dp"
+            android:maxHeight="160dp"
             android:layout_weight="1"
             android:background="@drawable/number_input_background"
             android:gravity="center"
-            android:textSize="@dimen/text_title"
+            android:textSize="48sp"
             android:textColor="@color/colorText"
             android:text="0"/>
             
@@ -46,10 +47,10 @@
             android:id="@+id/downButton1"
             android:layout_width="0dp"
             android:layout_height="0dp"
-            android:minWidth="48dp"
-            android:minHeight="48dp"
-            android:maxWidth="64dp"
-            android:maxHeight="64dp"
+            android:minWidth="140dp"
+            android:minHeight="140dp"
+            android:maxWidth="160dp"
+            android:maxHeight="160dp"
             android:layout_weight="1"
             android:src="@drawable/ic_arrow_down"
             android:background="@drawable/number_input_background"
@@ -57,7 +58,7 @@
             android:contentDescription="@string/number_down_button"/>
     </LinearLayout>
 
-    <Space android:layout_width="@dimen/margin_small" android:layout_height="0dp"/>
+    <Space android:layout_width="@dimen/margin_normal" android:layout_height="0dp"/>
 
     <!-- Second Number -->
     <LinearLayout
@@ -69,10 +70,10 @@
             android:id="@+id/upButton2"
             android:layout_width="0dp"
             android:layout_height="0dp"
-            android:minWidth="48dp"
-            android:minHeight="48dp"
-            android:maxWidth="64dp"
-            android:maxHeight="64dp"
+            android:minWidth="140dp"
+            android:minHeight="140dp"
+            android:maxWidth="160dp"
+            android:maxHeight="160dp"
             android:layout_weight="1"
             android:src="@drawable/ic_arrow_up"
             android:background="@drawable/number_input_background"
@@ -83,14 +84,14 @@
             android:id="@+id/numberText2"
             android:layout_width="0dp"
             android:layout_height="0dp"
-            android:minWidth="48dp"
-            android:minHeight="48dp"
-            android:maxWidth="64dp"
-            android:maxHeight="64dp"
+            android:minWidth="140dp"
+            android:minHeight="140dp"
+            android:maxWidth="160dp"
+            android:maxHeight="160dp"
             android:layout_weight="1"
             android:background="@drawable/number_input_background"
             android:gravity="center"
-            android:textSize="@dimen/text_title"
+            android:textSize="48sp"
             android:textColor="@color/colorText"
             android:text="0"/>
             
@@ -98,10 +99,10 @@
             android:id="@+id/downButton2"
             android:layout_width="0dp"
             android:layout_height="0dp"
-            android:minWidth="48dp"
-            android:minHeight="48dp"
-            android:maxWidth="64dp"
-            android:maxHeight="64dp"
+            android:minWidth="140dp"
+            android:minHeight="140dp"
+            android:maxWidth="160dp"
+            android:maxHeight="160dp"
             android:layout_weight="1"
             android:src="@drawable/ic_arrow_down"
             android:background="@drawable/number_input_background"
@@ -109,7 +110,7 @@
             android:contentDescription="@string/number_down_button"/>
     </LinearLayout>
 
-    <Space android:layout_width="@dimen/margin_small" android:layout_height="0dp"/>
+    <Space android:layout_width="@dimen/margin_normal" android:layout_height="0dp"/>
 
     <!-- Third Number -->
     <LinearLayout
@@ -121,10 +122,10 @@
             android:id="@+id/upButton3"
             android:layout_width="0dp"
             android:layout_height="0dp"
-            android:minWidth="48dp"
-            android:minHeight="48dp"
-            android:maxWidth="64dp"
-            android:maxHeight="64dp"
+            android:minWidth="140dp"
+            android:minHeight="140dp"
+            android:maxWidth="160dp"
+            android:maxHeight="160dp"
             android:layout_weight="1"
             android:src="@drawable/ic_arrow_up"
             android:background="@drawable/number_input_background"
@@ -135,14 +136,14 @@
             android:id="@+id/numberText3"
             android:layout_width="0dp"
             android:layout_height="0dp"
-            android:minWidth="48dp"
-            android:minHeight="48dp"
-            android:maxWidth="64dp"
-            android:maxHeight="64dp"
+            android:minWidth="140dp"
+            android:minHeight="140dp"
+            android:maxWidth="160dp"
+            android:maxHeight="160dp"
             android:layout_weight="1"
             android:background="@drawable/number_input_background"
             android:gravity="center"
-            android:textSize="@dimen/text_title"
+            android:textSize="48sp"
             android:textColor="@color/colorText"
             android:text="0"/>
             
@@ -150,14 +151,17 @@
             android:id="@+id/downButton3"
             android:layout_width="0dp"
             android:layout_height="0dp"
-            android:minWidth="48dp"
-            android:minHeight="48dp"
-            android:maxWidth="64dp"
-            android:maxHeight="64dp"
+            android:minWidth="140dp"
+            android:minHeight="140dp"
+            android:maxWidth="160dp"
+            android:maxHeight="160dp"
             android:layout_weight="1"
             android:src="@drawable/ic_arrow_down"
             android:background="@drawable/number_input_background"
             app:tint="@color/colorPrimary"
             android:contentDescription="@string/number_down_button"/>
     </LinearLayout>
-</LinearLayout> 
+
+
+
+</LinearLayout>

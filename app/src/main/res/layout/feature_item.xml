@@ -7,25 +7,28 @@
     android:orientation="vertical"
     android:gravity="center"
     android:background="@drawable/feature_item_background"
-    android:padding="16dp"
-    android:layout_margin="8dp"
+    android:padding="@dimen/padding_normal"
+    android:layout_margin="@dimen/margin_small"
     android:clickable="true"
     android:focusable="true"
     android:elevation="8dp">
 
     <ImageView
         android:id="@+id/featureIcon"
-        android:layout_width="64dp"
-        android:layout_height="56dp"
-        android:alpha="1.0"/>
+        android:layout_width="@dimen/feature_icon_size"
+        android:layout_height="@dimen/feature_icon_size"
+        android:padding="@dimen/feature_icon_padding"
+        android:scaleType="fitCenter"
+        android:alpha="1.0"
+        android:layout_marginBottom="@dimen/margin_small"/>
 
     <TextView
         android:id="@+id/featureTitle"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:textColor="@color/white"
-        android:textSize="14sp"
+        android:textSize="@dimen/text_medium"
         android:textStyle="bold"
-        android:layout_marginTop="12dp"/>
+        android:layout_marginTop="@dimen/margin_normal"/>
 
 </LinearLayout> 

@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Text sizes -->
+    <dimen name="text_title">32sp</dimen>
+    <dimen name="text_large">28sp</dimen>
+    <dimen name="text_medium">24sp</dimen>
+    <dimen name="text_small">20sp</dimen>
+    <dimen name="text_xsmall">16sp</dimen>
+
+    <!-- Margins -->
+    <dimen name="margin_xxlarge">64dp</dimen>
+    <dimen name="margin_xlarge">48dp</dimen>
+    <dimen name="margin_large">24dp</dimen>
+    <dimen name="margin_normal">16dp</dimen>
+    <dimen name="margin_small">8dp</dimen>
+    <dimen name="margin_xsmall">4dp</dimen>
+
+    <!-- Padding -->
+    <dimen name="padding_xlarge">48dp</dimen>
+    <dimen name="padding_large">24dp</dimen>
+    <dimen name="padding_normal">16dp</dimen>
+    <dimen name="padding_small">8dp</dimen>
+    <dimen name="padding_xsmall">4dp</dimen>
+
+    <!-- Corner Radius -->
+    <dimen name="corner_radius_large">24dp</dimen>
+    <dimen name="corner_radius_normal">16dp</dimen>
+    <dimen name="corner_radius_small">8dp</dimen>
+
+    <!-- Button Heights -->
+    <dimen name="button_height_large">64dp</dimen>
+    <dimen name="button_height_normal">56dp</dimen>
+    <dimen name="button_height_small">48dp</dimen>
+
+    <!-- Number Picker -->
+    <dimen name="picker_height">240dp</dimen>
+    <dimen name="picker_margin">12dp</dimen>
+    <dimen name="picker_elevation">8dp</dimen>
+    <dimen name="selected_text_size">48sp</dimen>
+    <dimen name="text_size">36sp</dimen>
+    <dimen name="divider_thickness">0.5dp</dimen>
+
+    <!-- Feature Icons -->
+    <dimen name="feature_icon_size">96dp</dimen>
+    <dimen name="feature_icon_padding">16dp</dimen>
+</resources>

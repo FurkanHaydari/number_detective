@@ -9,7 +9,10 @@ import androidx.recyclerview.widget.RecyclerView
 import com.brainfocus.numberdetective.databinding.ItemHintSquaresBinding
 import com.brainfocus.numberdetective.model.Hint
 
-class HintAdapter(private val onHintClick: (Hint) -> Unit) : ListAdapter<Hint, HintAdapter.HintViewHolder>(HintDiffCallback()) {
+class HintAdapter(
+    private val onHintClick: (Hint) -> Unit,
+    private val isTablet: Boolean = false
+) : ListAdapter<Hint, HintAdapter.HintViewHolder>(HintDiffCallback()) {
     init {
         // Enable view holder recycling
         setHasStableIds(true)
@@ -24,7 +27,7 @@ class HintAdapter(private val onHintClick: (Hint) -> Unit) : ListAdapter<Hint, H
         val binding = ItemHintSquaresBinding.inflate(LayoutInflater.from(parent.context), parent, false)
         // Enable hardware acceleration for better performance
         binding.root.setLayerType(View.LAYER_TYPE_HARDWARE, null)
-        return HintViewHolder(binding, onHintClick)
+        return HintViewHolder(binding, onHintClick, isTablet)
     }
     
     override fun onBindViewHolder(holder: HintViewHolder, position: Int) {
@@ -33,7 +36,8 @@ class HintAdapter(private val onHintClick: (Hint) -> Unit) : ListAdapter<Hint, H
     
     class HintViewHolder(
         private val binding: ItemHintSquaresBinding,
-        private val onHintClick: (Hint) -> Unit
+        private val onHintClick: (Hint) -> Unit,
+        private val isTablet: Boolean
     ) : RecyclerView.ViewHolder(binding.root) {
         // Cache views for better performance
         private val squares = listOf(binding.square1, binding.square2, binding.square3, binding.square4)
@@ -41,7 +45,22 @@ class HintAdapter(private val onHintClick: (Hint) -> Unit) : ListAdapter<Hint, H
 
         init {
             // Set click listener once during initialization
-            binding.root.setOnClickListener { currentHint?.let(onHintClick) }
+            binding.root.setOnClickListener { 
+                // Scale animation
+                binding.root.animate()
+                    .scaleX(1.05f)
+                    .scaleY(1.05f)
+                    .setDuration(100)
+                    .withEndAction {
+                        binding.root.animate()
+                            .scaleX(1f)
+                            .scaleY(1f)
+                            .setDuration(100)
+                            .start()
+                        currentHint?.let(onHintClick)
+                    }
+                    .start()
+            }
         }
 
         fun bind(hint: Hint) {
@@ -59,6 +78,17 @@ class HintAdapter(private val onHintClick: (Hint) -> Unit) : ListAdapter<Hint, H
 
             // Update description
             binding.hintDescription.text = hint.description
+
+            // Set text sizes and dimensions for tablet
+            if (isTablet) {
+                squares.forEach { square ->
+                    square.textSize = 36f
+                    val size = (60 * square.resources.displayMetrics.density).toInt()
+                    square.layoutParams.width = size
+                    square.layoutParams.height = size
+                }
+                binding.hintDescription.textSize = 24f
+            }
         }
     }
 }

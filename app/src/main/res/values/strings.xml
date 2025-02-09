@@ -5,6 +5,7 @@
 
     <!-- Game Activity -->
     <string name="guess_button">GUESS</string>
+    <string name="submit_button">SUBMIT</string>
 
     <!-- Level 3 Hints -->
     <string name="hint_l3_1">First and third digits are in correct positions</string>
@@ -162,7 +163,7 @@
     <string name="player_icon">Player Icon</string>
 
     <string name="brain_rot_title">Time to Exercise Your Brain!</string>
-<string name="brain_rot_message">Short-form content on social media is threatening our brains! Research shows that constant exposure to short content increases the risk of \'Brain Rot.\'\n\nKeep your mind sharp with Number Detective, and improve your logical thinking and problem-solving skills!</string>
+    <string name="brain_rot_message">Short-form content on social media is threatening our brains! Research shows that constant exposure to short content increases the risk of \'Brain Rot.\'\n\nKeep your mind sharp with Number Detective, and improve your logical thinking and problem-solving skills!</string>
 
     <!-- Toast Messages -->
     <string name="toast_enter_guess">Please enter a guess</string>

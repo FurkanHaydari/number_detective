@@ -1,16 +1,43 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <!-- Text sizes -->
-    <dimen name="text_size_title">20sp</dimen>
-    <dimen name="text_size_body">15sp</dimen>
-    <dimen name="text_size_highlight">17sp</dimen>
+    <dimen name="text_headline">52sp</dimen>
+    <dimen name="text_title">24sp</dimen>
+    <dimen name="text_large">18sp</dimen>
+    <dimen name="text_medium">16sp</dimen>
+    <dimen name="text_small">14sp</dimen>
+    <dimen name="text_xsmall">12sp</dimen>
     
     <!-- Margins -->
-    <dimen name="margin_horizontal">12dp</dimen>
-    <dimen name="margin_vertical">16dp</dimen>
-
-    <!-- Button margins -->
-    <dimen name="button_margin_bottom">24dp</dimen>
+    <dimen name="margin_xxlarge">64dp</dimen>
+    <dimen name="margin_xlarge">32dp</dimen>
+    <dimen name="margin_large">24dp</dimen>
+    <dimen name="margin_normal">16dp</dimen>
+    <dimen name="margin_small">8dp</dimen>
+    <dimen name="margin_xsmall">4dp</dimen>
+    
+    <!-- Padding -->
+    <dimen name="padding_xlarge">32dp</dimen>
+    <dimen name="padding_large">24dp</dimen>
+    <dimen name="padding_normal">16dp</dimen>
+    <dimen name="padding_small">8dp</dimen>
+    <dimen name="padding_xsmall">4dp</dimen>
+    
+    <!-- Corner Radius -->
+    <dimen name="corner_radius_xlarge">32dp</dimen>
+    <dimen name="corner_radius_large">24dp</dimen>
+    <dimen name="corner_radius_normal">16dp</dimen>
+    <dimen name="corner_radius_small">8dp</dimen>
+    
+    <!-- Button dimensions -->
+    <dimen name="button_height_large">64dp</dimen>
+    <dimen name="button_height_normal">48dp</dimen>
+    <dimen name="button_height_small">36dp</dimen>
+    
+    <!-- Stroke thickness -->
+    <dimen name="stroke_thickness_large">2dp</dimen>
+    <dimen name="stroke_thickness_normal">1.5dp</dimen>
+    <dimen name="stroke_thickness_small">1dp</dimen>
     
     <!-- NumberPicker dimensions -->
     <dimen name="picker_margin">6dp</dimen>
@@ -22,6 +49,10 @@
     <!-- NumberPicker text sizes -->
     <dimen name="selected_text_size">26sp</dimen>
     <dimen name="text_size">20sp</dimen>
+
+    <!-- Feature Icons -->
+    <dimen name="feature_icon_size">48dp</dimen>
+    <dimen name="feature_icon_padding">8dp</dimen>
     <dimen name="divider_thickness">0.5dp</dimen>
     
     <!-- Title text sizes -->
