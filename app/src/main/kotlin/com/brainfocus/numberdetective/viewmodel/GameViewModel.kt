@@ -87,29 +87,28 @@ class GameViewModel @Inject constructor(
         val hintList = mutableListOf<Hint>()
         
         if (_currentLevel.value == 3) {
-            // Level 3 için 4 hint
+            // Level 3: Sıralı hintler
             hintList.addAll(listOf(
-                Hint(game.firstHint, 2, 0, getHintDescription(3, 1)),
-                Hint(game.secondHint, 1, 1, getHintDescription(3, 2)),
+                Hint(game.firstHint, 1, 0, getHintDescription(3, 1)),
+                Hint(game.secondHint, 0, 1, getHintDescription(3, 2)),
                 Hint(game.thirdHint, 1, 1, getHintDescription(3, 3)),
-                Hint(game.fourthHint, 1, 0, getHintDescription(3, 4))
+                Hint(game.fourthHint, 1, 1, getHintDescription(3, 4)),
+                Hint(game.fifthHint, 1, 1, getHintDescription(3, 5))
             ))
+            _hints.value = hintList
         } else {
-            // Level 1-2 için 5 hint
-            hintList.addAll(listOf(
+            // Level 1-2 için tüm hintler
+            val hints = listOf(
                 Hint(game.firstHint, 1, 0, getHintDescription(_currentLevel.value, 1)),
                 Hint(game.secondHint, 1, 0, getHintDescription(_currentLevel.value, 2)),
                 Hint(game.thirdHint, 0, 2, getHintDescription(_currentLevel.value, 3)),
+                Hint(game.fourthHint, 0, 2, getHintDescription(_currentLevel.value, 4)),
                 Hint(game.fifthHint, 1, 1, getHintDescription(_currentLevel.value, 5))
-            ))
+            )
             
-            // Level 2 hariç fourthHint'i ekle
-            if (_currentLevel.value != 2) {
-                hintList.add(Hint(game.fourthHint, 0, 2, getHintDescription(_currentLevel.value, 4)))
-            }
+            // Level 1: Sıralı, Level 2: Karışık
+            _hints.value = if (_currentLevel.value == 2) hints.shuffled() else hints
         }
-        
-        _hints.value = hintList.shuffled()
         
         if (isFirstGame) {
             startTimer()
@@ -195,7 +194,6 @@ class GameViewModel @Inject constructor(
             _remainingAttempts.value <= 0 -> {  // wrongAttempts yerine remainingAttempts kontrolü
                 _gameState.value = GameState.GameOver(_score.value)
                 timerJob?.cancel()
-                soundManager.playWrongSound()
                 GuessResult.Wrong
             }
             else -> {
@@ -257,6 +255,7 @@ class GameViewModel @Inject constructor(
                 2 -> R.string.hint_l3_2
                 3 -> R.string.hint_l3_3
                 4 -> R.string.hint_l3_4
+                5 -> R.string.hint_l3_5
                 else -> null
             }
         } else {

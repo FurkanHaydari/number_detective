@@ -331,7 +331,6 @@ class GameActivity : AppCompatActivity(), NumberPicker.OnValueChangeListener {
                     soundManager.playPartialWrongSound()
                     Toast.makeText(this, getString(R.string.toast_remaining_attempts, remainingAttempts), Toast.LENGTH_SHORT).show()
                 } else {
-                    soundManager.playWrongSound()  // Son hak bittiğinde sadece wrong sound çal
                     Toast.makeText(this, getString(R.string.toast_game_over, viewModel.correctAnswer.value), Toast.LENGTH_LONG).show()
                     navigateToGameResult(false)
                     return
@@ -362,7 +361,6 @@ class GameActivity : AppCompatActivity(), NumberPicker.OnValueChangeListener {
                 Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
 
                 if (remainingAttempts <= 0) {
-                    soundManager.playWrongSound()  // Son hak bittiğinde sadece wrong sound çal
                     Toast.makeText(this, getString(R.string.toast_game_over, viewModel.correctAnswer.value), Toast.LENGTH_LONG).show()
                     navigateToGameResult(false)
                     return
@@ -435,11 +433,9 @@ class GameActivity : AppCompatActivity(), NumberPicker.OnValueChangeListener {
                     viewModel.gameState.collect { state ->
                         when (state) {
                             is GameState.Win -> {
-                                soundManager.playWinSound()
                                 navigateToGameResult(true)
                             }
                             is GameState.GameOver -> {
-                                soundManager.playWrongSound()
                                 navigateToGameResult(false)
                             }
                             else -> {}

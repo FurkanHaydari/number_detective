@@ -21,6 +21,39 @@ class NumberDetectiveGame {
         private val LEVEL_1_2_AB_FALSE = listOf("bax", "bxa", "xab")
         private val LEVEL_1_2_AC_FALSE = listOf("cax", "xca", "cxa")
         private val LEVEL_1_2_CB_FALSE = listOf("bcx", "cxb", "xcb")
+
+
+        // Level 3 Hint patterns
+        private val LEVEL_3_AB_FIRST_TRUE = listOf("axbx", "axxb")
+        private val LEVEL_3_AC_FIRST_TRUE = listOf("acxx", "axxc")
+        private val LEVEL_3_AD_FIRST_TRUE = listOf("adxx", "axdx")
+
+        private val LEVEL_3_BA_FIRST_TRUE = listOf("xbax", "xbxa")
+        private val LEVEL_3_BC_FIRST_TRUE = listOf("cbxx", "xbxc")
+        private val LEVEL_3_BD_FIRST_TRUE = listOf("bdxx", "bxdx")
+
+        private val LEVEL_3_CA_FIRST_TRUE = listOf("acxx", "axxc")
+        private val LEVEL_3_CB_FIRST_TRUE = listOf("bxcx", "xxcb")
+        private val LEVEL_3_CD_FIRST_TRUE = listOf("xdcx", "dxcx")
+
+        private val LEVEL_3_DA_FIRST_TRUE = listOf("xaxd", "xxad")
+        private val LEVEL_3_DB_FIRST_TRUE = listOf("bxxd", "xxbd")
+        private val LEVEL_3_DC_FIRST_TRUE = listOf("xcxd", "cxxd")
+
+        private val LEVEL_3_AD_TRUE = listOf("axxd")
+        private val LEVEL_3_BD_TRUE = listOf("xbxd")
+        private val LEVEL_3_CD_TRUE = listOf("xxcd")
+        private val LEVEL_3_AC_TRUE = listOf("axcx")
+
+        // Level 3 Single Correct Digit
+        private val LEVEL_3_SINGLE_TRUE = listOf("axxx", "xbxx", "xxcx", "xxxd")
+
+        // Level 3 Single False Digit
+        private val LEVEL_3_SINGLE_FALSE_A = listOf("xaxx", "xxax", "xxxa")
+        private val LEVEL_3_SINGLE_FALSE_B = listOf("bxxx", "xxbx", "xxxb")
+        private val LEVEL_3_SINGLE_FALSE_C = listOf("cxxx", "xcxx", "xxxc")
+        private val LEVEL_3_SINGLE_FALSE_D = listOf("dxxx", "xdxx", "xxdx")
+
     }
 
     private var secretNumber = ""
@@ -64,16 +97,7 @@ class NumberDetectiveGame {
     
     private fun generateSecretNumber() {
         if (currentLevel == 3) {
-            // Rastgele bir rakamı çıkar
-            val excludedNumber = numbers.random()
-            numbers.remove(excludedNumber)
-            
-            // Kalan rakamlardan 4 tanesini seç
-            val selectedNumbers = numbers.shuffled().take(4)
-            secretNumber = selectedNumbers.joinToString("")
-            
-            // Dummy kümeyi hazırla (secretNumber'da kullanılmayan rakamlar)
-            dummyNumbers = numbers.filter { it.toString()[0] !in secretNumber }.toMutableList()
+            secretNumber = numbers.shuffled().take(DIGITS_LEVEL_3).joinToString("")
         } else {
             secretNumber = numbers.shuffled().take(DIGITS_LEVEL_1_2).joinToString("")
         }
@@ -88,53 +112,81 @@ class NumberDetectiveGame {
     }
     
     private fun generateLevel3Hints() {
-        val (a, b, c, d) = secretNumber.map { it.toString().toInt() }
+        val (a, b, c, d) = secretNumber.map { it }
+        val secretDigits = setOf(a, b, c, d)
         
-        // 1. hint: a ve c doğru ve doğru yerde, b ve d dummy'den
-        firstHint = buildString {
-            append(a)
-            append(dummyNumbers.random())
-            append(c)
-            append(dummyNumbers.random())
-        }
+        // İlk iki hint için x havuzu
+        val firstPoolX = (0..9)
+            .map { it.toString()[0] }
+            .filterNot { it in secretDigits }
+            .shuffled()
+            .toMutableList()
+            
+        // Son üç hint için x havuzu
+        val secondPoolX = (0..9)
+            .map { it.toString()[0] }
+            .filterNot { it in secretDigits }
+            .shuffled()
+            .toMutableList()
         
-        // 2. hint: a ve d var, d doğru yerde a yanlış yerde
-        secondHint = buildString {
-            val positions = (0..3).filter { it != 0 && it != 3 }.random() // a için 1 veya 2
-            val chars = CharArray(4) { 
-                when(it) {
-                    positions -> a.toString()[0]
-                    3 -> d.toString()[0]
-                    else -> dummyNumbers.random().toString()[0]
+        fun replaceX(pattern: String, isFirstPool: Boolean): String {
+            val availableX = if (isFirstPool) firstPoolX else secondPoolX
+            return buildString {
+                pattern.forEach { char ->
+                    append(
+                        when (char) {
+                            'x' -> availableX.removeFirst()
+                            'a' -> a
+                            'b' -> b
+                            'c' -> c
+                            'd' -> d
+                            else -> char
+                        }
+                    )
                 }
             }
-            append(chars.joinToString(""))
+        }
+        val level_3_path_selection = (1..4).random()
+
+        val (first, second, third, fourth, fifth) = when (level_3_path_selection) {
+            1 -> listOf(
+                LEVEL_3_SINGLE_TRUE.get(0),       // Sadece A doğru yerde
+                LEVEL_3_SINGLE_FALSE_A.random(), // Sadece A var ama yanlış yerde
+                LEVEL_3_BC_FIRST_TRUE.random(),  // B ve C var, B doğru yerde
+                LEVEL_3_CD_FIRST_TRUE.random(), // C ve D var, C doğru yerde
+                LEVEL_3_BD_TRUE.random(),  // B ve D var, ikisi de doğru yerde
+                
+            )
+            2 -> listOf(
+                LEVEL_3_SINGLE_TRUE.get(1),      // Sadece B doğru yerde
+                LEVEL_3_SINGLE_FALSE_B.random(), // Sadece B var ama yanlış yerde
+                LEVEL_3_AC_FIRST_TRUE.random(),  // A ve C var, A doğru yerde
+                LEVEL_3_DA_FIRST_TRUE.random(),  // A ve D var, D doğru yerde
+                LEVEL_3_CD_TRUE.random(),  // C ve D var, ikisi de doğru yerde
+            )
+            3 -> listOf(
+                LEVEL_3_SINGLE_TRUE.get(2),       // Sadece C doğru yerde
+                LEVEL_3_SINGLE_FALSE_C.random(), // Sadece C var ama yanlış yerde
+                LEVEL_3_AB_FIRST_TRUE.random(),  // A ve B var, A doğru yerde
+                LEVEL_3_BD_FIRST_TRUE.random(),  // B ve D var, B doğru yerde
+                LEVEL_3_AD_TRUE.random(),       // A ve D var, ikisi de doğru yerde
+            )
+            else -> listOf(
+                LEVEL_3_SINGLE_TRUE.get(3),       // Sadece D doğru yerde
+                LEVEL_3_SINGLE_FALSE_D.random(), // Sadece D var ama yanlış yerde
+                LEVEL_3_AB_FIRST_TRUE.random(),  // A ve B var, A doğru yerde
+                LEVEL_3_BC_FIRST_TRUE.random(),  // B ve C var, B doğru yerde
+                LEVEL_3_AC_TRUE.random(),  // A ve C var, ikisi de doğru yerde
+            )
         }
         
-        // 3. hint: b ve d var, sadece b doğru yerde
-        thirdHint = buildString {
-            val positions = (0..3).filter { it != 1 && it != 3 }.random() // d için 0 veya 2
-            val chars = CharArray(4) {
-                when(it) {
-                    1 -> b.toString()[0]
-                    positions -> d.toString()[0]
-                    else -> dummyNumbers.random().toString()[0]
-                }
-            }
-            append(chars.joinToString(""))
-        }
-        
-        // 4. hint: sadece d doğru yerde
-        fourthHint = buildString {
-            append(dummyNumbers.random())
-            append(dummyNumbers.random())
-            append(dummyNumbers.random())
-            append(d)
-        }
-        
-        // 5. hint boş bırakılacak
-        fifthHint = ""
+        firstHint = replaceX(first, true)
+        secondHint = replaceX(second, true)
+        thirdHint = replaceX(third, false)
+        fourthHint = replaceX(fourth, false)
+        fifthHint = replaceX(fifth, false)
     }
+    
     
     private fun generateLevel1And2Hints() {
         val (a, b, c) = secretNumber.map { it }

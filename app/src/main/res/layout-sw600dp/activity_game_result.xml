@@ -254,7 +254,8 @@
             android:textAllCaps="false"
             android:fontFamily="@font/poppins_medium"
             app:cornerRadius="32dp"
-            android:backgroundTint="#40FFFFFF"
+            android:backgroundTint="#26FFFFFF"
+            style="@style/Widget.MaterialComponents.Button.UnelevatedButton"
             android:alpha="0.95"/>
 
         <com.google.android.material.button.MaterialButton
@@ -268,7 +269,8 @@
             android:fontFamily="@font/poppins_medium"
             android:layout_marginTop="16dp"
             app:cornerRadius="32dp"
-            android:backgroundTint="#40FFFFFF"
+            android:backgroundTint="#26FFFFFF"
+            style="@style/Widget.MaterialComponents.Button.UnelevatedButton"
             android:alpha="0.95"/>
 
         <com.google.android.material.button.MaterialButton
@@ -282,7 +284,8 @@
             android:fontFamily="@font/poppins_medium"
             android:layout_marginTop="16dp"
             app:cornerRadius="32dp"
-            android:backgroundTint="#40FFFFFF"
+            android:backgroundTint="#26FFFFFF"
+            style="@style/Widget.MaterialComponents.Button.UnelevatedButton"
             android:alpha="0.95"/>
 
         <com.google.android.material.button.MaterialButton
@@ -296,7 +299,8 @@
             android:fontFamily="@font/poppins_medium"
             android:layout_marginTop="16dp"
             app:cornerRadius="32dp"
-            android:backgroundTint="#40FFFFFF"
+            android:backgroundTint="#26FFFFFF"
+            style="@style/Widget.MaterialComponents.Button.UnelevatedButton"
             android:alpha="0.95"/>
 
     </LinearLayout>

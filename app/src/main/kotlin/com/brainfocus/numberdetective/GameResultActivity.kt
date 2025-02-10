@@ -68,7 +68,7 @@ class GameResultActivity : AppCompatActivity() {
         setupBackPressedCallback()
         
         // Play sound effect
-        playGameResultSound(true)
+        playGameResultSound(score >= 2000)
 
         // Submit score
         lifecycleScope.launch {
@@ -137,9 +137,14 @@ class GameResultActivity : AppCompatActivity() {
                 shareScore()
             }
             
-            mainMenuButton.setOnClickListener {
+            mainMenuButton.setOnClickListener { view ->
+                view.isEnabled = false  // Butonu devre dışı bırak
                 soundManager.playButtonClick()
-                finish()
+                // Ana menüye dön ve yeni bir task başlat
+                val intent = Intent(this@GameResultActivity, MainActivity::class.java)
+                intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+                startActivity(intent)
+                finishAffinity()
             }
             
             playAgainButton.setOnClickListener {

@@ -51,8 +51,8 @@
     <dimen name="text_size">20sp</dimen>
 
     <!-- Feature Icons -->
-    <dimen name="feature_icon_size">48dp</dimen>
-    <dimen name="feature_icon_padding">8dp</dimen>
+    <dimen name="feature_icon_size">56dp</dimen>
+    <dimen name="feature_icon_padding">4dp</dimen>
     <dimen name="divider_thickness">0.5dp</dimen>
     
     <!-- Title text sizes -->

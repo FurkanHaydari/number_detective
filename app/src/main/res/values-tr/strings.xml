@@ -5,18 +5,21 @@
     <!-- Game Activity -->
     <string name="guess_button">TAHMİN ET</string>
 
-    <!-- Level 3 Hints -->
-    <string name="hint_l3_1">İlk ve üçüncü rakam doğru yerde</string>
-    <string name="hint_l3_2">Son rakam doğru yerde, ilk rakam var ama yanlış yerde</string>
-    <string name="hint_l3_3">İkinci rakam doğru yerde, son rakam var ama yanlış yerde</string>
-    <string name="hint_l3_4">Sadece son rakam doğru yerde</string>
+    <!-- Seviye 3 İpuçları -->
+    <string name="hint_l3_1">Bir rakam doğru ve doğru yerde</string>
+    <string name="hint_l3_2">Bir rakam doğru, yanlış yerde</string>
+    <string name="hint_l3_3">İki rakam doğru, biri doğru yerde</string>
+    <string name="hint_l3_4">İki rakam doğru, biri doğru yerde</string>
+    <string name="hint_l3_5">İki rakam doğru ve ikisi de doğru yerlerde</string>
 
-    <!-- Other Level Hints -->
+    <!-- Diğer Seviye İpuçları -->
     <string name="hint_1">Bir rakam doğru ama yanlış yerde</string>
     <string name="hint_2">Bir rakam doğru ve doğru yerde</string>
-    <string name="hint_3">İki rakam doğru ama yanlış yerde</string>
-    <string name="hint_4">İki rakam doğru ama yanlış yerde</string>
-    <string name="hint_5">İki rakam doğru ve bir tanesi doğru yerde</string>
+    <string name="hint_3">İki rakam doğru ama yanlış yerlerde</string>
+    <string name="hint_4">İki rakam doğru ama yanlış yerlerde</string>
+    <string name="hint_5">İki rakam doğru, biri doğru yerde</string>
+
+
     <string name="remaining_attempts">Kalan Hak: %d</string>
     <string name="hint_correct">Tebrikler! Doğru tahmin!</string>
     <string name="hint_partial">%1$d rakam doğru, %2$d rakam yanlış yerde</string>

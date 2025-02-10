@@ -7,18 +7,21 @@
     <string name="guess_button">GUESS</string>
     <string name="submit_button">SUBMIT</string>
 
-    <!-- Level 3 Hints -->
-    <string name="hint_l3_1">First and third digits are in correct positions</string>
-    <string name="hint_l3_2">Last digit is in correct position, first digit exists but in wrong position</string>
-    <string name="hint_l3_3">Second digit is in correct position, last digit exists but in wrong position</string>
-    <string name="hint_l3_4">Only the last digit is in correct position</string>
+    <!-- Seviye 3 İpuçları -->
+    <string name="hint_l3_1">One digit correct and correct position</string>
+    <string name="hint_l3_2">One digit correct but wrong position</string>
+    <string name="hint_l3_3">Two digits correct but one in position</string>
+    <string name="hint_l3_4">Two digits correct but one in position</string>
+    <string name="hint_l3_5">Two digits correct and both in positions</string>
 
-    <!-- Other Level Hints -->
-    <string name="hint_1">One digit is correct but in wrong position</string>
-    <string name="hint_2">One digit is correct and in correct position</string>
-    <string name="hint_3">Two digits are correct but in wrong positions</string>
-    <string name="hint_4">Two digits are correct but in wrong positions</string>
-    <string name="hint_5">Two digits are correct and one is in correct position</string>
+    <!-- Diğer Seviye İpuçları -->
+    <string name="hint_1">One correct, correct position</string>
+    <string name="hint_2">One correct, wrong position</string>
+    <string name="hint_3">Two correct, wrong positions</string>
+    <string name="hint_4">Two correct, wrong positions</string>
+    <string name="hint_5">Two correct, one in position</string>
+
+
     <string name="remaining_attempts">Remaining Attempts: %d</string>
     <string name="hint_correct">Congratulations! Correct guess!</string>
     <string name="hint_partial">%1$d digit(s) correct, %2$d digit(s) in the wrong place</string>
