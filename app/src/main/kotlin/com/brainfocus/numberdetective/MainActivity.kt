@@ -56,11 +56,11 @@ class MainActivity : AppCompatActivity() {
         when (result) {
             is GameSignInManager.SignInResult.Success -> {
                 isSignedIn = true
-                Log.d(TAG, "Sign in success")
+                // Log.d(TAG, "Sign in success")
                 // The welcome popup will be shown automatically by the SDK
             }
             is GameSignInManager.SignInResult.Cancelled -> {
-                Log.d(TAG, "Sign in cancelled")
+                // Log.d(TAG, "Sign in cancelled")
                 // Try sign-in again since it's required
                 startSignIn()
             }

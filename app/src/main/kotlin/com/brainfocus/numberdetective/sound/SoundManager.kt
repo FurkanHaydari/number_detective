@@ -57,7 +57,7 @@ class SoundManager @Inject constructor(
                 try {
                     val resourceType = context.resources.getResourceTypeName(id)
                     val resourceName = context.resources.getResourceEntryName(id)
-                    android.util.Log.d("SoundManager", "Found resource: $name ($resourceType/$resourceName) with ID: $id")
+                    // android.util.Log.d("SoundManager", "Found resource: $name ($resourceType/$resourceName) with ID: $id")
                 } catch (e: Exception) {
                     android.util.Log.e("SoundManager", "Resource not found: $name (ID: $id)")
                 }
@@ -67,10 +67,10 @@ class SoundManager @Inject constructor(
                 synchronized(this) {
                     if (status == 0) {
                         loadedSounds++
-                        android.util.Log.d("SoundManager", "Sound loaded successfully: $sampleId, Total: $loadedSounds/$totalSounds")
+                        // android.util.Log.d("SoundManager", "Sound loaded successfully: $sampleId, Total: $loadedSounds/$totalSounds")
                         if (loadedSounds == totalSounds) {
                             isInitialized = true
-                            android.util.Log.d("SoundManager", "All sounds loaded successfully")
+                            // android.util.Log.d("SoundManager", "All sounds loaded successfully")
                         }
                     } else {
                         android.util.Log.e("SoundManager", "Failed to load sound $sampleId with status $status")
@@ -87,7 +87,7 @@ class SoundManager @Inject constructor(
             levelUpSoundId = 0
             partialWrongSoundId = 0
             
-            android.util.Log.d("SoundManager", "Starting to load sounds...")
+            // android.util.Log.d("SoundManager", "Starting to load sounds...")
             
             // Load all sounds
             tickSoundId = loadSound(R.raw.tick_sound)
@@ -99,7 +99,7 @@ class SoundManager @Inject constructor(
             levelUpSoundId = loadSound(R.raw.level_up)
             partialWrongSoundId = loadSound(R.raw.partial_or_wrong_guess)
             
-            android.util.Log.d("SoundManager", "Sound loading initiated")
+            // android.util.Log.d("SoundManager", "Sound loading initiated")
             
         } catch (e: Exception) {
             android.util.Log.e("SoundManager", "Error initializing SoundManager", e)
@@ -121,7 +121,7 @@ class SoundManager @Inject constructor(
             if (streamId == 0) {
                 android.util.Log.e("SoundManager", "Failed to play tick sound")
             } else {
-                android.util.Log.d("SoundManager", "Playing tick sound on stream: $streamId")
+                // android.util.Log.d("SoundManager", "Playing tick sound on stream: $streamId")
                 trackStreamId(streamId)
             }
         } catch (e: Exception) {
@@ -143,7 +143,7 @@ class SoundManager @Inject constructor(
             if (streamId == 0) {
                 android.util.Log.e("SoundManager", "Failed to play win sound")
             } else {
-                android.util.Log.d("SoundManager", "Playing win sound on stream: $streamId")
+                // android.util.Log.d("SoundManager", "Playing win sound on stream: $streamId")
                 trackStreamId(streamId)
             }
         } catch (e: Exception) {
@@ -165,7 +165,7 @@ class SoundManager @Inject constructor(
             if (streamId == 0) {
                 android.util.Log.e("SoundManager", "Failed to play wrong sound")
             } else {
-                android.util.Log.d("SoundManager", "Playing wrong sound on stream: $streamId")
+                // android.util.Log.d("SoundManager", "Playing wrong sound on stream: $streamId")
                 trackStreamId(streamId)
             }
         } catch (e: Exception) {
@@ -187,7 +187,7 @@ class SoundManager @Inject constructor(
             if (streamId == 0) {
                 android.util.Log.e("SoundManager", "Failed to play correct sound")
             } else {
-                android.util.Log.d("SoundManager", "Playing correct sound on stream: $streamId")
+                // android.util.Log.d("SoundManager", "Playing correct sound on stream: $streamId")
                 trackStreamId(streamId)
             }
         } catch (e: Exception) {
@@ -209,7 +209,7 @@ class SoundManager @Inject constructor(
             if (streamId == 0) {
                 android.util.Log.e("SoundManager", "Failed to play button click sound")
             } else {
-                android.util.Log.d("SoundManager", "Playing button click sound on stream: $streamId")
+                // android.util.Log.d("SoundManager", "Playing button click sound on stream: $streamId")
                 trackStreamId(streamId)
             }
         } catch (e: Exception) {
@@ -231,7 +231,7 @@ class SoundManager @Inject constructor(
             if (streamId == 0) {
                 android.util.Log.e("SoundManager", "Failed to play lose sound")
             } else {
-                android.util.Log.d("SoundManager", "Playing lose sound on stream: $streamId")
+                // android.util.Log.d("SoundManager", "Playing lose sound on stream: $streamId")
                 trackStreamId(streamId)
             }
         } catch (e: Exception) {
@@ -253,7 +253,7 @@ class SoundManager @Inject constructor(
             if (streamId == 0) {
                 android.util.Log.e("SoundManager", "Failed to play level up sound")
             } else {
-                android.util.Log.d("SoundManager", "Playing level up sound on stream: $streamId")
+                // android.util.Log.d("SoundManager", "Playing level up sound on stream: $streamId")
                 trackStreamId(streamId)
             }
         } catch (e: Exception) {
@@ -275,7 +275,7 @@ class SoundManager @Inject constructor(
             if (streamId == 0) {
                 android.util.Log.e("SoundManager", "Failed to play partial/wrong sound")
             } else {
-                android.util.Log.d("SoundManager", "Playing partial/wrong sound on stream: $streamId")
+                // android.util.Log.d("SoundManager", "Playing partial/wrong sound on stream: $streamId")
                 trackStreamId(streamId)
             }
         } catch (e: Exception) {
@@ -287,16 +287,16 @@ class SoundManager @Inject constructor(
         return try {
             // Validate resource exists
             val resourceName = context.resources.getResourceEntryName(resId)
-            val resourceType = context.resources.getResourceTypeName(resId)
+            // val resourceType = context.resources.getResourceTypeName(resId)
             
-            android.util.Log.d("SoundManager", "Attempting to load sound: name=$resourceName, type=$resourceType, id=$resId")
+            // android.util.Log.d("SoundManager", "Attempting to load sound: name=$resourceName, type=$resourceType, id=$resId")
             
             // Load using resource ID
             val soundId = soundPool?.load(context, resId, 1) ?: 0
             if (soundId == 0) {
                 android.util.Log.e("SoundManager", "Failed to load sound: $resourceName (ID: $resId)")
             } else {
-                android.util.Log.d("SoundManager", "Successfully loaded sound: $resourceName (ID: $resId) => $soundId")
+                // android.util.Log.d("SoundManager", "Successfully loaded sound: $resourceName (ID: $resId) => $soundId")
             }
             soundId
         } catch (e: android.content.res.Resources.NotFoundException) {

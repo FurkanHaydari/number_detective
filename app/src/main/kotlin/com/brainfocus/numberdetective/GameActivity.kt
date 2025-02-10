@@ -79,12 +79,12 @@ class GameActivity : AppCompatActivity(), NumberPicker.OnValueChangeListener {
                 android.util.Log.e("GameActivity", "Error initializing sound manager", e)
             }
             withContext(kotlinx.coroutines.Dispatchers.Main) {
-                android.util.Log.d("GameActivity", "Starting initial setup")
+                // android.util.Log.d("GameActivity", "Starting initial setup")
                 setupUI()
                 setupObservers()
                 // Wait for initial currentLevel value
                 viewModel.currentLevel.value // Access to ensure flow is initialized
-                android.util.Log.d("GameActivity", "Initial currentLevel: ${viewModel.currentLevel.value}")
+                // android.util.Log.d("GameActivity", "Initial currentLevel: ${viewModel.currentLevel.value}")
                 // Initial view setup with cleanup
                 cleanupViews()
                 setupViews()
@@ -165,7 +165,7 @@ class GameActivity : AppCompatActivity(), NumberPicker.OnValueChangeListener {
             }
 
             val numPickers = if (viewModel.currentLevel.value == 3) 4 else 3
-            android.util.Log.d("GameActivity", "Creating $numPickers number pickers")
+            // android.util.Log.d("GameActivity", "Creating $numPickers number pickers")
             
             val newPickers = List(numPickers) { 
                 NumberPicker(this@GameActivity).apply {
@@ -205,7 +205,7 @@ class GameActivity : AppCompatActivity(), NumberPicker.OnValueChangeListener {
             }
 
             withContext(kotlinx.coroutines.Dispatchers.Main) {
-                android.util.Log.d("GameActivity", "Setting up views on main thread")
+                // android.util.Log.d("GameActivity", "Setting up views on main thread")
                 numberPickers = newPickers
                 
                 // Add views to containers
@@ -408,15 +408,15 @@ class GameActivity : AppCompatActivity(), NumberPicker.OnValueChangeListener {
 
                 launch {
                     viewModel.currentLevel.collect { level ->
-                        android.util.Log.d("GameActivity", "Level changed to: $level")
+                        // android.util.Log.d("GameActivity", "Level changed to: $level")
                         binding.levelText.text = "Level $level"
                         // Only update views if not in initial setup
                         if (binding.numberPickerContainer?.childCount ?: 0 > 0) {
-                            android.util.Log.d("GameActivity", "Updating views for level change")
+                            // android.util.Log.d("GameActivity", "Updating views for level change")
                             cleanupViews()
                             setupViews()
                         } else {
-                            android.util.Log.d("GameActivity", "Skipping view update - initial setup")
+                            // android.util.Log.d("GameActivity", "Skipping view update - initial setup")
                         }
                     }
                 }

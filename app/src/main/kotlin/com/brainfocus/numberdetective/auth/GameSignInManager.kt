@@ -73,12 +73,12 @@ class GameSignInManager @Inject constructor() {
             val result = gamesSignInClient.isAuthenticated.await()
             
             if (result.isAuthenticated) {
-                Log.d(TAG, "Successfully authenticated with Play Games silently")
+                // Log.d(TAG, "Successfully authenticated with Play Games silently")
                 notifySuccess()
                 return@withContext SignInResult.Success
             }
             
-            Log.d(TAG, "Not authenticated with Play Games")
+            // Log.d(TAG, "Not authenticated with Play Games")
             SignInResult.Cancelled
         } catch (e: Exception) {
             Log.e(TAG, "Silent sign-in failed", e)
@@ -97,12 +97,12 @@ class GameSignInManager @Inject constructor() {
             val result = gamesSignInClient.signIn().await()
             
             if (result.isAuthenticated) {
-                Log.d(TAG, "Successfully authenticated with Play Games")
+                // Log.d(TAG, "Successfully authenticated with Play Games")
                 notifySuccess()
                 return@withContext SignInResult.Success
             }
             
-            Log.d(TAG, "Authentication cancelled or failed")
+            // Log.d(TAG, "Authentication cancelled or failed")
             SignInResult.Cancelled
         } catch (e: Exception) {
             Log.e(TAG, "Interactive sign-in failed", e)

@@ -49,7 +49,7 @@ class AdManager @Inject constructor(
         if (isInitialized) return
         
         MobileAds.initialize(context) {
-            Log.d(TAG, "Mobile Ads initialized successfully")
+            // Log.d(TAG, "Mobile Ads initialized successfully")
             loadInterstitialAd()
         }
         
@@ -63,7 +63,7 @@ class AdManager @Inject constructor(
         val adRequest = AdRequest.Builder().build()
         val adUnitId = context.getString(R.string.interstitial_ad_unit_id)
         
-        Log.d(TAG, "Loading interstitial ad, attempt: ${retryAttempt + 1}")
+        // Log.d(TAG, "Loading interstitial ad, attempt: ${retryAttempt + 1}")
         
         InterstitialAd.load(context, adUnitId, adRequest, object : InterstitialAdLoadCallback() {
             override fun onAdFailedToLoad(adError: LoadAdError) {
@@ -81,7 +81,7 @@ class AdManager @Inject constructor(
             }
             
             override fun onAdLoaded(ad: InterstitialAd) {
-                Log.d(TAG, "Interstitial ad loaded successfully")
+                // Log.d(TAG, "Interstitial ad loaded successfully")
                 isLoading = false
                 interstitialAd = ad
                 retryAttempt = 0
@@ -108,7 +108,7 @@ class AdManager @Inject constructor(
         if (ad != null) {
             ad.show(activity)
         } else {
-            Log.d(TAG, "Interstitial ad was not ready")
+            // Log.d(TAG, "Interstitial ad was not ready")
             loadInterstitialAd()
         }
     }
@@ -116,7 +116,7 @@ class AdManager @Inject constructor(
     private fun setupAdCallbacks(ad: InterstitialAd) {
         ad.fullScreenContentCallback = object : com.google.android.gms.ads.FullScreenContentCallback() {
             override fun onAdDismissedFullScreenContent() {
-                Log.d(TAG, "Ad dismissed fullscreen content")
+                // Log.d(TAG, "Ad dismissed fullscreen content")
                 interstitialAd = null
                 loadInterstitialAd() // Load the next ad
             }
@@ -128,7 +128,7 @@ class AdManager @Inject constructor(
             }
             
             override fun onAdShowedFullScreenContent() {
-                Log.d(TAG, "Ad showed fullscreen content")
+                // Log.d(TAG, "Ad showed fullscreen content")
             }
         }
     }
