@@ -368,21 +368,41 @@ fun CaseArchiveView(correctAnswer: String) {
         return
     }
 
+    val context = LocalContext.current
+
     LazyColumn(
         modifier = Modifier.fillMaxSize(),
         verticalArrangement = Arrangement.spacedBy(12.dp),
         contentPadding = PaddingValues(bottom = 24.dp)
     ) {
-        items(hints.size) { index ->
-            val hint = hints[index]
-            ArchiveHintCard(hint = hint, index = index + 1)
+        // Count how many hints are not user guesses to offset the analysis number correctly
+        val initialHintsCount = hints.count { it.description != "" && it.description != "ANALYZING..." } 
+        // Note: isUserGuess is checked by R.string.log_analysis_attempt which resolves to "ANALYZING...". 
+        // We'll calculate it properly below.
+
+        items(hints.size) { globalIndex ->
+            val hint = hints[globalIndex]
+            
+            // If the hint falls after the initial block, it's a guess.
+            val isUserGuess = hint.description == context.getString(R.string.log_analysis_attempt)
+            
+            // To find the actual number (1, 2, 3...) of this specific analysis
+            val analysisNumber = if (isUserGuess) {
+                // Determine how many preceding items were user guesses
+                hints.take(globalIndex + 1).count { it.description == context.getString(R.string.log_analysis_attempt) }
+            } else {
+                0
+            }
+
+            ArchiveHintCard(hint = hint, analysisNumber = analysisNumber)
         }
     }
 }
 
 @Composable
-fun ArchiveHintCard(hint: com.brainfocus.numberdetective.data.model.Hint, index: Int) {
-    val isUserGuess = hint.description == stringResource(R.string.log_analysis_attempt)
+fun ArchiveHintCard(hint: com.brainfocus.numberdetective.data.model.Hint, analysisNumber: Int) {
+    val context = LocalContext.current
+    val isUserGuess = hint.description == context.getString(R.string.log_analysis_attempt)
     
     Surface(
         color = SurfaceCard,
@@ -398,7 +418,7 @@ fun ArchiveHintCard(hint: com.brainfocus.numberdetective.data.model.Hint, index:
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    text = if (isUserGuess) "ANALYSIS $index" else "INITIAL INTELLIGENCE",
+                    text = if (isUserGuess) context.getString(R.string.log_analysis_number, analysisNumber) else context.getString(R.string.initial_intelligence),
                     style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold),
                     color = if (isUserGuess) PrimaryCyan else TextSecondary,
                     letterSpacing = 1.sp

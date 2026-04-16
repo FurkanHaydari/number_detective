@@ -335,7 +335,7 @@ fun FieldReportOverlay(report: FieldReport, onDismiss: () -> Unit) {
                         contentAlignment = Alignment.Center
                     ) {
                         Text(
-                            text = "CONTINUE MISSION",
+                            text = stringResource(R.string.continue_mission),
                             style = MaterialTheme.typography.titleMedium.copy(
                                 fontFamily = Montserrat,
                                 letterSpacing = 1.sp
