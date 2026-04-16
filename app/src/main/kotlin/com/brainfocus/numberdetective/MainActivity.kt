@@ -11,16 +11,22 @@ import androidx.lifecycle.lifecycleScope
 import com.brainfocus.numberdetective.feature.AppNavigation
 import com.brainfocus.numberdetective.core.designsystem.NumberDetectiveTheme
 import com.brainfocus.numberdetective.core.utils.LocaleHelper
+import com.brainfocus.numberdetective.core.sound.SoundManager
+import com.brainfocus.numberdetective.data.storage.DataStoreManager
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import javax.inject.Inject
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
     
-    private var soundPool: SoundPool? = null
-    private var buttonClickSound = 0
+    @Inject
+    lateinit var soundManager: SoundManager
+
+    @Inject
+    lateinit var dataStoreManager: DataStoreManager
 
     companion object {
         private const val TAG = "MainActivity"
@@ -33,17 +39,11 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         
-        // Initialize SoundPool
+        // Initialize SoundManager and sync with settings
+        soundManager.initialize()
         lifecycleScope.launch {
-            soundPool = SoundPool.Builder().setMaxStreams(5)
-                .setAudioAttributes(
-                    AudioAttributes.Builder()
-                        .setUsage(AudioAttributes.USAGE_GAME)
-                        .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
-                        .build()
-                ).build()
-            buttonClickSound = withContext(Dispatchers.IO) {
-                soundPool?.load(applicationContext, R.raw.button_click, 1) ?: 0
+            dataStoreManager.isSoundEnabledFlow.collect { enabled ->
+                soundManager.setSoundEnabled(enabled)
             }
         }
 
@@ -67,12 +67,13 @@ class MainActivity : ComponentActivity() {
     }
 
     private fun playButtonClickSound() {
-        soundPool?.play(buttonClickSound, 1f, 1f, 1, 0, 1f)
+        soundManager.playButtonClick()
     }
 
     override fun onDestroy() {
         super.onDestroy()
-        soundPool?.release()
-        soundPool = null
+        // SoundManager is a Singleton, release call might be better handled globally 
+        // or during specific lifecycle if needed, but we ensure it's clean here.
+        soundManager.release()
     }
 }
