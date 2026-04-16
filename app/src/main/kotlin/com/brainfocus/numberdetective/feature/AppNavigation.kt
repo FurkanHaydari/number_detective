@@ -14,6 +14,10 @@ import com.brainfocus.numberdetective.feature.onboarding.OnboardingScreen
 import com.brainfocus.numberdetective.feature.onboarding.OnboardingViewModel
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.background
+import com.brainfocus.numberdetective.core.designsystem.SurfaceCard
 
 @Composable
 fun AppNavigation(
@@ -25,8 +29,13 @@ fun AppNavigation(
     val onboardingViewModel: OnboardingViewModel = hiltViewModel()
     val isFirstLaunch by onboardingViewModel.isFirstLaunch.collectAsState()
 
+    if (isFirstLaunch == null) {
+        Box(modifier = androidx.compose.ui.Modifier.fillMaxSize().background(SurfaceCard))
+        return
+    }
+
     // Determine starting point based on persistence
-    val startDest = if (isFirstLaunch) "onboarding" else "home"
+    val startDest = if (isFirstLaunch == true) "onboarding" else "home"
 
     NavHost(navController = navController, startDestination = startDest) {
         composable("onboarding") {

@@ -95,16 +95,6 @@ fun HomeScreen(
                             modifier = Modifier.size(20.dp)
                         )
                     }
-                    Spacer(modifier = Modifier.width(12.dp))
-                    IconButton(
-                        onClick = onManualClick,
-                        modifier = Modifier
-                            .size(40.dp)
-                            .background(Color.White.copy(alpha = 0.05f), CircleShape)
-                            .border(1.dp, PrimaryCyan.copy(alpha = 0.2f), CircleShape)
-                    ) {
-                        Text("?", color = PrimaryCyan, fontWeight = FontWeight.Bold, fontSize = 18.sp)
-                    }
                 }
 
                 if (showSettings) {
@@ -115,7 +105,8 @@ fun HomeScreen(
                         isSoundEnabled = isSoundEnabled,
                         onSoundToggle = { viewModel.toggleSound(it) },
                         isHelperModeEnabled = isHelperModeEnabled,
-                        onHelperModeToggle = { viewModel.toggleHelperMode(it) }
+                        onHelperModeToggle = { viewModel.toggleHelperMode(it) },
+                        onManualClick = onManualClick
                     )
                 }
 

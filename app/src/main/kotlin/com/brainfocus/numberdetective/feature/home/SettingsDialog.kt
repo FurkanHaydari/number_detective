@@ -32,7 +32,8 @@ fun SettingsDialog(
     isSoundEnabled: Boolean,
     onSoundToggle: (Boolean) -> Unit,
     isHelperModeEnabled: Boolean,
-    onHelperModeToggle: (Boolean) -> Unit
+    onHelperModeToggle: (Boolean) -> Unit,
+    onManualClick: () -> Unit
 ) {
     Dialog(
         onDismissRequest = onDismiss,
@@ -82,7 +83,7 @@ fun SettingsDialog(
                     Spacer(modifier = Modifier.height(32.dp))
 
                     // Language Selection
-                    SettingRow(label = "COMMUNICATION PROTOCOL") {
+                    SettingRow(label = stringResource(R.string.settings_language)) {
                         Row(
                             modifier = Modifier
                                 .background(Color.White.copy(alpha = 0.05f), RoundedCornerShape(12.dp))
@@ -91,12 +92,18 @@ fun SettingsDialog(
                             LanguageOption(
                                 text = "TR",
                                 isSelected = currentLanguage == "tr",
-                                onClick = { onLanguageChange("tr") }
+                                onClick = { 
+                                    onDismiss()
+                                    onLanguageChange("tr") 
+                                }
                             )
                             LanguageOption(
                                 text = "EN",
                                 isSelected = currentLanguage == "en",
-                                onClick = { onLanguageChange("en") }
+                                onClick = { 
+                                    onDismiss()
+                                    onLanguageChange("en") 
+                                }
                             )
                         }
                     }
@@ -149,6 +156,38 @@ fun SettingsDialog(
                             lineHeight = 16.sp,
                             modifier = Modifier.padding(top = 4.dp, end = 48.dp)
                         )
+                    }
+
+                    Spacer(modifier = Modifier.height(32.dp))
+
+                    // How to Play / Manual Button
+                    Button(
+                        onClick = {
+                            onDismiss()
+                            onManualClick()
+                        },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(56.dp)
+                            .border(1.dp, PrimaryCyan.copy(alpha = 0.3f), RoundedCornerShape(16.dp)),
+                        shape = RoundedCornerShape(16.dp),
+                        colors = ButtonDefaults.buttonColors(containerColor = Color.White.copy(alpha = 0.05f))
+                    ) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.Center
+                        ) {
+                            Text(text = "📖", fontSize = 18.sp)
+                            Spacer(modifier = Modifier.width(12.dp))
+                            Text(
+                                text = stringResource(R.string.tutorial_title).uppercase(),
+                                style = MaterialTheme.typography.bodyLarge.copy(
+                                    fontWeight = FontWeight.Bold,
+                                    letterSpacing = 1.sp
+                                ),
+                                color = PrimaryCyan
+                            )
+                        }
                     }
 
                     Spacer(modifier = Modifier.height(32.dp))

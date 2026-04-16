@@ -167,7 +167,7 @@
     <string name="tutorial_page2_title">{ THE CYLINDERS }</string>
     <string name="tutorial_page2_desc">Use the vertical cylinders to select your digits. Drag or tap them to reveal the combination you wish to test.</string>
     <string name="tutorial_page3_title">[ THE EVIDENCE ]</string>
-    <string name="tutorial_page3_desc">After each guess, check the Evidence board.\n\n• GREEN: Correct digit in the right spot.\n• CYAN: Correct digit in the wrong spot.</string>
+    <string name="tutorial_page3_desc">After each guess, check the Evidence board.\n\n• GREEN: Correct digit in the right spot.\n• YELLOW: Correct digit in the wrong spot.</string>
     <string name="tutorial_page4_title">> PROMOTION</string>
     <string name="tutorial_page4_desc">Success leads to harder vaults but grants more time and attempts. Clear all 3 levels to win the case.</string>
     <string name="tutorial_continue_button">CONTINUE</string>
@@ -183,6 +183,7 @@
     <!-- Settings Menu -->
     <string name="settings_title">MISSION SETTINGS</string>
     <string name="settings_sound">SOUND EFFECTS</string>
+    <string name="settings_language">LANGUAGE</string>
     <string name="settings_helper">ASSISTED MODE</string>
     <string name="settings_helper_desc">Enables color-coded logic feedback for each digit in the interrogation log.</string>
     <string name="log_analysis_attempt">ANALYSIS ATTEMPT</string>

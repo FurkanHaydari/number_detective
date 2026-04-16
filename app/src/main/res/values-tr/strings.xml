@@ -166,7 +166,7 @@
     <string name="tutorial_page2_title">{ SİLİNDİRLER }</string>
     <string name="tutorial_page2_desc">Rakamları seçmek için dikey silindirleri kullan. Test etmek istediğin kombinasyonu ortaya çıkarmak için onları kaydır veya üzerine dokun.</string>
     <string name="tutorial_page3_title">[ KANITLAR ]</string>
-    <string name="tutorial_page3_desc">Her tahminden sonra Kanıt panosunu kontrol et.\n\n• YEŞİL: Doğru rakam, doğru nokta.\n• CYAN: Doğru rakam, yanlış nokta.</string>
+    <string name="tutorial_page3_desc">Her tahminden sonra Kanıt panosunu kontrol et.\n\n• YEŞİL: Doğru rakam, doğru nokta.\n• SARI: Doğru rakam, yanlış nokta.</string>
     <string name="tutorial_page4_title">> TERFİ</string>
     <string name="tutorial_page4_desc">Başarı seni daha zor kasalara götürür ancak daha fazla süre ve hak kazandırır. Davayı çözmek için 3 seviyeyi de temizle.</string>
     <string name="tutorial_continue_button">DEVAM ET</string>
@@ -182,6 +182,7 @@
     <!-- Settings Menu -->
     <string name="settings_title">GÖREV AYARLARI</string>
     <string name="settings_sound">SES EFEKTLERİ</string>
+    <string name="settings_language">DİL</string>
     <string name="settings_helper">YARDIMCI MOD</string>
     <string name="settings_helper_desc">Sorgu günlüğündeki her rakam için renkli mantık geri bildirimini açar.</string>
     <string name="log_analysis_attempt">ANALİZ GİRİŞİMİ</string>

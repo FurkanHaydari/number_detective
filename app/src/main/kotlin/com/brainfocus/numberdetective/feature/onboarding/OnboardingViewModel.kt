@@ -15,11 +15,11 @@ class OnboardingViewModel @Inject constructor(
     private val dataStoreManager: DataStoreManager
 ) : ViewModel() {
 
-    val isFirstLaunch: StateFlow<Boolean> = dataStoreManager.isFirstLaunchFlow
+    val isFirstLaunch: StateFlow<Boolean?> = dataStoreManager.isFirstLaunchFlow
         .stateIn(
             scope = viewModelScope,
             started = SharingStarted.WhileSubscribed(5000),
-            initialValue = true
+            initialValue = null
         )
 
     fun completeOnboarding() {
