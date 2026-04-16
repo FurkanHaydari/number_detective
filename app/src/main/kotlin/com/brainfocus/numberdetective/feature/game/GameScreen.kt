@@ -15,6 +15,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowUp
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -38,6 +39,7 @@ import com.brainfocus.numberdetective.data.model.GuessResult
 import com.brainfocus.numberdetective.data.model.Hint
 import com.brainfocus.numberdetective.feature.home.RowDefaults
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun GameScreen(
     viewModel: GameViewModel = hiltViewModel(),
@@ -49,12 +51,18 @@ fun GameScreen(
     val remainingTime by viewModel.remainingTime.collectAsState()
     val score by viewModel.score.collectAsState()
     val hints by viewModel.hints.collectAsState()
+    val evidenceHints = hints.take(5)
+    val trialHints = hints.drop(5)
+    
     val gameState by viewModel.gameState.collectAsState()
     val guesses by viewModel.guesses.collectAsState()
     val correctAnswer by viewModel.correctAnswer.collectAsState()
     val currentReport by viewModel.currentReport.collectAsState()
     val isPaused by viewModel.isPaused.collectAsState()
     val attempts = viewModel.attempts
+
+    val sheetState = rememberModalBottomSheetState()
+    var showHistorySheet by remember { mutableStateOf(false) }
 
     val expectedLength = if (currentLevel == 3) 4 else 3
     var pickerValues by remember(currentLevel) {
@@ -100,21 +108,52 @@ fun GameScreen(
         ) {
             GameTopBar(level = currentLevel)
             Spacer(modifier = Modifier.height(16.dp))
-            StatsDashboard(attempts = remainingAttempts, time = remainingTime, score = score)
-            Spacer(modifier = Modifier.height(20.dp))
+
+            StatsDashboard(
+                attempts = remainingAttempts,
+                time = remainingTime,
+                trialCount = trialHints.size,
+                onHistoryClick = { if (!isPaused) showHistorySheet = true }
+            )
+            Spacer(modifier = Modifier.height(16.dp))
 
             Box(modifier = Modifier.weight(1f)) {
-                if (hints.isEmpty()) {
-                    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                        Text("NO EVIDENCE YET...", color = TextSecondary.copy(alpha = 0.3f), letterSpacing = 2.sp)
+                Column(modifier = Modifier.fillMaxSize()) {
+                    // Minimized Placeholder Header
+                    Row(
+                        modifier = Modifier.fillMaxWidth().padding(bottom = 12.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.Center
+                    ) {
+                        val infiniteTransition = rememberInfiniteTransition()
+                        val alpha by infiniteTransition.animateFloat(
+                            initialValue = 0.3f,
+                            targetValue = 0.7f,
+                            animationSpec = infiniteRepeatable(
+                                animation = tween(2000, easing = LinearEasing),
+                                repeatMode = RepeatMode.Reverse
+                            )
+                        )
+                        Icon(Icons.Default.Search, contentDescription = null, tint = PrimaryCyan.copy(alpha = alpha), modifier = Modifier.size(18.dp))
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text(
+                            text = stringResource(R.string.msg_analysis_active),
+                            style = MaterialTheme.typography.labelSmall,
+                            color = PrimaryCyan.copy(alpha = alpha),
+                            letterSpacing = 2.sp
+                        )
                     }
-                }
-                LazyColumn(
-                    modifier = Modifier.fillMaxSize(),
-                    verticalArrangement = Arrangement.spacedBy(10.dp),
-                    contentPadding = PaddingValues(bottom = 16.dp)
-                ) {
-                    items(hints.reversed()) { hint -> HintCard(hint = hint) }
+
+                    // Evidence List (Persistent)
+                    LazyColumn(
+                        modifier = Modifier.fillMaxSize(),
+                        verticalArrangement = Arrangement.spacedBy(8.dp),
+                        contentPadding = PaddingValues(bottom = 16.dp)
+                    ) {
+                        items(evidenceHints) { hint ->
+                            HintCard(hint = hint)
+                        }
+                    }
                 }
             }
 
@@ -159,7 +198,54 @@ fun GameScreen(
             Spacer(modifier = Modifier.height(16.dp))
         }
 
-        // --- Layer 3: Field Report Overlay ---
+        // --- Layer 3: Case Archive Sheet ---
+        if (showHistorySheet) {
+            ModalBottomSheet(
+                onDismissRequest = { showHistorySheet = false },
+                sheetState = sheetState,
+                containerColor = SurfaceCard,
+                scrimColor = Color.Black.copy(alpha = 0.7f),
+                dragHandle = { BottomSheetDefaults.DragHandle(color = Color.White.copy(alpha = 0.2f)) }
+            ) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 20.dp)
+                        .padding(bottom = 32.dp)
+                ) {
+                    Text(
+                        text = stringResource(R.string.label_case_archive),
+                        style = MaterialTheme.typography.headlineSmall.copy(fontFamily = Montserrat),
+                        color = PrimaryCyan,
+                        modifier = Modifier.padding(bottom = 16.dp)
+                    )
+                    
+                    if (trialHints.isEmpty()) {
+                        Box(
+                            modifier = Modifier.fillMaxWidth().height(200.dp),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(
+                                text = stringResource(R.string.msg_no_evidence_waiting),
+                                color = TextSecondary.copy(alpha = 0.5f),
+                                letterSpacing = 2.sp
+                            )
+                        }
+                    } else {
+                        LazyColumn(
+                            modifier = Modifier.fillMaxWidth().weight(1f, fill = false),
+                            verticalArrangement = Arrangement.spacedBy(10.dp)
+                        ) {
+                            items(trialHints) { hint -> 
+                                HintCard(hint = hint) 
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        // --- Layer 4: Field Report Overlay ---
         AnimatedVisibility(
             visible = currentReport != null,
             enter = fadeIn() + scaleIn(initialScale = 0.9f),
@@ -281,7 +367,7 @@ fun GameTopBar(level: Int) {
 }
 
 @Composable
-fun StatsDashboard(attempts: Int, time: Int, score: Int) {
+fun StatsDashboard(attempts: Int, time: Int, trialCount: Int, onHistoryClick: () -> Unit) {
     Surface(
         color = SurfaceCard,
         shape = RoundedCornerShape(20.dp),
@@ -297,14 +383,22 @@ fun StatsDashboard(attempts: Int, time: Int, score: Int) {
             VerticalDivider(modifier = Modifier.height(24.dp).width(1.dp), color = Color.White.copy(alpha = 0.1f))
             StatItem(label = "TIME", value = String.format("%02d:%02d", time / 60, time % 60), color = PrimaryCyan)
             VerticalDivider(modifier = Modifier.height(24.dp).width(1.dp), color = Color.White.copy(alpha = 0.1f))
-            StatItem(label = "SCORE", value = score.toString(), color = SuccessGreen)
+            StatItem(
+                label = stringResource(R.string.label_trials), 
+                value = trialCount.toString(), 
+                color = SuccessGreen,
+                onClick = onHistoryClick
+            )
         }
     }
 }
 
 @Composable
-fun StatItem(label: String, value: String, color: Color) {
-    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+fun StatItem(label: String, value: String, color: Color, onClick: (() -> Unit)? = null) {
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
+        modifier = if (onClick != null) Modifier.clickable { onClick() } else Modifier
+    ) {
         Text(text = label, style = MaterialTheme.typography.bodySmall, color = TextSecondary, fontSize = 10.sp)
         Text(text = value, style = MaterialTheme.typography.titleMedium, color = color, fontWeight = FontWeight.Bold)
     }
@@ -320,12 +414,33 @@ fun HintCard(hint: Hint) {
     ) {
         Row(modifier = Modifier.padding(12.dp), verticalAlignment = Alignment.CenterVertically) {
             Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                hint.guess.forEach { char ->
+                hint.guess.forEachIndexed { index, char ->
+                    val status = hint.digitStatuses?.getOrNull(index)
+                    val bgColor = when (status) {
+                        com.brainfocus.numberdetective.data.model.DigitStatus.CORRECT_POS -> SuccessGreen.copy(alpha = 0.2f)
+                        com.brainfocus.numberdetective.data.model.DigitStatus.WRONG_POS -> WarningYellow.copy(alpha = 0.2f)
+                        com.brainfocus.numberdetective.data.model.DigitStatus.INCORRECT -> ErrorRed.copy(alpha = 0.2f)
+                        else -> Color.White.copy(alpha = 0.05f)
+                    }
+                    val borderColor = when (status) {
+                        com.brainfocus.numberdetective.data.model.DigitStatus.CORRECT_POS -> SuccessGreen
+                        com.brainfocus.numberdetective.data.model.DigitStatus.WRONG_POS -> WarningYellow
+                        com.brainfocus.numberdetective.data.model.DigitStatus.INCORRECT -> ErrorRed
+                        else -> Color.White.copy(alpha = 0.1f)
+                    }
+
                     Box(
-                        modifier = Modifier.size(34.dp).background(Color.White.copy(alpha = 0.05f), RoundedCornerShape(8.dp)).border(1.dp, Color.White.copy(alpha = 0.1f), RoundedCornerShape(8.dp)),
+                        modifier = Modifier
+                            .size(34.dp)
+                            .background(bgColor, RoundedCornerShape(8.dp))
+                            .border(1.dp, borderColor, RoundedCornerShape(8.dp)),
                         contentAlignment = Alignment.Center
                     ) {
-                        Text(text = char.toString(), style = MaterialTheme.typography.titleMedium, color = PrimaryCyan)
+                        Text(
+                            text = char.toString(),
+                            style = MaterialTheme.typography.titleMedium,
+                            color = if (status != null) Color.White else PrimaryCyan
+                        )
                     }
                 }
             }

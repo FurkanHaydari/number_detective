@@ -216,22 +216,22 @@ class NumberDetectiveGame {
         
         val (first, second, third, fourth, fifth) = when (pathSelection) {
             1 -> listOf(
-                LEVEL_1_2_FIRST_A_CHOICES.random(),
                 LEVEL_1_2_ONLY_A_CORRECT.random(),
+                LEVEL_1_2_FIRST_A_CHOICES.random(),
                 if (temp) LEVEL_1_2_AB_FALSE.random() else LEVEL_1_2_AC_FALSE.random(),
                 LEVEL_1_2_CB_FALSE.random(),
                 if (temp) "cbx" else "bxc"
             )
             2 -> listOf(
-                LEVEL_1_2_FIRST_B_CHOICES.random(),
                 LEVEL_1_2_ONLY_B_CORRECT.random(),
+                LEVEL_1_2_FIRST_B_CHOICES.random(),
                 if (temp) LEVEL_1_2_AB_FALSE.random() else LEVEL_1_2_CB_FALSE.random(),
                 LEVEL_1_2_AC_FALSE.random(),
                 if (temp) "acx" else "xac"
             )
             else -> listOf(
-                LEVEL_1_2_FIRST_C_CHOICES.random(),
                 LEVEL_1_2_ONLY_C_CORRECT.random(),
+                LEVEL_1_2_FIRST_C_CHOICES.random(),
                 if (temp) LEVEL_1_2_AC_FALSE.random() else LEVEL_1_2_CB_FALSE.random(),
                 LEVEL_1_2_AB_FALSE.random(),
                 if (temp) "axb" else "xba"

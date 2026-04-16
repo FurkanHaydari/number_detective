@@ -26,6 +26,8 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.brainfocus.numberdetective.R
 import com.brainfocus.numberdetective.core.designsystem.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Settings
 
 @Composable
 fun HomeScreen(
@@ -68,33 +70,53 @@ fun HomeScreen(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Top
         ) {
-            // --- Section 1: Top (Language & Title) ---
+            // --- Section 1: Top (Settings & Title) ---
+            val isSoundEnabled by viewModel.isSoundEnabled.collectAsState()
+            val isHelperModeEnabled by viewModel.isHelperModeEnabled.collectAsState()
+            var showSettings by remember { mutableStateOf(false) }
+
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
                 Row(
                     modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.End
+                    horizontalArrangement = Arrangement.End,
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
-                    LanguageButton(
-                        text = "TR",
-                        isSelected = currentLanguage == "tr",
-                        onClick = { onLanguageChange("tr") }
-                    )
-                    Spacer(modifier = Modifier.width(8.dp))
-                    LanguageButton(
-                        text = "EN",
-                        isSelected = currentLanguage == "en",
-                        onClick = { onLanguageChange("en") }
-                    )
-                    Spacer(modifier = Modifier.width(16.dp))
                     IconButton(
-                        onClick = onManualClick,
+                        onClick = { showSettings = true },
                         modifier = Modifier
-                            .size(36.dp)
+                            .size(40.dp)
                             .background(Color.White.copy(alpha = 0.05f), CircleShape)
                             .border(1.dp, PrimaryCyan.copy(alpha = 0.2f), CircleShape)
                     ) {
-                        Text("?", color = PrimaryCyan, fontWeight = FontWeight.Bold)
+                        Icon(
+                            imageVector = Icons.Default.Settings,
+                            contentDescription = "Settings",
+                            tint = PrimaryCyan,
+                            modifier = Modifier.size(20.dp)
+                        )
                     }
+                    Spacer(modifier = Modifier.width(12.dp))
+                    IconButton(
+                        onClick = onManualClick,
+                        modifier = Modifier
+                            .size(40.dp)
+                            .background(Color.White.copy(alpha = 0.05f), CircleShape)
+                            .border(1.dp, PrimaryCyan.copy(alpha = 0.2f), CircleShape)
+                    ) {
+                        Text("?", color = PrimaryCyan, fontWeight = FontWeight.Bold, fontSize = 18.sp)
+                    }
+                }
+
+                if (showSettings) {
+                    SettingsDialog(
+                        onDismiss = { showSettings = false },
+                        currentLanguage = currentLanguage,
+                        onLanguageChange = onLanguageChange,
+                        isSoundEnabled = isSoundEnabled,
+                        onSoundToggle = { viewModel.toggleSound(it) },
+                        isHelperModeEnabled = isHelperModeEnabled,
+                        onHelperModeToggle = { viewModel.toggleHelperMode(it) }
+                    )
                 }
 
                 Spacer(modifier = Modifier.height(8.dp))

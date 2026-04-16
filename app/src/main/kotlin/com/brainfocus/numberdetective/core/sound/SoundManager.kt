@@ -22,8 +22,13 @@ class SoundManager @Inject constructor(
     private var levelUpSoundId: Int = 0
     private var partialWrongSoundId: Int = 0
     private var isInitialized = false
+    private var isSoundEnabled = true // New flag for global sound control
     private var loadedSounds = 0
     private var totalSounds = 8
+    
+    fun setSoundEnabled(enabled: Boolean) {
+        isSoundEnabled = enabled
+    }
     
     fun initialize() {
         if (isInitialized) return
@@ -108,8 +113,8 @@ class SoundManager @Inject constructor(
     }
     
     fun playTickSound() {
-        if (!isInitialized) {
-            android.util.Log.w("SoundManager", "Attempted to play tick sound when not initialized")
+        if (!isSoundEnabled || !isInitialized) {
+            // android.util.Log.w("SoundManager", "Attempted to play tick sound when sound disabled or not initialized")
             return
         }
         if (tickSoundId == 0) {
@@ -130,10 +135,7 @@ class SoundManager @Inject constructor(
     }
     
     fun playWinSound() {
-        if (!isInitialized) {
-            android.util.Log.w("SoundManager", "Attempted to play win sound when not initialized")
-            return
-        }
+        if (!isSoundEnabled || !isInitialized) return
         if (winSoundId == 0) {
             android.util.Log.e("SoundManager", "Invalid win sound ID")
             return
@@ -152,10 +154,7 @@ class SoundManager @Inject constructor(
     }
     
     fun playWrongSound() {
-        if (!isInitialized) {
-            android.util.Log.w("SoundManager", "Attempted to play wrong sound when not initialized")
-            return
-        }
+        if (!isSoundEnabled || !isInitialized) return
         if (wrongSoundId == 0) {
             android.util.Log.e("SoundManager", "Invalid wrong sound ID")
             return
@@ -174,10 +173,7 @@ class SoundManager @Inject constructor(
     }
     
     fun playCorrectSound() {
-        if (!isInitialized) {
-            android.util.Log.w("SoundManager", "Attempted to play correct sound when not initialized")
-            return
-        }
+        if (!isSoundEnabled || !isInitialized) return
         if (correctSoundId == 0) {
             android.util.Log.e("SoundManager", "Invalid correct sound ID")
             return
@@ -196,10 +192,7 @@ class SoundManager @Inject constructor(
     }
 
     fun playButtonClick() {
-        if (!isInitialized) {
-            android.util.Log.w("SoundManager", "Attempted to play button click sound when not initialized")
-            return
-        }
+        if (!isSoundEnabled || !isInitialized) return
         if (buttonClickId == 0) {
             android.util.Log.e("SoundManager", "Invalid button click sound ID")
             return
@@ -218,10 +211,7 @@ class SoundManager @Inject constructor(
     }
 
     fun playLoseSound() {
-        if (!isInitialized) {
-            android.util.Log.w("SoundManager", "Attempted to play lose sound when not initialized")
-            return
-        }
+        if (!isSoundEnabled || !isInitialized) return
         if (loseSoundId == 0) {
             android.util.Log.e("SoundManager", "Invalid lose sound ID")
             return
@@ -240,10 +230,7 @@ class SoundManager @Inject constructor(
     }
 
     fun playLevelUpSound() {
-        if (!isInitialized) {
-            android.util.Log.w("SoundManager", "Attempted to play level up sound when not initialized")
-            return
-        }
+        if (!isSoundEnabled || !isInitialized) return
         if (levelUpSoundId == 0) {
             android.util.Log.e("SoundManager", "Invalid level up sound ID")
             return
@@ -262,10 +249,7 @@ class SoundManager @Inject constructor(
     }
 
     fun playPartialWrongSound() {
-        if (!isInitialized) {
-            android.util.Log.w("SoundManager", "Attempted to play partial/wrong sound when not initialized")
-            return
-        }
+        if (!isSoundEnabled || !isInitialized) return
         if (partialWrongSoundId == 0) {
             android.util.Log.e("SoundManager", "Invalid partial/wrong sound ID")
             return

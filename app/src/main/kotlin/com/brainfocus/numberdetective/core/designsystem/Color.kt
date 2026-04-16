@@ -17,6 +17,7 @@ val TextPrimary = Color(0xFFE0E0E0)
 val TextSecondary = Color(0xFFB0B0B0)
 
 val SuccessGreen = Color(0xFF4CAF50)
+val WarningYellow = Color(0xFFFFC107)
 val ErrorRed = Color(0xFFF44336)
 val GlowCyan = Color(0x6600E5FF)
 

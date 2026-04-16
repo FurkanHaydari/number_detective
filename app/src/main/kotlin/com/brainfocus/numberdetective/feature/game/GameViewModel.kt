@@ -46,6 +46,9 @@ class GameViewModel @Inject constructor(
     private var _attempts = 0
     private val _wrongAttempts = MutableStateFlow(0)
     
+    private val _currentReport = MutableStateFlow<FieldReport?>(null)
+    val currentReport: StateFlow<FieldReport?> = _currentReport
+    
     private val _remainingAttempts = MutableStateFlow(MAX_ATTEMPTS)
     val remainingAttempts: StateFlow<Int> = _remainingAttempts
     
@@ -70,11 +73,13 @@ class GameViewModel @Inject constructor(
     private val _remainingTime = MutableStateFlow(180) 
     val remainingTime: StateFlow<Int> = _remainingTime
 
-    private val _currentReport = MutableStateFlow<FieldReport?>(null)
-    val currentReport: StateFlow<FieldReport?> = _currentReport
-
     private val _isPaused = MutableStateFlow(false)
     val isPaused: StateFlow<Boolean> = _isPaused
+
+    // Settings Flows
+    val isSoundEnabled = dataStoreManager.isSoundEnabledFlow
+    val isHelperModeEnabled = dataStoreManager.isHelperModeEnabledFlow
+    private var isHelperModeEnabledLocal = false
 
     private var timerJob: Job? = null
     var startTime = System.currentTimeMillis()
@@ -84,7 +89,28 @@ class GameViewModel @Inject constructor(
     init {
         // Essential initialization
         soundManager.initialize()
+        
+        // Observe settings to update local states
+        viewModelScope.launch {
+            dataStoreManager.isSoundEnabledFlow.collect { enabled ->
+                soundManager.setSoundEnabled(enabled)
+            }
+        }
+        viewModelScope.launch {
+            dataStoreManager.isHelperModeEnabledFlow.collect { enabled ->
+                isHelperModeEnabledLocal = enabled
+            }
+        }
+        
         startNewGame()
+    }
+
+    fun toggleSound(enabled: Boolean) {
+        viewModelScope.launch { dataStoreManager.toggleSound(enabled) }
+    }
+
+    fun toggleHelperMode(enabled: Boolean) {
+        viewModelScope.launch { dataStoreManager.toggleHelperMode(enabled) }
     }
 
     fun startNewGame(isFirstGame: Boolean = true) {
@@ -101,6 +127,7 @@ class GameViewModel @Inject constructor(
         _guesses.value = emptyList()
         game.startNewGame(_currentLevel.value)
         _correctAnswer.value = game.getCorrectAnswer()
+        android.util.Log.d("NumberDetective", "SIA CONFIDENTIAL - TARGET CODE: ${_correctAnswer.value}")
         _gameState.value = GameState.Playing
 
         // Restore Hint Generation Logic
@@ -117,7 +144,7 @@ class GameViewModel @Inject constructor(
         } else {
             val h = listOf(
                 Hint(game.firstHint, 1, 0, getHintDescription(_currentLevel.value, 1)),
-                Hint(game.secondHint, 1, 0, getHintDescription(_currentLevel.value, 2)),
+                Hint(game.secondHint, 0, 1, getHintDescription(_currentLevel.value, 2)),
                 Hint(game.thirdHint, 0, 2, getHintDescription(_currentLevel.value, 3)),
                 Hint(game.fourthHint, 0, 2, getHintDescription(_currentLevel.value, 4)),
                 Hint(game.fifthHint, 1, 1, getHintDescription(_currentLevel.value, 5))
@@ -197,6 +224,24 @@ class GameViewModel @Inject constructor(
         val result = game.makeGuess(guess)
         val requiredDigits = if (_currentLevel.value == 3) 4 else 3
         
+        // Calculate Digit Statuses if Helper Mode is ON
+        val digitStatuses = if (isHelperModeEnabledLocal) {
+            calculateDigitStatuses(guess, _correctAnswer.value)
+        } else null
+
+        // Add this guess as a new Hint to the log
+        val newHint = Hint(
+            guess = guess,
+            correct = result.correct,
+            misplaced = result.misplaced,
+            description = if (result.correct == requiredDigits) "" else getApplication<Application>().getString(R.string.log_analysis_attempt),
+            digitStatuses = digitStatuses
+        )
+        
+        val updatedHints = _hints.value.toMutableList()
+        updatedHints.add(newHint)
+        _hints.value = updatedHints
+        
         return when {
             result.correct == requiredDigits -> {
                 calculateLevelScore()
@@ -219,12 +264,32 @@ class GameViewModel @Inject constructor(
             }
             else -> {
                 soundManager.playPartialWrongSound()
-                // Trigger Compromised Report
+                
+                // If helper mode is active, we store the per-digit status in the hint
+                // But we need to check helper mode synchronously here.
+                // I'll grab it from the flow's current value if possible or just use a state variable.
+                
+                // Simple workaround: the ViewModel can have a local variable updated by the flow.
+                
                 _currentReport.value = FieldReport.Compromised(_remainingAttempts.value)
                 _isPaused.value = true
                 GuessResult.Partial(result.correct, result.misplaced)
             }
         }
+    }
+
+    private fun calculateDigitStatuses(guess: String, answer: String): List<com.brainfocus.numberdetective.data.model.DigitStatus> {
+        val statuses = mutableListOf<com.brainfocus.numberdetective.data.model.DigitStatus>()
+        guess.forEachIndexed { index, char ->
+            statuses.add(
+                when {
+                    char == answer[index] -> com.brainfocus.numberdetective.data.model.DigitStatus.CORRECT_POS
+                    answer.contains(char) -> com.brainfocus.numberdetective.data.model.DigitStatus.WRONG_POS
+                    else -> com.brainfocus.numberdetective.data.model.DigitStatus.INCORRECT
+                }
+            )
+        }
+        return statuses
     }
 
     fun dismissReport() {

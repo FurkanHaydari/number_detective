@@ -14,8 +14,8 @@
     <string name="hint_l3_5">İki rakam doğru ve ikisi de doğru yerlerde</string>
 
     <!-- Diğer Seviye İpuçları -->
-    <string name="hint_1">Bir rakam doğru ama yanlış yerde</string>
-    <string name="hint_2">Bir rakam doğru ve doğru yerde</string>
+    <string name="hint_1">Bir rakam doğru ve doğru yerde</string>
+    <string name="hint_2">Bir rakam doğru ama yanlış yerde</string>
     <string name="hint_3">İki rakam doğru ama yanlış yerlerde</string>
     <string name="hint_4">İki rakam doğru ama yanlış yerlerde</string>
     <string name="hint_5">İki rakam doğru, biri doğru yerde</string>
@@ -178,4 +178,15 @@
     <string name="report_duplicate_msg">Bu dizilim daha önce analiz edildi. Lütfen farklı bir kombinasyon dene.</string>
     <string name="report_unique_title">PROTOKOL İHLALİ</string>
     <string name="report_unique_msg">Sistem güvenliği, şifredeki tüm rakamların benzersiz olmasını gerektirir. Dizilimi tekrar gözden geçir.</string>
+
+    <!-- Settings Menu -->
+    <string name="settings_title">GÖREV AYARLARI</string>
+    <string name="settings_sound">SES EFEKTLERİ</string>
+    <string name="settings_helper">YARDIMCI MOD</string>
+    <string name="settings_helper_desc">Sorgu günlüğündeki her rakam için renkli mantık geri bildirimini açar.</string>
+    <string name="log_analysis_attempt">ANALİZ GİRİŞİMİ</string>
+    <string name="label_trials">DENEMELER</string>
+    <string name="label_case_archive">VAKA ARŞİVİ</string>
+    <string name="msg_analysis_active">SIA ANALİZİ AKTİF</string>
+    <string name="msg_no_evidence_waiting">GİRİŞ BEKLENİYOR...</string>
 </resources>

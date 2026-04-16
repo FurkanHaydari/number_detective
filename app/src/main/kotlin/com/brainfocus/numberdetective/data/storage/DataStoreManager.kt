@@ -25,6 +25,8 @@ class DataStoreManager @Inject constructor(
         val CURRENT_SCORE = intPreferencesKey("current_score")
         val CORRECT_ANSWER = stringPreferencesKey("correct_answer")
         val IS_FIRST_LAUNCH = booleanPreferencesKey("is_first_launch")
+        val IS_SOUND_ENABLED = booleanPreferencesKey("is_sound_enabled")
+        val IS_HELPER_MODE_ENABLED = booleanPreferencesKey("is_helper_mode_enabled")
     }
 
     // High Score Flow
@@ -64,6 +66,26 @@ class DataStoreManager @Inject constructor(
 
     val isFirstLaunchFlow: Flow<Boolean> = context.dataStore.data.map { preferences ->
         preferences[PreferencesKeys.IS_FIRST_LAUNCH] ?: true
+    }
+
+    val isSoundEnabledFlow: Flow<Boolean> = context.dataStore.data.map { preferences ->
+        preferences[PreferencesKeys.IS_SOUND_ENABLED] ?: true
+    }
+
+    val isHelperModeEnabledFlow: Flow<Boolean> = context.dataStore.data.map { preferences ->
+        preferences[PreferencesKeys.IS_HELPER_MODE_ENABLED] ?: false
+    }
+
+    suspend fun toggleSound(enabled: Boolean) {
+        context.dataStore.edit { preferences ->
+            preferences[PreferencesKeys.IS_SOUND_ENABLED] = enabled
+        }
+    }
+
+    suspend fun toggleHelperMode(enabled: Boolean) {
+        context.dataStore.edit { preferences ->
+            preferences[PreferencesKeys.IS_HELPER_MODE_ENABLED] = enabled
+        }
     }
 
     suspend fun completeOnboarding() {
