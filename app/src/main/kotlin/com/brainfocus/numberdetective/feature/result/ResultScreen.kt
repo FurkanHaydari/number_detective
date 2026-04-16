@@ -94,7 +94,7 @@ fun ResultScreen(
             ) {
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
                     Text(
-                        text = if (isWin) "MISSION ACCOMPLISHED" else "MISSION FAILED",
+                        text = stringResource(if (isWin) R.string.mission_accomplished else R.string.mission_failed),
                         style = MaterialTheme.typography.headlineLarge.copy(
                             fontFamily = Montserrat,
                             fontSize = 28.sp,
@@ -134,7 +134,7 @@ fun ResultScreen(
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
                         Text(
-                            text = "FINAL SCORE",
+                            text = stringResource(R.string.final_score),
                             style = MaterialTheme.typography.bodySmall,
                             color = TextSecondary,
                             letterSpacing = 2.sp
@@ -158,7 +158,9 @@ fun ResultScreen(
                             modifier = Modifier.fillMaxWidth(),
                             horizontalArrangement = Arrangement.SpaceEvenly
                         ) {
-                            DebriefStat(stringResource(R.string.correct_answer), correctAnswer)
+                            if (!isWin) {
+                                DebriefStat(stringResource(R.string.correct_answer), correctAnswer)
+                            }
                             DebriefStat(stringResource(R.string.attempts), attempts.toString())
                             DebriefStat(stringResource(R.string.time), formattedTime)
                         }
@@ -168,52 +170,63 @@ fun ResultScreen(
 
             Spacer(modifier = Modifier.height(24.dp))
 
-            // Guess History List
-            Text(
-                text = "INTERROGATION LOG",
-                style = MaterialTheme.typography.bodySmall,
-                color = TextSecondary.copy(alpha = 0.6f),
-                modifier = Modifier.align(Alignment.Start),
-                letterSpacing = 1.sp
-            )
-            
-            LazyColumn(
-                modifier = Modifier
-                    .weight(1f)
-                    .fillMaxWidth()
-                    .padding(vertical = 12.dp),
-                verticalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                items(guesses.size) { index ->
-                    Text(
-                        text = "${index + 1}. ANALYZED: ${guesses[index]}",
-                        style = MaterialTheme.typography.bodyMedium.copy(fontFamily = Poppins),
-                        color = TextPrimary.copy(alpha = 0.8f)
-                    )
+            if (!isWin) {
+                // Guess History List
+                Text(
+                    text = stringResource(R.string.interrogation_log),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = TextSecondary.copy(alpha = 0.6f),
+                    modifier = Modifier.align(Alignment.Start),
+                    letterSpacing = 1.sp
+                )
+                
+                LazyColumn(
+                    modifier = Modifier
+                        .weight(1f)
+                        .fillMaxWidth()
+                        .padding(vertical = 12.dp),
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    items(guesses.size) { index ->
+                        Text(
+                            text = "${index + 1}. ANALYZED: ${guesses[index]}",
+                            style = MaterialTheme.typography.bodyMedium.copy(fontFamily = Poppins),
+                            color = TextPrimary.copy(alpha = 0.8f)
+                        )
+                    }
                 }
+            } else {
+                Spacer(modifier = Modifier.weight(1f))
             }
 
             // Philosophical Insight (Random Quote)
             val quotes = stringArrayResource(id = R.array.game_quotes)
-            val randomQuote = remember { quotes.random() }
+            val selectedQuotes = remember { 
+                if (isWin) quotes.toList().shuffled().take(2) else listOf(quotes.random())
+            }
             
-            Surface(
-                color = Color.White.copy(alpha = 0.03f),
-                shape = RoundedCornerShape(12.dp),
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(bottom = 24.dp)
+            Column(
+                verticalArrangement = Arrangement.spacedBy(12.dp),
+                modifier = Modifier.padding(bottom = 24.dp)
             ) {
-                Text(
-                    text = randomQuote,
-                    style = MaterialTheme.typography.bodySmall.copy(
-                        fontStyle = androidx.compose.ui.text.font.FontStyle.Italic,
-                        lineHeight = 18.sp
-                    ),
-                    color = TextSecondary.copy(alpha = 0.8f),
-                    textAlign = TextAlign.Center,
-                    modifier = Modifier.padding(16.dp)
-                )
+                selectedQuotes.forEach { quote ->
+                    Surface(
+                        color = Color.White.copy(alpha = 0.03f),
+                        shape = RoundedCornerShape(12.dp),
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Text(
+                            text = quote,
+                            style = MaterialTheme.typography.bodySmall.copy(
+                                fontStyle = androidx.compose.ui.text.font.FontStyle.Italic,
+                                lineHeight = 18.sp
+                            ),
+                            color = TextSecondary.copy(alpha = 0.8f),
+                            textAlign = TextAlign.Center,
+                            modifier = Modifier.padding(16.dp)
+                        )
+                    }
+                }
             }
 
             // Action Buttons

@@ -189,4 +189,13 @@
     <string name="label_case_archive">VAKA ARŞİVİ</string>
     <string name="msg_analysis_active">SIA ANALİZİ AKTİF</string>
     <string name="msg_no_evidence_waiting">GİRİŞ BEKLENİYOR...</string>
+
+    <string name="mission_accomplished">GÖREV TAMAMLANDI</string>
+    <string name="mission_failed">GÖREV BAŞARISIZ</string>
+    <string name="final_score">TOPLAM SKOR</string>
+    <string name="interrogation_log">SORGU GÜNLÜĞÜ</string>
+    <string name="continue_mission">GÖREVE DEVAM ET</string>
+    <string name="case_file_level">VAKA DOSYASI: SEVİYE %d</string>
+    <string name="label_lives">CAN</string>
+    <string name="label_time">SÜRE</string>
 </resources>

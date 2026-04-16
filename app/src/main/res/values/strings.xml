@@ -190,4 +190,13 @@
     <string name="label_case_archive">CASE ARCHIVE</string>
     <string name="msg_analysis_active">SIA ANALYSIS ACTIVE</string>
     <string name="msg_no_evidence_waiting">WAITING FOR INPUT...</string>
+
+    <string name="mission_accomplished">MISSION ACCOMPLISHED</string>
+    <string name="mission_failed">MISSION FAILED</string>
+    <string name="final_score">FINAL SCORE</string>
+    <string name="interrogation_log">INTERROGATION LOG</string>
+    <string name="continue_mission">CONTINUE MISSION</string>
+    <string name="case_file_level">CASE FILE: LEVEL %d</string>
+    <string name="label_lives">LIVES</string>
+    <string name="label_time">TIME</string>
 </resources>
