@@ -122,13 +122,9 @@ class SoundManager @Inject constructor(
 
     fun playBeepSound() {
         if (!isSoundEnabled || !isInitialized) return
-        if (beepSoundId == 0) {
-            android.util.Log.e("SoundManager", "Invalid beep sound ID")
-            return
-        }
+        if (beepSoundId == 0) return
         try {
-            val streamId = soundPool?.play(beepSoundId, 0.6f, 0.6f, 1, 0, 1f)
-            if (streamId != 0) trackStreamId(streamId)
+            soundPool?.play(beepSoundId, 1f, 1f, 1, 0, 1f)
         } catch (e: Exception) {
             android.util.Log.e("SoundManager", "Error playing beep sound", e)
         }
@@ -141,13 +137,7 @@ class SoundManager @Inject constructor(
             return
         }
         try {
-            val streamId = soundPool?.play(winSoundId, 1f, 1f, 1, 0, 1f)
-            if (streamId == 0) {
-                android.util.Log.e("SoundManager", "Failed to play win sound")
-            } else {
-                // android.util.Log.d("SoundManager", "Playing win sound on stream: $streamId")
-                trackStreamId(streamId)
-            }
+            soundPool?.play(winSoundId, 1f, 1f, 1, 0, 1f)
         } catch (e: Exception) {
             android.util.Log.e("SoundManager", "Error playing win sound", e)
         }
@@ -160,13 +150,7 @@ class SoundManager @Inject constructor(
             return
         }
         try {
-            val streamId = soundPool?.play(wrongSoundId, 1f, 1f, 1, 0, 1f)
-            if (streamId == 0) {
-                android.util.Log.e("SoundManager", "Failed to play wrong sound")
-            } else {
-                // android.util.Log.d("SoundManager", "Playing wrong sound on stream: $streamId")
-                trackStreamId(streamId)
-            }
+            soundPool?.play(wrongSoundId, 1f, 1f, 1, 0, 1f)
         } catch (e: Exception) {
             android.util.Log.e("SoundManager", "Error playing wrong sound", e)
         }
@@ -179,13 +163,7 @@ class SoundManager @Inject constructor(
             return
         }
         try {
-            val streamId = soundPool?.play(correctSoundId, 0.7f, 0.7f, 1, 0, 1f)
-            if (streamId == 0) {
-                android.util.Log.e("SoundManager", "Failed to play correct sound")
-            } else {
-                // android.util.Log.d("SoundManager", "Playing correct sound on stream: $streamId")
-                trackStreamId(streamId)
-            }
+            soundPool?.play(correctSoundId, 0.7f, 0.7f, 1, 0, 1f)
         } catch (e: Exception) {
             android.util.Log.e("SoundManager", "Error playing correct sound", e)
         }
@@ -198,13 +176,7 @@ class SoundManager @Inject constructor(
             return
         }
         try {
-            val streamId = soundPool?.play(buttonClickId, 0.5f, 0.5f, 1, 0, 1f)
-            if (streamId == 0) {
-                android.util.Log.e("SoundManager", "Failed to play button click sound")
-            } else {
-                // android.util.Log.d("SoundManager", "Playing button click sound on stream: $streamId")
-                trackStreamId(streamId)
-            }
+            soundPool?.play(buttonClickId, 0.5f, 0.5f, 1, 0, 1f)
         } catch (e: Exception) {
             android.util.Log.e("SoundManager", "Error playing button click sound", e)
         }
@@ -217,13 +189,7 @@ class SoundManager @Inject constructor(
             return
         }
         try {
-            val streamId = soundPool?.play(loseSoundId, 1f, 1f, 1, 0, 1f)
-            if (streamId == 0) {
-                android.util.Log.e("SoundManager", "Failed to play lose sound")
-            } else {
-                // android.util.Log.d("SoundManager", "Playing lose sound on stream: $streamId")
-                trackStreamId(streamId)
-            }
+            soundPool?.play(loseSoundId, 1f, 1f, 1, 0, 1f)
         } catch (e: Exception) {
             android.util.Log.e("SoundManager", "Error playing lose sound", e)
         }
@@ -236,13 +202,7 @@ class SoundManager @Inject constructor(
             return
         }
         try {
-            val streamId = soundPool?.play(levelUpSoundId, 1f, 1f, 1, 0, 1f)
-            if (streamId == 0) {
-                android.util.Log.e("SoundManager", "Failed to play level up sound")
-            } else {
-                // android.util.Log.d("SoundManager", "Playing level up sound on stream: $streamId")
-                trackStreamId(streamId)
-            }
+            soundPool?.play(levelUpSoundId, 1f, 1f, 1, 0, 1f)
         } catch (e: Exception) {
             android.util.Log.e("SoundManager", "Error playing level up sound", e)
         }
@@ -255,13 +215,7 @@ class SoundManager @Inject constructor(
             return
         }
         try {
-            val streamId = soundPool?.play(partialWrongSoundId, 1f, 1f, 1, 0, 1f)
-            if (streamId == 0) {
-                android.util.Log.e("SoundManager", "Failed to play partial/wrong sound")
-            } else {
-                // android.util.Log.d("SoundManager", "Playing partial/wrong sound on stream: $streamId")
-                trackStreamId(streamId)
-            }
+            soundPool?.play(partialWrongSoundId, 1f, 1f, 1, 0, 1f)
         } catch (e: Exception) {
             android.util.Log.e("SoundManager", "Error playing partial/wrong sound", e)
         }
@@ -291,42 +245,9 @@ class SoundManager @Inject constructor(
             0
         }
     }
-    
-    private var activeStreamIds = mutableSetOf<Int>()
-
-    private fun trackStreamId(streamId: Int?) {
-        if (streamId != null && streamId != 0) {
-            synchronized(activeStreamIds) {
-                activeStreamIds.add(streamId)
-            }
-            // Stream tamamlandığında ID'yi kaldır
-            soundPool?.setOnLoadCompleteListener { _, sid, _ ->
-                if (sid == streamId) {
-                    synchronized(activeStreamIds) {
-                        activeStreamIds.remove(streamId)
-                    }
-                }
-            }
-        }
-    }
 
     fun release() {
         try {
-            // Aktif stream'lerin bitmesini bekle
-            var waitCount = 0
-            while (activeStreamIds.isNotEmpty() && waitCount < 50) { // max 5 saniye bekle
-                Thread.sleep(100)
-                waitCount++
-            }
-
-            // Tüm aktif stream'leri durdur
-            synchronized(activeStreamIds) {
-                activeStreamIds.forEach { streamId ->
-                    soundPool?.stop(streamId)
-                }
-                activeStreamIds.clear()
-            }
-
             soundPool?.release()
         } catch (e: Exception) {
             android.util.Log.e("SoundManager", "Error releasing SoundPool", e)
