@@ -3,7 +3,6 @@
     xmlns:tools="http://schemas.android.com/tools">
 
     <uses-permission android:name="android.permission.INTERNET" />
-    <uses-permission android:name="com.google.android.gms.permission.GAMES" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.BLUETOOTH_CONNECT" />
     <uses-permission android:name="com.google.android.gms.permission.AD_ID"/>
@@ -18,15 +17,8 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.NumberDetective"
-        android:enableOnBackInvokedCallback="true">
-
-        <meta-data
-            android:name="com.google.android.gms.games.APP_ID"
-            android:value="@string/app_id" />
-
-        <meta-data
-            android:name="com.google.android.gms.games.CLIENT_ID"
-            android:value="@string/games_oauth_client_id" />
+        android:enableOnBackInvokedCallback="true"
+        tools:targetApi="33">
 
         <!-- AdMob App ID -->
         <meta-data

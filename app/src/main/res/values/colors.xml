@@ -65,16 +65,6 @@
     <color name="textOverlayDark">#99000000</color>
     <color name="buttonShadow">#26000000</color>
     
-    <!-- Leaderboard Colors -->
-    <color name="gold">#FFD700</color>
-    <color name="silver">#C0C0C0</color>
-    <color name="bronze">#CD7F32</color>
-    <color name="colorDivider">#BDBDBD</color>
-    <color name="colorDividerDark">#666666</color>
-    <color name="numberPickerTextColor">@android:color/white</color>
-    <color name="colorError">#F44336</color>
-    <color name="picker_divider_color">#33FFFFFF</color>
-    
     <!-- Yeni Renkler -->
     <color name="colorPrimaryNew">#2196F3</color>
     <color name="colorPrimaryDarkNew">#1976D2</color>

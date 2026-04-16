@@ -135,7 +135,7 @@ class NumberDetectiveGame {
                 pattern.forEach { char ->
                     append(
                         when (char) {
-                            'x' -> availableX.removeFirst()
+                            'x' -> availableX.removeAt(0)
                             'a' -> a
                             'b' -> b
                             'c' -> c
@@ -202,7 +202,7 @@ class NumberDetectiveGame {
             pattern.forEach { char ->
                 append(
                     when (char) {
-                        'x' -> availableX.removeFirst()
+                        'x' -> availableX.removeAt(0)
                         'a' -> a
                         'b' -> b
                         'c' -> c

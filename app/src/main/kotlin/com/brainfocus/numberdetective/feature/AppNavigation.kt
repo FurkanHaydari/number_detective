@@ -8,13 +8,11 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.brainfocus.numberdetective.feature.home.HomeScreen
 import com.brainfocus.numberdetective.feature.game.GameScreen
 import com.brainfocus.numberdetective.feature.result.ResultScreen
-import com.brainfocus.numberdetective.feature.leaderboard.LeaderboardScreen
 import com.brainfocus.numberdetective.feature.game.GameViewModel
 
 @Composable
 fun AppNavigation(
     onPlayClick: () -> Unit,
-    isSignedIn: () -> Boolean,
     onLanguageChange: (String) -> Unit,
     currentLanguage: String
 ) {
@@ -25,7 +23,6 @@ fun AppNavigation(
             HomeScreen(
                 onPlayClick = {
                     onPlayClick()
-                    // Geliştirme aşaması için Google Play Games zorunluluğu kaldırıldı!
                     navController.navigate("game")
                 },
                 onLanguageChange = onLanguageChange,
@@ -66,15 +63,7 @@ fun AppNavigation(
                 },
                 onGoHome = {
                     navController.popBackStack("home", inclusive = false)
-                },
-                onShowLeaderboard = {
-                    navController.navigate("leaderboard")
                 }
-            )
-        }
-        composable("leaderboard") {
-            LeaderboardScreen(
-                onBack = { navController.popBackStack() }
             )
         }
     }

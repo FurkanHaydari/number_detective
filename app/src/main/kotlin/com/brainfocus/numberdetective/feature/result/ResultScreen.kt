@@ -27,8 +27,7 @@ fun ResultScreen(
     timeInSeconds: Int,
     guesses: List<String>,
     onPlayAgain: () -> Unit,
-    onGoHome: () -> Unit,
-    onShowLeaderboard: () -> Unit
+    onGoHome: () -> Unit
 ) {
     val context = LocalContext.current
     
@@ -119,32 +118,20 @@ fun ResultScreen(
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        // Buttons
-        Row(
+        // Share Button
+        Button(
+            onClick = {
+                val shareIntent = Intent().apply {
+                    action = Intent.ACTION_SEND
+                    type = "text/plain"
+                    putExtra(Intent.EXTRA_TEXT, context.getString(R.string.share_score_message, score, attempts, formattedTime))
+                }
+                context.startActivity(Intent.createChooser(shareIntent, context.getString(R.string.share_score_title)))
+            },
             modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(8.dp)
+            colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.secondary)
         ) {
-            Button(
-                onClick = onShowLeaderboard,
-                modifier = Modifier.weight(1f),
-                colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.secondary)
-            ) {
-                Text(stringResource(R.string.leaderboard_title))
-            }
-            Button(
-                onClick = {
-                    val shareIntent = Intent().apply {
-                        action = Intent.ACTION_SEND
-                        type = "text/plain"
-                        putExtra(Intent.EXTRA_TEXT, context.getString(R.string.share_score_message, score, attempts, formattedTime))
-                    }
-                    context.startActivity(Intent.createChooser(shareIntent, context.getString(R.string.share_score_title)))
-                },
-                modifier = Modifier.weight(1f),
-                colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.secondary)
-            ) {
-                Text(stringResource(R.string.share_button))
-            }
+            Text(stringResource(R.string.share_button))
         }
         
         Spacer(modifier = Modifier.height(8.dp))

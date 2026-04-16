@@ -9,6 +9,7 @@ import com.brainfocus.numberdetective.data.model.GameState
 import com.brainfocus.numberdetective.data.model.GuessResult
 import com.brainfocus.numberdetective.data.model.Hint
 import com.brainfocus.numberdetective.core.sound.SoundManager
+import com.brainfocus.numberdetective.data.storage.DataStoreManager
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -22,7 +23,8 @@ import javax.inject.Inject
 class GameViewModel @Inject constructor(
     application: Application,
     private val game: NumberDetectiveGame,
-    private val soundManager: SoundManager
+    private val soundManager: SoundManager,
+    private val dataStoreManager: DataStoreManager
 ) : AndroidViewModel(application) {
     private var _attempts = 0
     private val _wrongAttempts = MutableStateFlow(0)
@@ -188,12 +190,18 @@ class GameViewModel @Inject constructor(
                 if (_currentLevel.value >= MAX_LEVELS) {
                     _gameState.value = GameState.Win(_score.value)
                     timerJob?.cancel()
+                    viewModelScope.launch {
+                        dataStoreManager.saveHighScore(_score.value)
+                    }
                 }
                 GuessResult.Correct
             }
             _remainingAttempts.value <= 0 -> {  // wrongAttempts yerine remainingAttempts kontrolü
                 _gameState.value = GameState.GameOver(_score.value)
                 timerJob?.cancel()
+                viewModelScope.launch {
+                    dataStoreManager.saveHighScore(_score.value)
+                }
                 GuessResult.Wrong
             }
             else -> {
@@ -239,6 +247,7 @@ class GameViewModel @Inject constructor(
                 
                 if (_remainingTime.value == 0) {
                     _gameState.value = GameState.GameOver(_score.value)
+                    dataStoreManager.saveHighScore(_score.value)
                 }
             }
         }

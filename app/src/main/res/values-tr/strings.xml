@@ -4,6 +4,7 @@
 
     <!-- Game Activity -->
     <string name="guess_button">TAHMİN ET</string>
+    <string name="submit_button">GÖNDER</string>
 
     <!-- Seviye 3 İpuçları -->
     <string name="hint_l3_1">Bir rakam doğru ve doğru yerde</string>
@@ -41,7 +42,6 @@
     <string name="share_win_text">🎉 Number Detective\'de kazandım! Skorum: %1$d 🎮</string>
     <string name="share_lose_text">🎮 Number Detective\'de skorumu geçebilir misin? Skorum: %1$d</string>
     <string name="share_title">Sonucu Paylaş</string>
-    <string name="error_showing_leaderboard">Liderlik tablosu gösterilirken bir hata oluştu</string>
 
     <!-- Main Activity -->
     <string name="app_title_1">Sayı</string>
@@ -66,6 +66,8 @@
     <string name="cancel">İptal</string>
     <string name="settings">AYARLAR</string>
     <string name="press_back_again_to_exit">Çıkmak için tekrar basın</string>
+    <string name="number_up_button">Arttır</string>
+    <string name="number_down_button">Azalt</string>
 
     <string name="back_to_menu">ANA MENÜ</string>
     <string name="play_again">TEKRAR OYNA</string>
@@ -117,47 +119,11 @@
         <item>"Zorluklar, yaratıcılığın anasıdır." - Plato</item>
     </string-array>
 
-    <!-- Permissions -->
-    <string name="location_permission_title">Konum İzni Gerekli</string>
-    <string name="location_permission_rationale">Number Detective oyununda size yakın oyuncuları görebilmeniz ve liderlik tablosunda yerinizi alabilmeniz için konum izninize ihtiyacımız var.</string>
-    <string name="location_permission_denied_message">Konum izni olmadan bazı özellikler sınırlı olarak çalışacak.</string>
-    <string name="bluetooth_permission_title">Bluetooth İzni Gerekli</string>
-    <string name="bluetooth_permission_rationale">Yakındaki oyuncularla etkileşim kurabilmek için Bluetooth izninize ihtiyacımız var.</string>
-    <string name="bluetooth_permission_denied_message">Bluetooth izni olmadan bazı özellikler sınırlı olarak çalışacak.</string>
-
     <!-- Result Screen -->
     <string name="correct_answer">Doğru Cevap</string>
     <string name="attempts">Deneme</string>
     <string name="your_guesses">Tahminleriniz</string>
     <string name="time">Süre</string>
-
-    <!-- Leaderboard -->
-    <string name="leaderboard_title">SIRALAMA</string>
-    <string name="high_score">En Yüksek Skor</string>
-    <string name="total_games">Toplam Oyun</string>
-    <string name="games_played">Oyun Sayısı</string>
-    <string name="top_players">En İyi Oyuncular</string>
-    <string name="nearby_players">Yakındaki Oyuncular</string>
-    <string name="global_players">Tüm Oyuncular</string>
-    <string name="error_loading_leaderboard">Sıralama yüklenirken bir hata oluştu. Lütfen tekrar deneyin.</string>
-    <string name="retry">Tekrar Dene</string>
-    <string name="nearby_top_players">Çevrendeki En İyi Oyuncular</string>
-    <string name="district_leaderboard">%s Bölgesi Sıralaması</string>
-    <string name="no_location_title">Bölge Sıralaması</string>
-    <string name="location_required_message">Bölge sıralamasına katılmak için konum bilgilerinizi paylaşabilirsiniz</string>
-    <string name="error_loading_data">Veriler yüklenirken bir hata oluştu. Lütfen tekrar deneyin</string>
-    <string name="update_location">Konumu Güncelle</string>
-    <string name="location_permission_denied">Konum izni olmadan bölge sıralaması görüntülenemez</string>
-    <string name="score_format">%d Puan</string>
-    <string name="location_error">Konum bilgisi alınamadı</string>
-    <string name="no_leaderboard_data">Bu bölgede henüz sıralama verisi yok</string>
-    <string name="player_icon">Oyuncu İkonu</string>
-    <string name="global_leaderboard">Küresel Sıralama</string>
-    <string name="nearby_leaderboard">Yakınımdakiler</string>
-    <string name="error_submitting_score">Skor kaydedilemedi</string>
-    <string name="error_play_games_required">Google Play Games girişi gereklidir</string>
-    <string name="error_sign_in">Giriş hatası: %1$s</string>
-    <string name="error_play_games_sign_in_first">Lütfen önce Google Play Games\'e giriş yapın</string>
 
     <string name="brain_rot_title">Beyin Sağlığınız İçin Egzersiz Zamanı!</string>
     <string name="brain_rot_message">Sosyal medyanın kısa içerikleri beynimizi tehdit ediyor! Araştırmalar, sürekli kısa içeriklere maruz kalmanın \'Brain Rot\' (Beyin Çürümesi) riskini artırdığını gösteriyor.\n\nSayı Dedektifi ile beyninizi zinde tutun, mantık yürütme ve problem çözme yeteneklerinizi geliştirin!</string>
@@ -180,4 +146,16 @@
     <string name="hint_correct_only">%d rakam doğru yerde</string>
     <string name="hint_wrong_only">%d rakam yanlış yerde</string>
     <string name="hint_no_match">Hiç eşleşme yok</string>
+
+    <string name="share_score_message">Sayı Dedektifi\'nde %1$d puan topladım! %3$s sürede %2$d deneme yaptım. Skorumu geçebilir misin? 🎮</string>
+    <string name="share_score_title">Skoru Paylaş</string>
+
+    <!-- Home Screen Redesign -->
+    <string name="home_mission_title">Görev Brifingi</string>
+    <string name="home_step_1_title">Analiz Et</string>
+    <string name="home_step_1_desc">Gizli kodu bulmak için ipuçlarını incele.</string>
+    <string name="home_step_2_title">Mantık Yürüt</string>
+    <string name="home_step_2_desc">İmkansız rakamları eleyerek mantığını kullan.</string>
+    <string name="home_step_3_title">Çöz</string>
+    <string name="home_step_3_desc">Doğru dizilimi bul ve zafer kazan!</string>
 </resources>
