@@ -21,10 +21,11 @@ class SoundManager @Inject constructor(
     private var loseSoundId: Int = 0
     private var levelUpSoundId: Int = 0
     private var partialWrongSoundId: Int = 0
+    private var beepSoundId: Int = 0
     private var isInitialized = false
     private var isSoundEnabled = true // New flag for global sound control
     private var loadedSounds = 0
-    private var totalSounds = 8
+    private var totalSounds = 9
     
     fun setSoundEnabled(enabled: Boolean) {
         isSoundEnabled = enabled
@@ -103,6 +104,7 @@ class SoundManager @Inject constructor(
             loseSoundId = loadSound(R.raw.lose_sound)
             levelUpSoundId = loadSound(R.raw.level_up)
             partialWrongSoundId = loadSound(R.raw.partial_or_wrong_guess)
+            beepSoundId = loadSound(R.raw.beep)
             
             // android.util.Log.d("SoundManager", "Sound loading initiated")
             
@@ -113,24 +115,22 @@ class SoundManager @Inject constructor(
     }
     
     fun playTickSound() {
-        if (!isSoundEnabled || !isInitialized) {
-            // android.util.Log.w("SoundManager", "Attempted to play tick sound when sound disabled or not initialized")
-            return
-        }
-        if (tickSoundId == 0) {
-            android.util.Log.e("SoundManager", "Invalid tick sound ID")
+        // Keeping for compatibility but delegating to playBeepSound if needed 
+        // or just letting it be if user wants both. The user asked to replace tick with beep in timer.
+        playBeepSound()
+    }
+
+    fun playBeepSound() {
+        if (!isSoundEnabled || !isInitialized) return
+        if (beepSoundId == 0) {
+            android.util.Log.e("SoundManager", "Invalid beep sound ID")
             return
         }
         try {
-            val streamId = soundPool?.play(tickSoundId, 0.5f, 0.5f, 1, 0, 1f)
-            if (streamId == 0) {
-                android.util.Log.e("SoundManager", "Failed to play tick sound")
-            } else {
-                // android.util.Log.d("SoundManager", "Playing tick sound on stream: $streamId")
-                trackStreamId(streamId)
-            }
+            val streamId = soundPool?.play(beepSoundId, 0.6f, 0.6f, 1, 0, 1f)
+            if (streamId != 0) trackStreamId(streamId)
         } catch (e: Exception) {
-            android.util.Log.e("SoundManager", "Error playing tick sound", e)
+            android.util.Log.e("SoundManager", "Error playing beep sound", e)
         }
     }
     
@@ -342,6 +342,7 @@ class SoundManager @Inject constructor(
             loseSoundId = 0
             levelUpSoundId = 0
             partialWrongSoundId = 0
+            beepSoundId = 0
         }
     }
 }

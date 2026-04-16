@@ -311,7 +311,20 @@ class GameViewModel @Inject constructor(
             while (_remainingTime.value > 0 && _gameState.value !is GameState.Win && _gameState.value !is GameState.GameOver) {
                 if (!_isPaused.value) {
                     _remainingTime.value--
-                    soundManager.playTickSound()
+                    
+                    val beepCount = when {
+                        _remainingTime.value <= 10 -> 4
+                        _remainingTime.value <= 30 -> 3
+                        _remainingTime.value <= 60 -> 2
+                        else -> 1
+                    }
+
+                    viewModelScope.launch {
+                        repeat(beepCount) { i ->
+                            soundManager.playBeepSound()
+                            if (beepCount > 1 && i < beepCount - 1) delay(120)
+                        }
+                    }
                 }
                 delay(1000)
                 
