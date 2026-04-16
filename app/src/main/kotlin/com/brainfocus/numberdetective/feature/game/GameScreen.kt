@@ -397,11 +397,42 @@ fun StatsDashboard(attempts: Int, time: Int, trialCount: Int, onHistoryClick: ()
 
 @Composable
 fun StatItem(label: String, value: String, color: Color, onClick: (() -> Unit)? = null) {
+    val scale = remember { androidx.compose.animation.core.Animatable(1f) }
+    
+    LaunchedEffect(value) {
+        if (onClick != null) {
+            scale.animateTo(1.15f, androidx.compose.animation.core.tween(150))
+            scale.animateTo(1f, androidx.compose.animation.core.tween(150))
+        }
+    }
+
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
-        modifier = if (onClick != null) Modifier.clickable { onClick() } else Modifier
+        verticalArrangement = Arrangement.Center,
+        modifier = Modifier
+            .scale(scale.value)
+            .then(
+                if (onClick != null) {
+                    Modifier
+                        .clip(RoundedCornerShape(8.dp))
+                        .background(Color.White.copy(alpha = 0.05f))
+                        .clickable { onClick() }
+                        .padding(horizontal = 12.dp, vertical = 4.dp)
+                } else Modifier.padding(horizontal = 12.dp, vertical = 4.dp)
+            )
     ) {
-        Text(text = label, style = MaterialTheme.typography.bodySmall, color = TextSecondary, fontSize = 10.sp)
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Text(text = label, style = MaterialTheme.typography.bodySmall, color = TextSecondary, fontSize = 10.sp)
+            if (onClick != null) {
+                Spacer(modifier = Modifier.width(4.dp))
+                Icon(
+                    imageVector = androidx.compose.material.icons.Icons.Default.Info,
+                    contentDescription = null,
+                    tint = color.copy(alpha = 0.8f),
+                    modifier = Modifier.size(10.dp)
+                )
+            }
+        }
         Text(text = value, style = MaterialTheme.typography.titleMedium, color = color, fontWeight = FontWeight.Bold)
     }
 }
