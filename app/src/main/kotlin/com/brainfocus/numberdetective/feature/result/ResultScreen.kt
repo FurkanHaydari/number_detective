@@ -37,6 +37,8 @@ fun ResultScreen(
     attempts: Int,
     timeInSeconds: Int,
     guesses: List<String>,
+    dailyHighScore: Int,
+    allTimeHighScore: Int,
     onPlayAgain: () -> Unit,
     onGoHome: () -> Unit
 ) {
@@ -147,6 +149,19 @@ fun ResultScreen(
                             ),
                             color = PrimaryCyan
                         )
+                        
+                        // Records Summary
+                        Spacer(modifier = Modifier.height(16.dp))
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .background(Color.White.copy(alpha = 0.03f), RoundedCornerShape(12.dp))
+                                .padding(12.dp),
+                            horizontalArrangement = Arrangement.SpaceEvenly
+                        ) {
+                            RecordItem(label = stringResource(R.string.label_daily_record), value = dailyHighScore)
+                            RecordItem(label = stringResource(R.string.label_all_time_record), value = allTimeHighScore)
+                        }
                         
                         Spacer(modifier = Modifier.height(24.dp))
                         
@@ -318,5 +333,23 @@ fun ResultActionButton(text: String, isPrimary: Boolean, onClick: () -> Unit) {
                 color = Color.White
             )
         }
+    }
+}
+
+@Composable
+fun RecordItem(label: String, value: Int) {
+    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+        Text(
+            text = label,
+            style = MaterialTheme.typography.labelSmall,
+            color = TextSecondary.copy(alpha = 0.6f),
+            fontSize = 11.sp,
+            letterSpacing = 1.sp
+        )
+        Text(
+            text = value.toString(),
+            style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
+            color = Color.White.copy(alpha = 0.9f)
+        )
     }
 }

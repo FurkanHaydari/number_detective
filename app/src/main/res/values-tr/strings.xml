@@ -29,7 +29,7 @@
     <!-- Game Result Activity -->
     <string name="result_congrats">Tebrikler!</string>
     <string name="result_try_again">Tekrar Dene!</string>
-    <string name="score_text">Skor: %1$d</string>
+    <string name="score_text">GÜNÜN SKORU: %1$d</string>
     <string name="attempts_text">Deneme: %1$d</string>
     <string name="time_text">Süre: %1$ds</string>
     <string name="share_button">Paylaş</string>
@@ -190,6 +190,8 @@
     <string name="label_case_archive">VAKA ARŞİVİ</string>
     <string name="msg_analysis_active">SIA ANALİZİ AKTİF</string>
     <string name="msg_no_evidence_waiting">GİRİŞ BEKLENİYOR...</string>
+    <string name="label_daily_record">GÜNLÜK REKOR</string>
+    <string name="label_all_time_record">EBEDİ REKOR</string>
 
     <string name="mission_accomplished">GÖREV TAMAMLANDI</string>
     <string name="mission_failed">GÖREV BAŞARISIZ</string>

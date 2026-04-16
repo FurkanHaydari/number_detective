@@ -7,6 +7,9 @@ import androidx.datastore.preferences.preferencesDataStore
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -27,19 +30,52 @@ class DataStoreManager @Inject constructor(
         val IS_FIRST_LAUNCH = booleanPreferencesKey("is_first_launch")
         val IS_SOUND_ENABLED = booleanPreferencesKey("is_sound_enabled")
         val IS_HELPER_MODE_ENABLED = booleanPreferencesKey("is_helper_mode_enabled")
+        val ALL_TIME_HIGH_SCORE = intPreferencesKey("all_time_high_score")
+        val LAST_SCORE_DATE = stringPreferencesKey("last_score_date")
     }
 
     // High Score Flow
     val highScoreFlow: Flow<Int> = context.dataStore.data.map { preferences ->
-        preferences[PreferencesKeys.HIGH_SCORE] ?: 0
+        val lastDate = preferences[PreferencesKeys.LAST_SCORE_DATE] ?: ""
+        val currentDate = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(Date())
+        
+        if (lastDate == currentDate) {
+            preferences[PreferencesKeys.HIGH_SCORE] ?: 0
+        } else {
+            0 // New day, reset daily high score view
+        }
+    }
+
+    val allTimeHighScoreFlow: Flow<Int> = context.dataStore.data.map { preferences ->
+        preferences[PreferencesKeys.ALL_TIME_HIGH_SCORE] ?: 0
     }
 
     suspend fun saveHighScore(score: Int) {
+        val currentDate = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(Date())
         context.dataStore.edit { preferences ->
-            val currentHighScore = preferences[PreferencesKeys.HIGH_SCORE] ?: 0
-            if (score > currentHighScore) {
+            val lastDate = preferences[PreferencesKeys.LAST_SCORE_DATE] ?: ""
+            
+            // Handle Daily High Score
+            val currentDailyHighScore = if (lastDate == currentDate) {
+                preferences[PreferencesKeys.HIGH_SCORE] ?: 0
+            } else {
+                0
+            }
+            
+            if (score > currentDailyHighScore) {
+                preferences[PreferencesKeys.HIGH_SCORE] = score
+            } else if (lastDate != currentDate) {
+                // First game of a new day, set the daily score
                 preferences[PreferencesKeys.HIGH_SCORE] = score
             }
+
+            // Handle All-Time High Score
+            val currentAllTime = preferences[PreferencesKeys.ALL_TIME_HIGH_SCORE] ?: 0
+            if (score > currentAllTime) {
+                preferences[PreferencesKeys.ALL_TIME_HIGH_SCORE] = score
+            }
+
+            preferences[PreferencesKeys.LAST_SCORE_DATE] = currentDate
         }
     }
 

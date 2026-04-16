@@ -29,7 +29,7 @@
     <!-- Game Result Activity -->
     <string name="result_congrats">Congratulations!</string>
     <string name="result_try_again">Try Again!</string>
-    <string name="score_text">Score: %1$d</string>
+    <string name="score_text">DAILY SCORE: %1$d</string>
     <string name="attempts_text">Attempts: %1$d</string>
     <string name="time_text">Time: %1$ds</string>
     <string name="share_button">Share</string>
@@ -191,6 +191,8 @@
     <string name="label_case_archive">CASE ARCHIVE</string>
     <string name="msg_analysis_active">SIA ANALYSIS ACTIVE</string>
     <string name="msg_no_evidence_waiting">WAITING FOR INPUT...</string>
+    <string name="label_daily_record">DAILY RECORD</string>
+    <string name="label_all_time_record">ALL-TIME RECORD</string>
 
     <string name="mission_accomplished">MISSION ACCOMPLISHED</string>
     <string name="mission_failed">MISSION FAILED</string>

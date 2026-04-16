@@ -77,6 +77,8 @@ class GameViewModel @Inject constructor(
     val isPaused: StateFlow<Boolean> = _isPaused
 
     // Settings Flows
+    val dailyHighScore = dataStoreManager.highScoreFlow
+    val allTimeHighScore = dataStoreManager.allTimeHighScoreFlow
     val isSoundEnabled = dataStoreManager.isSoundEnabledFlow
     val isHelperModeEnabled = dataStoreManager.isHelperModeEnabledFlow
     private var isHelperModeEnabledLocal = false

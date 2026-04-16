@@ -125,8 +125,6 @@ fun HomeScreen(
                             modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
                             verticalAlignment = Alignment.CenterVertically
                         ) {
-                            Text("🏆", fontSize = 16.sp)
-                            Spacer(modifier = Modifier.width(8.dp))
                             Text(
                                 text = stringResource(R.string.score_text, highScore),
                                 style = MaterialTheme.typography.bodyMedium,

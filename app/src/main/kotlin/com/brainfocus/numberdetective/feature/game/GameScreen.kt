@@ -43,13 +43,15 @@ import com.brainfocus.numberdetective.feature.home.RowDefaults
 @Composable
 fun GameScreen(
     viewModel: GameViewModel = hiltViewModel(),
-    onNavigateToResult: (Boolean, Int, String, Int, Int, List<String>) -> Unit
+    onNavigateToResult: (Boolean, Int, String, Int, Int, List<String>, Int, Int) -> Unit
 ) {
     val context = LocalContext.current
     val currentLevel by viewModel.currentLevel.collectAsState()
     val remainingAttempts by viewModel.remainingAttempts.collectAsState()
     val remainingTime by viewModel.remainingTime.collectAsState()
     val score by viewModel.score.collectAsState()
+    val dailyHighScore by viewModel.dailyHighScore.collectAsState(0)
+    val allTimeHighScore by viewModel.allTimeHighScore.collectAsState(0)
     val hints by viewModel.hints.collectAsState()
     val evidenceHints = hints.take(5)
     val trialHints = hints.drop(5)
@@ -72,10 +74,10 @@ fun GameScreen(
     LaunchedEffect(gameState) {
         when (gameState) {
             is GameState.Win -> {
-                onNavigateToResult(true, score, correctAnswer, attempts, viewModel.getTimeInSeconds(), guesses.toList())
+                onNavigateToResult(true, score, correctAnswer, attempts, viewModel.getTimeInSeconds(), guesses.toList(), dailyHighScore, allTimeHighScore)
             }
             is GameState.GameOver -> {
-                onNavigateToResult(false, score, correctAnswer, attempts, viewModel.getTimeInSeconds(), guesses.toList())
+                onNavigateToResult(false, score, correctAnswer, attempts, viewModel.getTimeInSeconds(), guesses.toList(), dailyHighScore, allTimeHighScore)
             }
             else -> {}
         }
