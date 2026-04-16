@@ -11,5 +11,6 @@ data class Hint(
     val correct: Int,
     val misplaced: Int,
     val description: String = "",
-    val digitStatuses: List<DigitStatus>? = null
+    val digitStatuses: List<DigitStatus>? = null,
+    val timestamp: Int? = null
 )

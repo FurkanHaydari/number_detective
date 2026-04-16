@@ -193,6 +193,9 @@
     <string name="msg_no_evidence_waiting">WAITING FOR INPUT...</string>
     <string name="label_daily_record">DAILY RECORD</string>
     <string name="label_all_time_record">ALL-TIME RECORD</string>
+    
+    <string name="label_tab_briefing">BRIEFING</string>
+    <string name="label_tab_archive">CASE ARCHIVE</string>
 
     <string name="mission_accomplished">MISSION ACCOMPLISHED</string>
     <string name="mission_failed">MISSION FAILED</string>

@@ -43,7 +43,7 @@ import com.brainfocus.numberdetective.feature.home.RowDefaults
 @Composable
 fun GameScreen(
     viewModel: GameViewModel = hiltViewModel(),
-    onNavigateToResult: (Boolean, Int, String, Int, Int, List<String>, Int, Int) -> Unit
+    onNavigateToResult: (Boolean, Int, String, Int, Int, Int, Int) -> Unit
 ) {
     val context = LocalContext.current
     val currentLevel by viewModel.currentLevel.collectAsState()
@@ -74,10 +74,10 @@ fun GameScreen(
     LaunchedEffect(gameState) {
         when (gameState) {
             is GameState.Win -> {
-                onNavigateToResult(true, score, correctAnswer, attempts, viewModel.getTimeInSeconds(), guesses.toList(), dailyHighScore, allTimeHighScore)
+                onNavigateToResult(true, score, correctAnswer, attempts, viewModel.getTimeInSeconds(), dailyHighScore, allTimeHighScore)
             }
             is GameState.GameOver -> {
-                onNavigateToResult(false, score, correctAnswer, attempts, viewModel.getTimeInSeconds(), guesses.toList(), dailyHighScore, allTimeHighScore)
+                onNavigateToResult(false, score, correctAnswer, attempts, viewModel.getTimeInSeconds(), dailyHighScore, allTimeHighScore)
             }
             else -> {}
         }

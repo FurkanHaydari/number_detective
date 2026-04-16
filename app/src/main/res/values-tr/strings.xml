@@ -193,6 +193,9 @@
     <string name="label_daily_record">GÜNLÜK REKOR</string>
     <string name="label_all_time_record">EBEDİ REKOR</string>
 
+    <string name="label_tab_briefing">ÖZET</string>
+    <string name="label_tab_archive">VAKA ARŞİVİ</string>
+
     <string name="mission_accomplished">GÖREV TAMAMLANDI</string>
     <string name="mission_failed">GÖREV BAŞARISIZ</string>
     <string name="final_score">TOPLAM SKOR</string>

@@ -10,6 +10,7 @@ import com.brainfocus.numberdetective.data.model.GuessResult
 import com.brainfocus.numberdetective.data.model.Hint
 import com.brainfocus.numberdetective.core.sound.SoundManager
 import com.brainfocus.numberdetective.data.storage.DataStoreManager
+import com.brainfocus.numberdetective.data.storage.GameResultStorage
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -136,20 +137,20 @@ class GameViewModel @Inject constructor(
         val hintList = mutableListOf<Hint>()
         if (_currentLevel.value == 3) {
             hintList.addAll(listOf(
-                Hint(game.firstHint, 1, 0, getHintDescription(3, 1)),
-                Hint(game.secondHint, 0, 1, getHintDescription(3, 2)),
-                Hint(game.thirdHint, 1, 1, getHintDescription(3, 3)),
-                Hint(game.fourthHint, 1, 1, getHintDescription(3, 4)),
-                Hint(game.fifthHint, 1, 1, getHintDescription(3, 5))
+                Hint(game.firstHint, 1, 0, getHintDescription(3, 1), null, 0),
+                Hint(game.secondHint, 0, 1, getHintDescription(3, 2), null, 0),
+                Hint(game.thirdHint, 1, 1, getHintDescription(3, 3), null, 0),
+                Hint(game.fourthHint, 1, 1, getHintDescription(3, 4), null, 0),
+                Hint(game.fifthHint, 1, 1, getHintDescription(3, 5), null, 0)
             ))
             _hints.value = hintList
         } else {
             val h = listOf(
-                Hint(game.firstHint, 1, 0, getHintDescription(_currentLevel.value, 1)),
-                Hint(game.secondHint, 0, 1, getHintDescription(_currentLevel.value, 2)),
-                Hint(game.thirdHint, 0, 2, getHintDescription(_currentLevel.value, 3)),
-                Hint(game.fourthHint, 0, 2, getHintDescription(_currentLevel.value, 4)),
-                Hint(game.fifthHint, 1, 1, getHintDescription(_currentLevel.value, 5))
+                Hint(game.firstHint, 1, 0, getHintDescription(_currentLevel.value, 1), null, 0),
+                Hint(game.secondHint, 0, 1, getHintDescription(_currentLevel.value, 2), null, 0),
+                Hint(game.thirdHint, 0, 2, getHintDescription(_currentLevel.value, 3), null, 0),
+                Hint(game.fourthHint, 0, 2, getHintDescription(_currentLevel.value, 4), null, 0),
+                Hint(game.fifthHint, 1, 1, getHintDescription(_currentLevel.value, 5), null, 0)
             )
             _hints.value = if (_currentLevel.value == 2) h.shuffled() else h
         }
@@ -237,7 +238,8 @@ class GameViewModel @Inject constructor(
             correct = result.correct,
             misplaced = result.misplaced,
             description = if (result.correct == requiredDigits) "" else getApplication<Application>().getString(R.string.log_analysis_attempt),
-            digitStatuses = digitStatuses
+            digitStatuses = digitStatuses,
+            timestamp = getTimeInSeconds()
         )
         
         val updatedHints = _hints.value.toMutableList()
@@ -248,6 +250,8 @@ class GameViewModel @Inject constructor(
             result.correct == requiredDigits -> {
                 calculateLevelScore()
                 if (_currentLevel.value >= MAX_LEVELS) {
+                    GameResultStorage.lastGameHints = _hints.value
+                    GameResultStorage.lastGameDurationSeconds = getTimeInSeconds()
                     _gameState.value = GameState.Win(_score.value)
                     soundManager.playWinSound()
                     timerJob?.cancel()
@@ -258,6 +262,8 @@ class GameViewModel @Inject constructor(
                 GuessResult.Correct
             }
             _remainingAttempts.value <= 0 -> {
+                GameResultStorage.lastGameHints = _hints.value
+                GameResultStorage.lastGameDurationSeconds = getTimeInSeconds()
                 _gameState.value = GameState.GameOver(_score.value)
                 soundManager.playLoseSound()
                 timerJob?.cancel()
@@ -332,6 +338,8 @@ class GameViewModel @Inject constructor(
                 delay(1000)
                 
                 if (_remainingTime.value == 0) {
+                    GameResultStorage.lastGameHints = _hints.value
+                    GameResultStorage.lastGameDurationSeconds = getTimeInSeconds()
                     _gameState.value = GameState.GameOver(_score.value)
                     soundManager.playLoseSound()
                     dataStoreManager.saveHighScore(_score.value)

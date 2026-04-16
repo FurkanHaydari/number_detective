@@ -65,16 +65,14 @@ fun AppNavigation(
             val gameViewModel: GameViewModel = hiltViewModel()
             GameScreen(
                 viewModel = gameViewModel,
-                onNavigateToResult = { isWin, score, correctAnswer, attempts, timeInSeconds, guesses, dailyHighScore, allTimeHighScore -> 
-                    // Using URI encoding for a quick string representation without complex JSON logic
-                    val guessesStr = guesses.joinToString(",")
-                    navController.navigate("result/$isWin/$score/$correctAnswer/$attempts/$timeInSeconds/$dailyHighScore/$allTimeHighScore?guesses=$guessesStr") {
+                onNavigateToResult = { isWin, score, correctAnswer, attempts, timeInSeconds, dailyHighScore, allTimeHighScore -> 
+                    navController.navigate("result/$isWin/$score/$correctAnswer/$attempts/$timeInSeconds/$dailyHighScore/$allTimeHighScore") {
                         popUpTo("home")
                     }
                 }
             )
         }
-        composable("result/{isWin}/{score}/{correctAnswer}/{attempts}/{timeInSeconds}/{dailyHighScore}/{allTimeHighScore}?guesses={guesses}") { backStackEntry ->
+        composable("result/{isWin}/{score}/{correctAnswer}/{attempts}/{timeInSeconds}/{dailyHighScore}/{allTimeHighScore}") { backStackEntry ->
             val isWin = backStackEntry.arguments?.getString("isWin")?.toBoolean() ?: false
             val score = backStackEntry.arguments?.getString("score")?.toIntOrNull() ?: 0
             val correctAnswer = backStackEntry.arguments?.getString("correctAnswer") ?: ""
@@ -82,8 +80,6 @@ fun AppNavigation(
             val timeInSeconds = backStackEntry.arguments?.getString("timeInSeconds")?.toIntOrNull() ?: 0
             val dailyHighScore = backStackEntry.arguments?.getString("dailyHighScore")?.toIntOrNull() ?: 0
             val allTimeHighScore = backStackEntry.arguments?.getString("allTimeHighScore")?.toIntOrNull() ?: 0
-            val guessesStr = backStackEntry.arguments?.getString("guesses") ?: ""
-            val guesses = if (guessesStr.isNotEmpty()) guessesStr.split(",") else emptyList()
 
             ResultScreen(
                 isWin = isWin,
@@ -91,7 +87,6 @@ fun AppNavigation(
                 correctAnswer = correctAnswer,
                 attempts = attempts,
                 timeInSeconds = timeInSeconds,
-                guesses = guesses,
                 dailyHighScore = dailyHighScore,
                 allTimeHighScore = allTimeHighScore,
                 onPlayAgain = {
