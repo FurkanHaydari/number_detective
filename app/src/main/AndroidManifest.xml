@@ -50,15 +50,7 @@
             </intent-filter>
         </activity>
 
-        <activity
-            android:name=".GameActivity"
-            android:exported="true"
-            android:screenOrientation="portrait" />
 
-        <activity
-            android:name=".GameResultActivity"
-            android:theme="@style/Theme.NumberDetective.Fullscreen"
-            android:screenOrientation="portrait" />
 
     </application>
 </manifest>
