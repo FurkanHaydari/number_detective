@@ -26,10 +26,13 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import com.brainfocus.numberdetective.R
 import com.brainfocus.numberdetective.core.designsystem.*
 import com.brainfocus.numberdetective.feature.home.RowDefaults
-
+import com.brainfocus.numberdetective.core.utils.ShareImageGenerator
 import com.brainfocus.numberdetective.data.storage.GameResultStorage
 
 @Composable
@@ -47,6 +50,7 @@ fun ResultScreen(
     val context = LocalContext.current
     var isVisible by remember { mutableStateOf(false) }
     var selectedTab by remember { mutableIntStateOf(0) } // 0: Briefing, 1: Archive
+    val coroutineScope = rememberCoroutineScope()
 
     val minutes = timeInSeconds / 60
     val seconds = timeInSeconds % 60
@@ -178,12 +182,29 @@ fun ResultScreen(
                     text = stringResource(R.string.share_button).uppercase(),
                     isPrimary = false,
                     onClick = {
-                        val shareIntent = Intent().apply {
-                            action = Intent.ACTION_SEND
-                            type = "text/plain"
-                            putExtra(Intent.EXTRA_TEXT, context.getString(R.string.share_score_message, score, attempts, formattedTime))
+                        val playStoreLink = "https://play.google.com/store/apps/details?id=${context.packageName}"
+                        val baseMessage = context.getString(R.string.share_score_message, score, attempts, formattedTime)
+                        val shareMessage = "$baseMessage\n\n$playStoreLink"
+                        val shareTitle = context.getString(R.string.share_score_title)
+                        
+                        coroutineScope.launch(Dispatchers.IO) {
+                            val imageUri = ShareImageGenerator.generateShareImage(context, isWin, score)
+                            
+                            val shareIntent = Intent(Intent.ACTION_SEND).apply {
+                                if (imageUri != null) {
+                                    type = "image/jpeg"
+                                    putExtra(Intent.EXTRA_STREAM, imageUri)
+                                    addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                                } else {
+                                    type = "text/plain"
+                                }
+                                putExtra(Intent.EXTRA_TEXT, shareMessage)
+                            }
+                            
+                            withContext(Dispatchers.Main) {
+                                context.startActivity(Intent.createChooser(shareIntent, shareTitle))
+                            }
                         }
-                        context.startActivity(Intent.createChooser(shareIntent, context.getString(R.string.share_score_title)))
                     }
                 )
 
