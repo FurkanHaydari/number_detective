@@ -199,4 +199,9 @@
     <string name="case_file_level">CASE FILE: LEVEL %d</string>
     <string name="label_lives">LIVES</string>
     <string name="label_time">TIME</string>
+
+    <string name="report_promotion_title">PROMOTION GRANTED</string>
+    <string name="report_promotion_msg">Case solved! You\'ve been promoted to Level %d. Proceed to the next vault.</string>
+    <string name="report_compromised_title">SECURITY BREACH</string>
+    <string name="report_compromised_msg">Incorrect code sequence! Security is tightening. You have %d attempts left.</string>
 </resources>

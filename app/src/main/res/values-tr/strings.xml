@@ -198,4 +198,9 @@
     <string name="case_file_level">VAKA DOSYASI: SEVİYE %d</string>
     <string name="label_lives">CAN</string>
     <string name="label_time">SÜRE</string>
+
+    <string name="report_promotion_title">TERFİ ALINDI</string>
+    <string name="report_promotion_msg">Vaka çözüldü! %d. Seviye\'ye terfi ettiniz. Bir sonraki kasaya ilerleyin.</string>
+    <string name="report_compromised_title">GÜVENLİK İHLALİ</string>
+    <string name="report_compromised_msg">Hatalı kod dizilimi! Güvenlik sıkılaşıyor. %d deneme hakkınız kaldı.</string>
 </resources>

@@ -19,14 +19,14 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 sealed class FieldReport(val title: String, val message: String, val isPositive: Boolean) {
-    class Promotion(level: Int) : FieldReport(
-        title = "PROMOTION GRANTED",
-        message = "Case solved! You've been promoted to Level $level. Proceed to the next vault.",
+    class Promotion(context: android.content.Context, level: Int) : FieldReport(
+        title = context.getString(R.string.report_promotion_title),
+        message = context.getString(R.string.report_promotion_msg, level),
         isPositive = true
     )
-    class Compromised(remaining: Int) : FieldReport(
-        title = "SECURITY BREACH",
-        message = "Incorrect code sequence! Security is tightening. You have $remaining attempts left.",
+    class Compromised(context: android.content.Context, remaining: Int) : FieldReport(
+        title = context.getString(R.string.report_compromised_title),
+        message = context.getString(R.string.report_compromised_msg, remaining),
         isPositive = false
     )
     class Validation(title: String, message: String) : FieldReport(
@@ -184,7 +184,7 @@ class GameViewModel @Inject constructor(
         soundManager.playLevelUpSound()
         
         // Trigger Promotion Report
-        _currentReport.value = FieldReport.Promotion(nextLvl)
+        _currentReport.value = FieldReport.Promotion(getApplication(), nextLvl)
         _isPaused.value = true
         
         startNewGame(false)
@@ -271,7 +271,8 @@ class GameViewModel @Inject constructor(
                 
                 // Simple workaround: the ViewModel can have a local variable updated by the flow.
                 
-                _currentReport.value = FieldReport.Compromised(_remainingAttempts.value)
+                
+                _currentReport.value = FieldReport.Compromised(getApplication(), _remainingAttempts.value)
                 _isPaused.value = true
                 GuessResult.Partial(result.correct, result.misplaced)
             }
