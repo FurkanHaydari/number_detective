@@ -10,6 +10,11 @@ import com.brainfocus.numberdetective.feature.game.GameScreen
 import com.brainfocus.numberdetective.feature.result.ResultScreen
 import com.brainfocus.numberdetective.feature.game.GameViewModel
 
+import com.brainfocus.numberdetective.feature.onboarding.OnboardingScreen
+import com.brainfocus.numberdetective.feature.onboarding.OnboardingViewModel
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+
 @Composable
 fun AppNavigation(
     onPlayClick: () -> Unit,
@@ -17,13 +22,31 @@ fun AppNavigation(
     currentLanguage: String
 ) {
     val navController = rememberNavController()
+    val onboardingViewModel: OnboardingViewModel = hiltViewModel()
+    val isFirstLaunch by onboardingViewModel.isFirstLaunch.collectAsState()
 
-    NavHost(navController = navController, startDestination = "home") {
+    // Determine starting point based on persistence
+    val startDest = if (isFirstLaunch) "onboarding" else "home"
+
+    NavHost(navController = navController, startDestination = startDest) {
+        composable("onboarding") {
+            OnboardingScreen(
+                viewModel = onboardingViewModel,
+                onFinish = {
+                    navController.navigate("home") {
+                        popUpTo("onboarding") { inclusive = true }
+                    }
+                }
+            )
+        }
         composable("home") {
             HomeScreen(
                 onPlayClick = {
                     onPlayClick()
                     navController.navigate("game")
+                },
+                onManualClick = {
+                    navController.navigate("onboarding")
                 },
                 onLanguageChange = onLanguageChange,
                 currentLanguage = currentLanguage

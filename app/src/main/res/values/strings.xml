@@ -159,4 +159,18 @@
     <string name="home_step_2_desc">Use logic to eliminate impossible numbers.</string>
     <string name="home_step_3_title">Solve</string>
     <string name="home_step_3_desc">Enter the correct sequence and win!</string>
+
+    <!-- Onboarding / Tutorial -->
+    <string name="tutorial_title">DETECTIVE MANUAL</string>
+    <string name="tutorial_page1_title">THE MISSION</string>
+    <string name="tutorial_page1_desc">A secure vault holds the data. Your objective is to crack the secret code (all digits are unique) before security locks you out.</string>
+    <string name="tutorial_page2_title">{ THE CYLINDERS }</string>
+    <string name="tutorial_page2_desc">Use the vertical cylinders to select your digits. Drag or tap them to reveal the combination you wish to test.</string>
+    <string name="tutorial_page3_title">[ THE EVIDENCE ]</string>
+    <string name="tutorial_page3_desc">After each guess, check the Evidence board.\n\n• GREEN: Correct digit in the right spot.\n• CYAN: Correct digit in the wrong spot.</string>
+    <string name="tutorial_page4_title">> PROMOTION</string>
+    <string name="tutorial_page4_desc">Success leads to harder vaults but grants more time and attempts. Clear all 3 levels to win the case.</string>
+    <string name="tutorial_continue_button">CONTINUE</string>
+    <string name="tutorial_finish_button">ACCEPT MISSION</string>
+    <string name="home_manual_button">MANUAL</string>
 </resources>

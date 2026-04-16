@@ -8,6 +8,7 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -30,6 +31,7 @@ import com.brainfocus.numberdetective.core.designsystem.*
 fun HomeScreen(
     viewModel: HomeViewModel = hiltViewModel(),
     onPlayClick: () -> Unit,
+    onManualClick: () -> Unit,
     onLanguageChange: (String) -> Unit,
     currentLanguage: String
 ) {
@@ -83,6 +85,16 @@ fun HomeScreen(
                         isSelected = currentLanguage == "en",
                         onClick = { onLanguageChange("en") }
                     )
+                    Spacer(modifier = Modifier.width(16.dp))
+                    IconButton(
+                        onClick = onManualClick,
+                        modifier = Modifier
+                            .size(36.dp)
+                            .background(Color.White.copy(alpha = 0.05f), CircleShape)
+                            .border(1.dp, PrimaryCyan.copy(alpha = 0.2f), CircleShape)
+                    ) {
+                        Text("?", color = PrimaryCyan, fontWeight = FontWeight.Bold)
+                    }
                 }
 
                 Spacer(modifier = Modifier.height(8.dp))

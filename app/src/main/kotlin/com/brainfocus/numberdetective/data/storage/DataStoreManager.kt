@@ -24,6 +24,7 @@ class DataStoreManager @Inject constructor(
         val REMAINING_TIME = intPreferencesKey("remaining_time")
         val CURRENT_SCORE = intPreferencesKey("current_score")
         val CORRECT_ANSWER = stringPreferencesKey("correct_answer")
+        val IS_FIRST_LAUNCH = booleanPreferencesKey("is_first_launch")
     }
 
     // High Score Flow
@@ -59,6 +60,16 @@ class DataStoreManager @Inject constructor(
 
     val correctAnswerFlow: Flow<String?> = context.dataStore.data.map { preferences ->
         preferences[PreferencesKeys.CORRECT_ANSWER]
+    }
+
+    val isFirstLaunchFlow: Flow<Boolean> = context.dataStore.data.map { preferences ->
+        preferences[PreferencesKeys.IS_FIRST_LAUNCH] ?: true
+    }
+
+    suspend fun completeOnboarding() {
+        context.dataStore.edit { preferences ->
+            preferences[PreferencesKeys.IS_FIRST_LAUNCH] = false
+        }
     }
 
     suspend fun saveGameState(

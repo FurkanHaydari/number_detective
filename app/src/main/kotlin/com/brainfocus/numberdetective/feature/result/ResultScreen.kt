@@ -19,6 +19,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringArrayResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -190,6 +191,29 @@ fun ResultScreen(
                         color = TextPrimary.copy(alpha = 0.8f)
                     )
                 }
+            }
+
+            // Philosophical Insight (Random Quote)
+            val quotes = stringArrayResource(id = R.array.game_quotes)
+            val randomQuote = remember { quotes.random() }
+            
+            Surface(
+                color = Color.White.copy(alpha = 0.03f),
+                shape = RoundedCornerShape(12.dp),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(bottom = 24.dp)
+            ) {
+                Text(
+                    text = randomQuote,
+                    style = MaterialTheme.typography.bodySmall.copy(
+                        fontStyle = androidx.compose.ui.text.font.FontStyle.Italic,
+                        lineHeight = 18.sp
+                    ),
+                    color = TextSecondary.copy(alpha = 0.8f),
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier.padding(16.dp)
+                )
             }
 
             // Action Buttons
