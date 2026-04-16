@@ -311,6 +311,7 @@ class GameViewModel @Inject constructor(
             while (_remainingTime.value > 0 && _gameState.value !is GameState.Win && _gameState.value !is GameState.GameOver) {
                 if (!_isPaused.value) {
                     _remainingTime.value--
+                    soundManager.playTickSound()
                 }
                 delay(1000)
                 
