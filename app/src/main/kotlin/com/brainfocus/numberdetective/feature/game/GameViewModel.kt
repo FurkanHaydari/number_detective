@@ -18,6 +18,18 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
+sealed class FieldReport(val title: String, val message: String, val isPositive: Boolean) {
+    class Promotion(level: Int) : FieldReport(
+        title = "PROMOTION GRANTED",
+        message = "Case solved! You've been promoted to Level $level. Proceed to the next vault.",
+        isPositive = true
+    )
+    class Compromised(remaining: Int) : FieldReport(
+        title = "SECURITY BREACH",
+        message = "Incorrect code sequence! Security is tightening. You have $remaining attempts left.",
+        isPositive = false
+    )
+}
 
 @HiltViewModel
 class GameViewModel @Inject constructor(
@@ -28,14 +40,10 @@ class GameViewModel @Inject constructor(
 ) : AndroidViewModel(application) {
     private var _attempts = 0
     private val _wrongAttempts = MutableStateFlow(0)
-    val wrongAttempts: StateFlow<Int> = _wrongAttempts
     
     private val _remainingAttempts = MutableStateFlow(MAX_ATTEMPTS)
     val remainingAttempts: StateFlow<Int> = _remainingAttempts
     
-    var startTime = System.currentTimeMillis()
-        private set
-        
     private val _guesses = MutableStateFlow<List<String>>(emptyList())
     val guesses: StateFlow<List<String>> = _guesses
     
@@ -54,15 +62,23 @@ class GameViewModel @Inject constructor(
     private val _currentLevel = MutableStateFlow(1)
     val currentLevel: StateFlow<Int> = _currentLevel
 
-    private val _remainingTime = MutableStateFlow(180) // 3 minutes in seconds
+    private val _remainingTime = MutableStateFlow(180) 
     val remainingTime: StateFlow<Int> = _remainingTime
 
-    private var timerJob: Job? = null
+    private val _currentReport = MutableStateFlow<FieldReport?>(null)
+    val currentReport: StateFlow<FieldReport?> = _currentReport
 
-    val attempts: Int
-        get() = _attempts
+    private val _isPaused = MutableStateFlow(false)
+    val isPaused: StateFlow<Boolean> = _isPaused
+
+    private var timerJob: Job? = null
+    var startTime = System.currentTimeMillis()
+
+    val attempts: Int get() = _attempts
 
     init {
+        // Essential initialization
+        soundManager.initialize()
         startNewGame()
     }
 
@@ -71,25 +87,20 @@ class GameViewModel @Inject constructor(
             _attempts = 0
             _wrongAttempts.value = 0
             _remainingAttempts.value = MAX_ATTEMPTS
-            _score.value = 0  // Başlangıç skoru 0
+            _score.value = 0
             startTime = System.currentTimeMillis()
-            _remainingTime.value = 180 // Reset timer to 3 minutes
+            _remainingTime.value = 180
             _currentLevel.value = 1
         }
         
         _guesses.value = emptyList()
-        game.startNewGame(_currentLevel.value)  // Level'ı game'e geçiriyoruz
+        game.startNewGame(_currentLevel.value)
         _correctAnswer.value = game.getCorrectAnswer()
         _gameState.value = GameState.Playing
-        
-        // Print correct answer to logcat for testing
-        android.util.Log.d("GameViewModel", "Correct answer for level ${_currentLevel.value}: ${_correctAnswer.value}")
-        
-        // Generate all hints and shuffle them
+
+        // Restore Hint Generation Logic
         val hintList = mutableListOf<Hint>()
-        
         if (_currentLevel.value == 3) {
-            // Level 3: Sıralı hintler
             hintList.addAll(listOf(
                 Hint(game.firstHint, 1, 0, getHintDescription(3, 1)),
                 Hint(game.secondHint, 0, 1, getHintDescription(3, 2)),
@@ -99,17 +110,14 @@ class GameViewModel @Inject constructor(
             ))
             _hints.value = hintList
         } else {
-            // Level 1-2 için tüm hintler
-            val hints = listOf(
+            val h = listOf(
                 Hint(game.firstHint, 1, 0, getHintDescription(_currentLevel.value, 1)),
                 Hint(game.secondHint, 1, 0, getHintDescription(_currentLevel.value, 2)),
                 Hint(game.thirdHint, 0, 2, getHintDescription(_currentLevel.value, 3)),
                 Hint(game.fourthHint, 0, 2, getHintDescription(_currentLevel.value, 4)),
                 Hint(game.fifthHint, 1, 1, getHintDescription(_currentLevel.value, 5))
             )
-            
-            // Level 1: Sıralı, Level 2: Karışık
-            _hints.value = if (_currentLevel.value == 2) hints.shuffled() else hints
+            _hints.value = if (_currentLevel.value == 2) h.shuffled() else h
         }
         
         if (isFirstGame) {
@@ -118,144 +126,112 @@ class GameViewModel @Inject constructor(
     }
 
     fun nextLevel() {
-        if (_gameState.value !is GameState.Playing) {
-            return
-        }
-        val currentLevel = _currentLevel.value
-        if (currentLevel >= MAX_LEVELS) {
+        if (_gameState.value !is GameState.Playing) return
+        
+        val nextLvl = _currentLevel.value + 1
+        if (nextLvl > MAX_LEVELS) {
             _gameState.value = GameState.Win(_score.value)
             timerJob?.cancel()
             return
         }
         
-        _currentLevel.value = currentLevel + 1
+        _currentLevel.value = nextLvl
         
-        // Level yükseldikçe ek can ve süre ver
-        when (_currentLevel.value) {
+        // Dynamic bonuses
+        when (nextLvl) {
             2 -> {
-                // 2. seviyeye geçişte 1 can
-                _remainingAttempts.value = _remainingAttempts.value + 2
-                // ve 40 saniye
-                _remainingTime.value = _remainingTime.value + 40
+                _remainingAttempts.value += 2
+                _remainingTime.value += 40
             }
             3 -> {
-                // 3. seviyeye geçişte 2 can
-                _remainingAttempts.value = _remainingAttempts.value + 3
-                // ve 80 saniye
+                _remainingAttempts.value += 3
                 _remainingTime.value += 80
             }
         }
         
+        soundManager.playLevelUpSound()
         
-        // Oyun bitmemişse level up Müziğini çal
-        if (_gameState.value !is GameState.Win && _gameState.value !is GameState.GameOver) {
-            soundManager.playLevelUpSound()
-        }
+        // Trigger Promotion Report
+        _currentReport.value = FieldReport.Promotion(nextLvl)
+        _isPaused.value = true
         
         startNewGame(false)
     }
 
     fun makeGuess(guess: String): GuessResult {
-        // Input validasyonu ekle
-        if (guess.isBlank() || !guess.all { it.isDigit() }) {
-            return GuessResult.Invalid
-        }
-        val requiredLength = if (_currentLevel.value == 3) 4 else 3
-        if (guess.length != requiredLength) {
-            return GuessResult.Invalid
-        }
-        _attempts++
+        if (guess.isBlank() || !guess.all { it.isDigit() }) return GuessResult.Invalid
         
-        // Add the guess to the list
+        _attempts++
         val currentGuesses = _guesses.value.toMutableList()
         currentGuesses.add(guess)
         _guesses.value = currentGuesses
-
-        // Decrease remaining attempts
-        _remainingAttempts.value = _remainingAttempts.value - 1
+        _remainingAttempts.value--
 
         val result = game.makeGuess(guess)
-        
-        // Check if the guess is correct based on the current level
         val requiredDigits = if (_currentLevel.value == 3) 4 else 3
         
-        // Always increment wrong attempts unless it's a complete match
-        if (result.correct != requiredDigits) {
-            _wrongAttempts.value = _wrongAttempts.value + 1
-        }
-        
-        val guessResult = when {
+        return when {
             result.correct == requiredDigits -> {
                 calculateLevelScore()
                 if (_currentLevel.value >= MAX_LEVELS) {
                     _gameState.value = GameState.Win(_score.value)
+                    soundManager.playWinSound()
                     timerJob?.cancel()
-                    viewModelScope.launch {
-                        dataStoreManager.saveHighScore(_score.value)
-                    }
+                    viewModelScope.launch { dataStoreManager.saveHighScore(_score.value) }
+                } else {
+                    nextLevel()
                 }
                 GuessResult.Correct
             }
-            _remainingAttempts.value <= 0 -> {  // wrongAttempts yerine remainingAttempts kontrolü
+            _remainingAttempts.value <= 0 -> {
                 _gameState.value = GameState.GameOver(_score.value)
+                soundManager.playLoseSound()
                 timerJob?.cancel()
-                viewModelScope.launch {
-                    dataStoreManager.saveHighScore(_score.value)
-                }
+                viewModelScope.launch { dataStoreManager.saveHighScore(_score.value) }
                 GuessResult.Wrong
             }
             else -> {
                 soundManager.playPartialWrongSound()
+                // Trigger Compromised Report
+                _currentReport.value = FieldReport.Compromised(_remainingAttempts.value)
+                _isPaused.value = true
                 GuessResult.Partial(result.correct, result.misplaced)
             }
         }
-        
-        return guessResult
+    }
+
+    fun dismissReport() {
+        _currentReport.value = null
+        _isPaused.value = false
     }
 
     private fun calculateLevelScore() {
-        val maxScorePerLevel = 1000 // Her level için maksimum puan
-        
-        // Süre bazlı düşüş (180 saniye üzerinden)
-        val timePenalty = (180 - _remainingTime.value) * 2 // Her saniye için 2 puan düşüş
-        
-        // Deneme sayısı bazlı düşüş
-        val attemptsPenalty = _attempts * 50 // Her deneme için 50 puan düşüş
-        
-        // Level skoru hesaplama
+        val maxScorePerLevel = 1000
+        val timePenalty = (180 - _remainingTime.value) * 2
+        val attemptsPenalty = _attempts * 50
         val levelScore = maxOf(0, maxScorePerLevel - timePenalty - attemptsPenalty)
-        
-        // Toplam skora ekleme
-        _score.value = _score.value + levelScore
-        
-        android.util.Log.d("GameViewModel", """
-            Level ${_currentLevel.value} Score Calculation:
-            Base Score: $maxScorePerLevel
-            Time Penalty: $timePenalty (${180 - _remainingTime.value} seconds used)
-            Attempts Penalty: $attemptsPenalty (${_attempts} attempts used)
-            Level Score: $levelScore
-            Total Score: ${_score.value}
-        """.trimIndent())
+        _score.value += levelScore
     }
 
     private fun startTimer() {
         timerJob?.cancel()
         timerJob = viewModelScope.launch {
-            while (_remainingTime.value > 0 && _gameState.value is GameState.Playing) {
+            while (_remainingTime.value > 0 && _gameState.value !is GameState.Win && _gameState.value !is GameState.GameOver) {
+                if (!_isPaused.value) {
+                    _remainingTime.value--
+                }
                 delay(1000)
-                _remainingTime.value = _remainingTime.value - 1
                 
                 if (_remainingTime.value == 0) {
                     _gameState.value = GameState.GameOver(_score.value)
+                    soundManager.playLoseSound()
                     dataStoreManager.saveHighScore(_score.value)
                 }
             }
         }
     }
 
-    fun getTimeInSeconds(): Int {
-        return ((System.currentTimeMillis() - startTime) / 1000).toInt()
-    }
+    fun getTimeInSeconds(): Int = ((System.currentTimeMillis() - startTime) / 1000).toInt()
 
     private fun getHintDescription(level: Int, hintNumber: Int): String {
         val resId = if (level == 3) {
@@ -282,6 +258,6 @@ class GameViewModel @Inject constructor(
 
     companion object {
         const val MAX_ATTEMPTS = 3
-        const val MAX_LEVELS = 3  // Maximum 3 level
+        const val MAX_LEVELS = 3
     }
 }

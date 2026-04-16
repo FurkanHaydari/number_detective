@@ -1,17 +1,16 @@
 package com.brainfocus.numberdetective.feature.game
 
 import android.widget.Toast
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.core.animateFloatAsState
-import androidx.compose.animation.core.tween
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.scaleIn
+import androidx.compose.animation.*
+import androidx.compose.animation.core.*
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.KeyboardArrowDown
@@ -20,9 +19,10 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.blur
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -32,13 +32,12 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.brainfocus.numberdetective.R
+import com.brainfocus.numberdetective.core.designsystem.*
 import com.brainfocus.numberdetective.data.model.GameState
 import com.brainfocus.numberdetective.data.model.GuessResult
 import com.brainfocus.numberdetective.data.model.Hint
-import com.brainfocus.numberdetective.core.sound.SoundManager
-import com.brainfocus.numberdetective.feature.game.GameViewModel
+import com.brainfocus.numberdetective.feature.home.RowDefaults
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun GameScreen(
     viewModel: GameViewModel = hiltViewModel(),
@@ -53,12 +52,9 @@ fun GameScreen(
     val gameState by viewModel.gameState.collectAsState()
     val guesses by viewModel.guesses.collectAsState()
     val correctAnswer by viewModel.correctAnswer.collectAsState()
+    val currentReport by viewModel.currentReport.collectAsState()
+    val isPaused by viewModel.isPaused.collectAsState()
     val attempts = viewModel.attempts
-
-    // In a real approach, SoundManager should be injected or requested via ViewModel
-    // We'll trust that SoundManager is initialized correctly. 
-    // To simplify we might not use SoundManager directly here unless we resolve it from Di.
-    // However, keeping the sound logic simple is better.
 
     val expectedLength = if (currentLevel == 3) 4 else 3
     var pickerValues by remember(currentLevel) {
@@ -77,134 +73,104 @@ fun GameScreen(
         }
     }
 
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = { Text("Level $currentLevel", fontWeight = FontWeight.Bold) },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.background,
-                    titleContentColor = MaterialTheme.colorScheme.onBackground
-                )
-            )
-        },
-        containerColor = MaterialTheme.colorScheme.background
-    ) { paddingValues ->
+    Box(modifier = Modifier.fillMaxSize()) {
+        // --- Layer 1: Background ---
+        Image(
+            painter = painterResource(id = R.drawable.detective_bg),
+            contentDescription = null,
+            modifier = Modifier
+                .fillMaxSize()
+                .blur(if (currentReport != null) 8.dp else 0.dp), // Dynamic blur
+            contentScale = ContentScale.Crop
+        )
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(Color.Black.copy(alpha = if (currentReport != null) 0.9f else 0.85f))
+        )
+
+        // --- Layer 2: UI Content ---
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(paddingValues)
-                .padding(16.dp),
+                .statusBarsPadding()
+                .navigationBarsPadding()
+                .padding(horizontal = 20.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            // Stats Row
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .clip(RoundedCornerShape(12.dp))
-                    .background(MaterialTheme.colorScheme.surfaceVariant)
-                    .padding(16.dp),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Text(
-                    text = "❤️ $remainingAttempts",
-                    style = MaterialTheme.typography.titleMedium,
-                    color = MaterialTheme.colorScheme.primary
-                )
-                Text(
-                    text = String.format("%d:%02d", remainingTime / 60, remainingTime % 60),
-                    style = MaterialTheme.typography.titleLarge,
-                    fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-                Text(
-                    text = "⭐ $score",
-                    style = MaterialTheme.typography.titleMedium,
-                    color = MaterialTheme.colorScheme.tertiary
-                )
-            }
+            GameTopBar(level = currentLevel)
+            Spacer(modifier = Modifier.height(16.dp))
+            StatsDashboard(attempts = remainingAttempts, time = remainingTime, score = score)
+            Spacer(modifier = Modifier.height(20.dp))
 
-            Spacer(modifier = Modifier.height(24.dp))
-
-            // Hints List
             Box(modifier = Modifier.weight(1f)) {
+                if (hints.isEmpty()) {
+                    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                        Text("NO EVIDENCE YET...", color = TextSecondary.copy(alpha = 0.3f), letterSpacing = 2.sp)
+                    }
+                }
                 LazyColumn(
                     modifier = Modifier.fillMaxSize(),
-                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                    verticalArrangement = Arrangement.spacedBy(10.dp),
+                    contentPadding = PaddingValues(bottom = 16.dp)
                 ) {
-                    items(hints) { hint ->
-                        HintCard(hint = hint)
-                    }
+                    items(hints.reversed()) { hint -> HintCard(hint = hint) }
                 }
             }
 
-            Spacer(modifier = Modifier.height(24.dp))
+            Spacer(modifier = Modifier.height(16.dp))
 
-            // Input Row
             Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceEvenly,
+                modifier = Modifier.fillMaxWidth().padding(vertical = 12.dp),
+                horizontalArrangement = Arrangement.spacedBy(12.dp, Alignment.CenterHorizontally),
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 pickerValues.forEachIndexed { index, value ->
-                    NumberPickerWheel(
+                    NumberVaultPicker(
                         value = value,
                         onValueChange = { newValue ->
-                            val newList = pickerValues.toMutableList()
-                            newList[index] = newValue
-                            pickerValues = newList
+                            if (!isPaused) {
+                                val newList = pickerValues.toMutableList()
+                                newList[index] = newValue
+                                pickerValues = newList
+                            }
                         }
                     )
                 }
             }
 
-            Spacer(modifier = Modifier.height(24.dp))
+            Spacer(modifier = Modifier.height(20.dp))
 
-            // Submit Button
-            Button(
+            GuessButton(
+                enabled = !isPaused,
                 onClick = {
                     val guess = pickerValues.joinToString("")
-                    if (guess.length != expectedLength) return@Button
-                    
+                    if (guess.length != expectedLength) return@GuessButton
                     if (guess.toSet().size != expectedLength) {
                         Toast.makeText(context, context.getString(R.string.toast_invalid_guess), Toast.LENGTH_SHORT).show()
-                        return@Button
+                        return@GuessButton
                     }
                     if (guesses.contains(guess)) {
                         Toast.makeText(context, context.getString(R.string.toast_duplicate_guess), Toast.LENGTH_SHORT).show()
-                        return@Button
+                        return@GuessButton
                     }
-                    
-                    val result = viewModel.makeGuess(guess)
-                    when (result) {
-                        is GuessResult.Correct -> {
-                            if (currentLevel < GameViewModel.MAX_LEVELS) {
-                                viewModel.nextLevel()
-                                Toast.makeText(context, "Level Up!", Toast.LENGTH_SHORT).show()
-                            }
-                        }
-                        is GuessResult.Wrong -> {
-                            Toast.makeText(context, context.getString(R.string.toast_remaining_attempts, remainingAttempts), Toast.LENGTH_SHORT).show()
-                        }
-                        is GuessResult.Partial -> {
-                            // Hint logic is generated in ViewModel and appears in hints list
-                        }
-                        is GuessResult.Invalid -> {
-                            Toast.makeText(context, context.getString(R.string.toast_invalid_guess), Toast.LENGTH_SHORT).show()
-                        }
-                    }
-                    // Reset to 000
+                    viewModel.makeGuess(guess)
                     pickerValues = List(expectedLength) { 0 }
-                },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(64.dp),
-                shape = RoundedCornerShape(16.dp)
-            ) {
-                Text(
-                    text = stringResource(R.string.submit_button),
-                    fontSize = 20.sp,
-                    fontWeight = FontWeight.Bold
+                }
+            )
+            Spacer(modifier = Modifier.height(16.dp))
+        }
+
+        // --- Layer 3: Field Report Overlay ---
+        AnimatedVisibility(
+            visible = currentReport != null,
+            enter = fadeIn() + scaleIn(initialScale = 0.9f),
+            exit = fadeOut() + scaleOut(targetScale = 0.9f)
+        ) {
+            currentReport?.let { report ->
+                FieldReportOverlay(
+                    report = report,
+                    onDismiss = { viewModel.dismissReport() }
                 )
             }
         }
@@ -212,89 +178,200 @@ fun GameScreen(
 }
 
 @Composable
-fun HintCard(hint: Hint) {
-    Card(
-        modifier = Modifier.fillMaxWidth(),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+fun FieldReportOverlay(report: FieldReport, onDismiss: () -> Unit) {
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(Color.Black.copy(alpha = 0.4f))
+            .clickable(enabled = false) {},
+        contentAlignment = Alignment.Center
     ) {
-        Row(
+        Surface(
             modifier = Modifier
-                .fillMaxWidth()
-                .padding(12.dp),
-            verticalAlignment = Alignment.CenterVertically
+                .fillMaxWidth(0.85f)
+                .wrapContentHeight(),
+            color = SurfaceCard,
+            shape = RoundedCornerShape(28.dp),
+            border = RowDefaults.CardBorder
         ) {
-            // Guess Digits
-            Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
-                hint.guess.forEach { char ->
+            Column(
+                modifier = Modifier.padding(24.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Box(
+                    modifier = Modifier
+                        .size(64.dp)
+                        .background(
+                            if (report.isPositive) SuccessGreen.copy(alpha = 0.1f) else ErrorRed.copy(alpha = 0.1f),
+                            CircleShape
+                        )
+                        .border(1.dp, if (report.isPositive) SuccessGreen else ErrorRed, CircleShape),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(text = if (report.isPositive) "🎖️" else "⚠️", fontSize = 32.sp)
+                }
+
+                Spacer(modifier = Modifier.height(20.dp))
+
+                Text(
+                    text = report.title,
+                    style = MaterialTheme.typography.titleLarge.copy(fontFamily = Montserrat),
+                    color = if (report.isPositive) PrimaryCyan else ErrorRed,
+                    textAlign = TextAlign.Center
+                )
+
+                Spacer(modifier = Modifier.height(12.dp))
+
+                Text(
+                    text = report.message,
+                    style = MaterialTheme.typography.bodyLarge,
+                    color = TextPrimary,
+                    textAlign = TextAlign.Center,
+                    lineHeight = 22.sp
+                )
+
+                Spacer(modifier = Modifier.height(32.dp))
+
+                Button(
+                    onClick = onDismiss,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(56.dp)
+                        .border(1.dp, PrimaryCyan.copy(alpha = 0.5f), RoundedCornerShape(16.dp)),
+                    shape = RoundedCornerShape(16.dp),
+                    contentPadding = PaddingValues(0.dp),
+                    colors = ButtonDefaults.buttonColors(containerColor = Color.Transparent)
+                ) {
                     Box(
                         modifier = Modifier
-                            .size(40.dp)
-                            .background(MaterialTheme.colorScheme.primaryContainer, RoundedCornerShape(8.dp)),
+                            .fillMaxSize()
+                            .background(PlayButtonGradient),
                         contentAlignment = Alignment.Center
                     ) {
                         Text(
-                            text = char.toString(),
-                            fontWeight = FontWeight.Bold,
-                            color = MaterialTheme.colorScheme.onPrimaryContainer
+                            text = "CONTINUE MISSION",
+                            style = MaterialTheme.typography.titleMedium.copy(
+                                fontFamily = Montserrat,
+                                letterSpacing = 1.sp
+                            ),
+                            color = Color.White
                         )
                     }
                 }
             }
-            Spacer(modifier = Modifier.width(16.dp))
-            // Description
-            Text(
-                text = hint.description,
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurface,
-                modifier = Modifier.weight(1f)
-            )
         }
     }
 }
 
 @Composable
-fun NumberPickerWheel(
-    value: Int,
-    onValueChange: (Int) -> Unit
-) {
-    var scaled by remember { mutableStateOf(false) }
-    val scale by animateFloatAsState(if (scaled) 1.1f else 1f, tween(100))
+fun GameTopBar(level: Int) {
+    Row(
+        modifier = Modifier.fillMaxWidth().height(56.dp),
+        horizontalArrangement = Arrangement.Center,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Text(
+            text = "CASE FILE: LEVEL $level",
+            style = MaterialTheme.typography.titleMedium.copy(
+                fontFamily = Montserrat,
+                letterSpacing = 2.sp,
+                fontSize = 16.sp
+            ),
+            color = Color.White.copy(alpha = 0.7f)
+        )
+    }
+}
 
+@Composable
+fun StatsDashboard(attempts: Int, time: Int, score: Int) {
+    Surface(
+        color = SurfaceCard,
+        shape = RoundedCornerShape(20.dp),
+        border = RowDefaults.CardBorder,
+        modifier = Modifier.fillMaxWidth()
+    ) {
+        Row(
+            modifier = Modifier.padding(16.dp).fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceEvenly,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            StatItem(label = "LIVES", value = "x$attempts", color = ErrorRed)
+            VerticalDivider(modifier = Modifier.height(24.dp).width(1.dp), color = Color.White.copy(alpha = 0.1f))
+            StatItem(label = "TIME", value = String.format("%02d:%02d", time / 60, time % 60), color = PrimaryCyan)
+            VerticalDivider(modifier = Modifier.height(24.dp).width(1.dp), color = Color.White.copy(alpha = 0.1f))
+            StatItem(label = "SCORE", value = score.toString(), color = SuccessGreen)
+        }
+    }
+}
+
+@Composable
+fun StatItem(label: String, value: String, color: Color) {
+    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+        Text(text = label, style = MaterialTheme.typography.bodySmall, color = TextSecondary, fontSize = 10.sp)
+        Text(text = value, style = MaterialTheme.typography.titleMedium, color = color, fontWeight = FontWeight.Bold)
+    }
+}
+
+@Composable
+fun HintCard(hint: Hint) {
+    Surface(
+        color = SurfaceCard,
+        shape = RoundedCornerShape(16.dp),
+        border = RowDefaults.CardBorder,
+        modifier = Modifier.fillMaxWidth()
+    ) {
+        Row(modifier = Modifier.padding(12.dp), verticalAlignment = Alignment.CenterVertically) {
+            Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                hint.guess.forEach { char ->
+                    Box(
+                        modifier = Modifier.size(34.dp).background(Color.White.copy(alpha = 0.05f), RoundedCornerShape(8.dp)).border(1.dp, Color.White.copy(alpha = 0.1f), RoundedCornerShape(8.dp)),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(text = char.toString(), style = MaterialTheme.typography.titleMedium, color = PrimaryCyan)
+                    }
+                }
+            }
+            Spacer(modifier = Modifier.width(16.dp))
+            Text(text = hint.description, style = MaterialTheme.typography.bodyMedium, color = TextPrimary, modifier = Modifier.weight(1f), lineHeight = 18.sp)
+        }
+    }
+}
+
+@Composable
+fun NumberVaultPicker(value: Int, onValueChange: (Int) -> Unit) {
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
-        modifier = Modifier
-            .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f), RoundedCornerShape(16.dp))
-            .border(1.dp, MaterialTheme.colorScheme.outline.copy(alpha=0.3f), RoundedCornerShape(16.dp))
-            .padding(vertical = 8.dp, horizontal = 4.dp)
+        modifier = Modifier.width(64.dp).background(SurfaceCard, RoundedCornerShape(16.dp)).border(1.dp, Color.White.copy(alpha = 0.1f), RoundedCornerShape(16.dp)).padding(vertical = 8.dp)
     ) {
-        IconButton(
-            onClick = { 
-                scaled = !scaled
-                onValueChange((value + 1) % 10) 
-            }
-        ) {
-            Icon(Icons.Default.KeyboardArrowUp, contentDescription = "Up", tint = MaterialTheme.colorScheme.primary)
+        IconButton(onClick = { onValueChange((value + 1) % 10) }, modifier = Modifier.size(32.dp)) {
+            Icon(Icons.Default.KeyboardArrowUp, contentDescription = null, tint = PrimaryCyan, modifier = Modifier.size(20.dp))
         }
-        
-        Text(
-            text = value.toString(),
-            fontSize = 48.sp,
-            fontWeight = FontWeight.Bold,
-            color = MaterialTheme.colorScheme.onBackground,
-            textAlign = TextAlign.Center,
-            modifier = Modifier
-                .width(60.dp)
-                .scale(scale)
-        )
-        
-        IconButton(
-            onClick = { 
-                scaled = !scaled
-                onValueChange((value - 1 + 10) % 10) 
-            }
+        Text(text = value.toString(), style = MaterialTheme.typography.headlineLarge.copy(fontSize = 32.sp, fontWeight = FontWeight.Bold), color = Color.White, textAlign = TextAlign.Center, modifier = Modifier.padding(vertical = 4.dp))
+        IconButton(onClick = { onValueChange((value - 1 + 10) % 10) }, modifier = Modifier.size(32.dp)) {
+            Icon(Icons.Default.KeyboardArrowDown, contentDescription = null, tint = PrimaryCyan, modifier = Modifier.size(20.dp))
+        }
+    }
+}
+
+@Composable
+fun GuessButton(enabled: Boolean, onClick: () -> Unit) {
+    Button(
+        onClick = onClick,
+        enabled = enabled,
+        modifier = Modifier.fillMaxWidth().height(56.dp).border(1.dp, PrimaryCyan.copy(alpha = 0.5f), RoundedCornerShape(16.dp)),
+        shape = RoundedCornerShape(16.dp),
+        contentPadding = PaddingValues(0.dp),
+        colors = ButtonDefaults.buttonColors(containerColor = Color.Transparent, disabledContainerColor = Color.Transparent)
+    ) {
+        Box(
+            modifier = if (enabled) {
+                Modifier.fillMaxSize().background(PlayButtonGradient)
+            } else {
+                Modifier.fillMaxSize().background(Color.White.copy(alpha = 0.05f))
+            },
+            contentAlignment = Alignment.Center
         ) {
-            Icon(Icons.Default.KeyboardArrowDown, contentDescription = "Down", tint = MaterialTheme.colorScheme.primary)
+            Text(text = stringResource(R.string.submit_button).uppercase(), style = MaterialTheme.typography.titleMedium.copy(fontFamily = Montserrat, letterSpacing = 2.sp), color = if (enabled) Color.White else Color.Gray)
         }
     }
 }
