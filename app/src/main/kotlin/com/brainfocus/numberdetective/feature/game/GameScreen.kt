@@ -16,6 +16,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.filled.Info
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -23,6 +24,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.blur
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
@@ -406,20 +408,26 @@ fun StatItem(label: String, value: String, color: Color, onClick: (() -> Unit)? 
         }
     }
 
+    val baseModifier = Modifier
+        .graphicsLayer {
+            scaleX = scale.value
+            scaleY = scale.value
+        }
+
+    val finalModifier = if (onClick != null) {
+        baseModifier
+            .clip(RoundedCornerShape(8.dp))
+            .background(Color.White.copy(alpha = 0.05f))
+            .clickable { onClick() }
+            .padding(horizontal = 12.dp, vertical = 4.dp)
+    } else {
+        baseModifier.padding(horizontal = 12.dp, vertical = 4.dp)
+    }
+
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center,
-        modifier = Modifier
-            .scale(scale.value)
-            .then(
-                if (onClick != null) {
-                    Modifier
-                        .clip(RoundedCornerShape(8.dp))
-                        .background(Color.White.copy(alpha = 0.05f))
-                        .clickable { onClick() }
-                        .padding(horizontal = 12.dp, vertical = 4.dp)
-                } else Modifier.padding(horizontal = 12.dp, vertical = 4.dp)
-            )
+        modifier = finalModifier
     ) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             Text(text = label, style = MaterialTheme.typography.bodySmall, color = TextSecondary, fontSize = 10.sp)
@@ -483,18 +491,71 @@ fun HintCard(hint: Hint) {
     }
 }
 
+@OptIn(androidx.compose.foundation.ExperimentalFoundationApi::class)
 @Composable
 fun NumberVaultPicker(value: Int, onValueChange: (Int) -> Unit) {
-    Column(
-        horizontalAlignment = Alignment.CenterHorizontally,
-        modifier = Modifier.width(64.dp).background(SurfaceCard, RoundedCornerShape(16.dp)).border(1.dp, Color.White.copy(alpha = 0.1f), RoundedCornerShape(16.dp)).padding(vertical = 8.dp)
-    ) {
-        IconButton(onClick = { onValueChange((value + 1) % 10) }, modifier = Modifier.size(32.dp)) {
-            Icon(Icons.Default.KeyboardArrowUp, contentDescription = null, tint = PrimaryCyan, modifier = Modifier.size(20.dp))
+    val pageCount = 10000 // Creates an infinite scroll feel
+    val startIndex = 5000 - (5000 % 10) + value
+    val pagerState = androidx.compose.foundation.pager.rememberPagerState(
+        initialPage = startIndex,
+        pageCount = { pageCount }
+    )
+
+    // Notify state change when user scrolls the vault picker
+    LaunchedEffect(pagerState.currentPage) {
+        val currVal = pagerState.currentPage % 10
+        if (currVal != value) {
+            onValueChange(currVal)
         }
-        Text(text = value.toString(), style = MaterialTheme.typography.headlineLarge.copy(fontSize = 32.sp, fontWeight = FontWeight.Bold), color = Color.White, textAlign = TextAlign.Center, modifier = Modifier.padding(vertical = 4.dp))
-        IconButton(onClick = { onValueChange((value - 1 + 10) % 10) }, modifier = Modifier.size(32.dp)) {
-            Icon(Icons.Default.KeyboardArrowDown, contentDescription = null, tint = PrimaryCyan, modifier = Modifier.size(20.dp))
+    }
+
+    // React to external changes (such as clear button or reset)
+    LaunchedEffect(value) {
+        val currVal = pagerState.currentPage % 10
+        if (currVal != value) {
+            var diff = value - currVal
+            if (diff > 5) diff -= 10
+            if (diff < -5) diff += 10
+            pagerState.animateScrollToPage(pagerState.currentPage + diff)
+        }
+    }
+
+    androidx.compose.foundation.pager.VerticalPager(
+        state = pagerState,
+        modifier = Modifier
+            .width(64.dp)
+            .height(130.dp)
+            .background(SurfaceCard, RoundedCornerShape(16.dp))
+            .border(1.dp, Color.White.copy(alpha = 0.1f), RoundedCornerShape(16.dp)),
+        contentPadding = PaddingValues(vertical = 40.dp) // Ensures items are centrally focused
+    ) { page ->
+        val itemValue = page % 10
+        val pageOffset = kotlin.math.abs((pagerState.currentPage - page) + pagerState.currentPageOffsetFraction)
+        
+        // 3D effect: scale and fade based on distance from center
+        val scale = 1f - (pageOffset.coerceIn(0f, 1f) * 0.4f)
+        val alpha = 1f - (pageOffset.coerceIn(0f, 1f) * 0.7f)
+
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(50.dp)
+                .graphicsLayer {
+                    scaleX = scale
+                    scaleY = scale
+                    this.alpha = alpha
+                },
+            contentAlignment = Alignment.Center
+        ) {
+            Text(
+                text = itemValue.toString(),
+                style = MaterialTheme.typography.headlineLarge.copy(
+                    fontSize = 32.sp, 
+                    fontWeight = FontWeight.Bold
+                ),
+                color = Color.White,
+                textAlign = TextAlign.Center
+            )
         }
     }
 }

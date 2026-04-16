@@ -34,7 +34,7 @@ fun OnboardingScreen(
     viewModel: OnboardingViewModel = hiltViewModel(),
     onFinish: () -> Unit
 ) {
-    val pagerState = rememberPagerState(pageCount = { 4 })
+    val pagerState = rememberPagerState(pageCount = { 5 })
     val scope = rememberCoroutineScope()
 
     Box(modifier = Modifier.fillMaxSize()) {
@@ -152,20 +152,23 @@ fun TutorialCard(page: Int) {
         0 -> R.string.tutorial_page1_title
         1 -> R.string.tutorial_page2_title
         2 -> R.string.tutorial_page3_title
-        else -> R.string.tutorial_page4_title
+        3 -> R.string.tutorial_page4_title
+        else -> R.string.tutorial_page5_title
     }
     
     val description = when (page) {
         0 -> R.string.tutorial_page1_desc
         1 -> R.string.tutorial_page2_desc
         2 -> R.string.tutorial_page3_desc
-        else -> R.string.tutorial_page4_desc
+        3 -> R.string.tutorial_page4_desc
+        else -> R.string.tutorial_page5_desc
     }
 
     val icon = when (page) {
         0 -> "🎯"
         1 -> "🔒"
-        2 -> "📊"
+        2 -> "📂"
+        3 -> "🎨"
         else -> "🏅"
     }
 

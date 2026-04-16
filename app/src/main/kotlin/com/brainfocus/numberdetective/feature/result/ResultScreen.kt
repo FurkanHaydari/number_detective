@@ -302,7 +302,7 @@ fun BriefingView(
                 
                 Spacer(modifier = Modifier.height(24.dp))
                 
-                Divider(color = Color.White.copy(alpha = 0.05f))
+                HorizontalDivider(color = Color.White.copy(alpha = 0.05f))
                 
                 Spacer(modifier = Modifier.height(24.dp))
 

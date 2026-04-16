@@ -162,13 +162,15 @@
     <!-- Onboarding / Tutorial -->
     <string name="tutorial_title">DEDEKTİF EL KİTABI</string>
     <string name="tutorial_page1_title">GÖREV</string>
-    <string name="tutorial_page1_desc">Süre dolduğunda deliller imha edilecek. Davayı çözmek için, deliller yok olmadan 3 katmanlı şifreyi kırmalısın. Panik yapma! Şifredeki hiçbir rakam tekrar etmez, hepsi benzersizdir. Bu da ihtimalleri daraltarak hesap yapmanı ve şifreyi kırmanı kolaylaştıracaktır.</string>
+    <string name="tutorial_page1_desc">Süre dolduğunda deliller imha edilecek. Davayı çözmek için, deliller yok olmadan 3 katmanlı şifreyi kırmalısın. Şifredeki hiçbir rakam tekrar etmez, hepsi benzersizdir. Bu da ihtimalleri daraltarak hesap yapmanı ve şifreyi kırmanı kolaylaştıracaktır.</string>
     <string name="tutorial_page2_title">{ SİLİNDİRLER }</string>
     <string name="tutorial_page2_desc">Rakamları seçmek için dikey silindirleri kullan. Test etmek istediğin kombinasyonu ortaya çıkarmak için onları kaydır veya üzerine dokun.</string>
-    <string name="tutorial_page3_title">[ YARDIM MODU ]</string>
-    <string name="tutorial_page3_desc">Takıldın mı? Herhangi bir anda sağ üstteki \'Denemeler\' alanına tıklayarak Vaka Arşivi\'ni açabilirsin. Önceki tahminlerini ve İstihbarat Teşkilatı\'nın renkli dönütlerini burada inceleyebilirsin:\n\n• YEŞİL: Doğru rakam doğru yerde.\n• SARI: Doğru rakam yanlış yerde.</string>
-    <string name="tutorial_page4_title">> İLERLEME</string>
-    <string name="tutorial_page4_desc">Bir katmanı kırmak sana ek deneme hakkı ve ekstra süre kazandırır. Davayı kazanmak için 3 katmanı da temizle.</string>
+    <string name="tutorial_page3_title">[ VAKA ARŞİVİ ]</string>
+    <string name="tutorial_page3_desc">Takıldın mı? Herhangi bir anda sağ üstteki \'Denemeler\' alanına tıklayarak Vaka Arşivi\'ni açabilirsin. Önceki tüm tahminlerini burada görebilir ve ihtimalleri daraltabilirsin.</string>
+    <string name="tutorial_page4_title">[ ANALİZ ANAHTARI ]</string>
+    <string name="tutorial_page4_desc">Eğer yardımlı modu ayarlardan açarsan, arşivdeki tahminlerin için renkli analizler görebilirsin:\n\n• YEŞİL: Doğru rakam doğru yerde.\n• SARI: Doğru rakam yanlış yerde.</string>
+    <string name="tutorial_page5_title">> İLERLEME</string>
+    <string name="tutorial_page5_desc">Bir katmanı kırmak sana ek deneme hakkı ve ekstra süre kazandırır. Davayı kazanmak için 3 katmanı da temizle.</string>
     <string name="tutorial_continue_button">DEVAM ET</string>
     <string name="tutorial_finish_button">GÖREVİ KABUL ET</string>
     <string name="home_manual_button">REHBER</string>

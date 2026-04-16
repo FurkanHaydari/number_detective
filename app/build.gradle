@@ -20,8 +20,8 @@ android {
         applicationId = "com.brainfocus.numberdetective"
         minSdk = 24
         targetSdk = 34
-        versionCode = 1
-        versionName = "1.0"
+        versionCode = 2
+        versionName = "1.1"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         buildConfigField "String", "WEB_CLIENT_ID", "\"140671902567-i5jdqtncsdu1261n2bkpemh2kf04blt6.apps.googleusercontent.com\""
