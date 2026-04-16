@@ -172,4 +172,10 @@
     <string name="tutorial_continue_button">DEVAM ET</string>
     <string name="tutorial_finish_button">GÖREVİ KABUL ET</string>
     <string name="home_manual_button">REHBER</string>
+
+    <!-- Validation Reports -->
+    <string name="report_duplicate_title">MÜKERRER ANALİZ</string>
+    <string name="report_duplicate_msg">Bu dizilim daha önce analiz edildi. Lütfen farklı bir kombinasyon dene.</string>
+    <string name="report_unique_title">PROTOKOL İHLALİ</string>
+    <string name="report_unique_msg">Sistem güvenliği, şifredeki tüm rakamların benzersiz olmasını gerektirir. Dizilimi tekrar gözden geçir.</string>
 </resources>

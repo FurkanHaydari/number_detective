@@ -173,4 +173,10 @@
     <string name="tutorial_continue_button">CONTINUE</string>
     <string name="tutorial_finish_button">ACCEPT MISSION</string>
     <string name="home_manual_button">MANUAL</string>
+
+    <!-- Validation Reports -->
+    <string name="report_duplicate_title">DUPLICATE ANALYSIS</string>
+    <string name="report_duplicate_msg">This sequence has already been cross-referenced. Try a different combination.</string>
+    <string name="report_unique_title">PROTOCOL BREACH</string>
+    <string name="report_unique_msg">System security requires all digits in the code to be unique. Re-evaluate your sequence.</string>
 </resources>

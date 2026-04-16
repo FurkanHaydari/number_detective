@@ -29,6 +29,11 @@ sealed class FieldReport(val title: String, val message: String, val isPositive:
         message = "Incorrect code sequence! Security is tightening. You have $remaining attempts left.",
         isPositive = false
     )
+    class Validation(title: String, message: String) : FieldReport(
+        title = title,
+        message = message,
+        isPositive = false
+    )
 }
 
 @HiltViewModel
@@ -161,6 +166,28 @@ class GameViewModel @Inject constructor(
     fun makeGuess(guess: String): GuessResult {
         if (guess.isBlank() || !guess.all { it.isDigit() }) return GuessResult.Invalid
         
+        // Protocol Check: Unique Digits
+        if (guess.toSet().size != guess.length) {
+            _currentReport.value = FieldReport.Validation(
+                title = getApplication<Application>().getString(R.string.report_unique_title),
+                message = getApplication<Application>().getString(R.string.report_unique_msg)
+            )
+            _isPaused.value = true
+            soundManager.playPartialWrongSound()
+            return GuessResult.Invalid
+        }
+
+        // Analysis Check: Duplicate Guess
+        if (_guesses.value.contains(guess)) {
+            _currentReport.value = FieldReport.Validation(
+                title = getApplication<Application>().getString(R.string.report_duplicate_title),
+                message = getApplication<Application>().getString(R.string.report_duplicate_msg)
+            )
+            _isPaused.value = true
+            soundManager.playPartialWrongSound()
+            return GuessResult.Invalid
+        }
+
         _attempts++
         val currentGuesses = _guesses.value.toMutableList()
         currentGuesses.add(guess)

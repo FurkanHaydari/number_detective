@@ -146,16 +146,14 @@ fun GameScreen(
                 onClick = {
                     val guess = pickerValues.joinToString("")
                     if (guess.length != expectedLength) return@GuessButton
-                    if (guess.toSet().size != expectedLength) {
-                        Toast.makeText(context, context.getString(R.string.toast_invalid_guess), Toast.LENGTH_SHORT).show()
-                        return@GuessButton
+                    
+                    // Trigger analysis & validation
+                    val result = viewModel.makeGuess(guess)
+                    
+                    // Only reset picker if the guess was actually analyzed (not a validation error)
+                    if (result != GuessResult.Invalid) {
+                        pickerValues = List(expectedLength) { 0 }
                     }
-                    if (guesses.contains(guess)) {
-                        Toast.makeText(context, context.getString(R.string.toast_duplicate_guess), Toast.LENGTH_SHORT).show()
-                        return@GuessButton
-                    }
-                    viewModel.makeGuess(guess)
-                    pickerValues = List(expectedLength) { 0 }
                 }
             )
             Spacer(modifier = Modifier.height(16.dp))
