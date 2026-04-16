@@ -323,31 +323,26 @@ fun BriefingView(
 
         // Philosophical Insight
         val quotes = stringArrayResource(id = R.array.game_quotes)
-        val selectedQuotes = remember { 
-            if (isWin) quotes.toList().shuffled().take(2) else listOf(quotes.random())
-        }
+        val selectedQuote = remember { quotes.random() }
         
         Column(
-            verticalArrangement = Arrangement.spacedBy(12.dp),
             modifier = Modifier.padding(bottom = 24.dp)
         ) {
-            selectedQuotes.forEach { quote ->
-                Surface(
-                    color = Color.White.copy(alpha = 0.03f),
-                    shape = RoundedCornerShape(12.dp),
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    Text(
-                        text = quote,
-                        style = MaterialTheme.typography.bodySmall.copy(
-                            fontStyle = androidx.compose.ui.text.font.FontStyle.Italic,
-                            lineHeight = 18.sp
-                        ),
-                        color = TextSecondary.copy(alpha = 0.8f),
-                        textAlign = TextAlign.Center,
-                        modifier = Modifier.padding(16.dp)
-                    )
-                }
+            Surface(
+                color = Color.White.copy(alpha = 0.03f),
+                shape = RoundedCornerShape(12.dp),
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text(
+                    text = selectedQuote,
+                    style = MaterialTheme.typography.bodySmall.copy(
+                        fontStyle = androidx.compose.ui.text.font.FontStyle.Italic,
+                        lineHeight = 18.sp
+                    ),
+                    color = TextSecondary.copy(alpha = 0.8f),
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier.padding(16.dp)
+                )
             }
         }
     }
