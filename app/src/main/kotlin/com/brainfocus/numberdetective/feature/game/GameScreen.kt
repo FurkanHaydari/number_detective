@@ -640,31 +640,55 @@ fun HintCard(hint: Hint, isHelperModeEnabled: Boolean) {
 @OptIn(androidx.compose.foundation.ExperimentalFoundationApi::class)
 @Composable
 fun NumberVaultPicker(value: Int, onValueChange: (Int) -> Unit) {
-    val pageCount = 10000 // Creates an infinite scroll feel
+    val pageCount = 10000
     val startIndex = 5000 - (5000 % 10) + value
     val pagerState = androidx.compose.foundation.pager.rememberPagerState(
         initialPage = startIndex,
         pageCount = { pageCount }
     )
 
-    // Notify state change when user scrolls the vault picker
-    LaunchedEffect(pagerState.currentPage) {
-        val currVal = pagerState.currentPage % 10
-        if (currVal != value) {
-            onValueChange(currVal)
-        }
+    // Haptic feedback for premium feel
+    val haptic = androidx.compose.ui.platform.LocalHapticFeedback.current
+
+    // Use settledPage to avoid race conditions
+    LaunchedEffect(pagerState) {
+        snapshotFlow { pagerState.settledPage }
+            .collect { page ->
+                val currVal = page % 10
+                if (currVal != value) {
+                    onValueChange(currVal)
+                }
+            }
     }
 
-    // React to external changes (such as clear button or reset)
+    // Haptic tick on every page scroll (like iOS wheel)
+    LaunchedEffect(pagerState) {
+        snapshotFlow { pagerState.currentPage }
+            .collect {
+                haptic.performHapticFeedback(androidx.compose.ui.hapticfeedback.HapticFeedbackType.TextHandleMove)
+            }
+    }
+
+    // React to external changes (reset after guess)
     LaunchedEffect(value) {
-        val currVal = pagerState.currentPage % 10
+        val currVal = pagerState.settledPage % 10
         if (currVal != value) {
             var diff = value - currVal
             if (diff > 5) diff -= 10
             if (diff < -5) diff += 10
-            pagerState.animateScrollToPage(pagerState.currentPage + diff)
+            pagerState.animateScrollToPage(pagerState.settledPage + diff)
         }
     }
+
+    val fling = androidx.compose.foundation.pager.PagerDefaults.flingBehavior(
+        state = pagerState,
+        pagerSnapDistance = androidx.compose.foundation.pager.PagerSnapDistance.atMost(6),
+        snapPositionalThreshold = 0.2f,
+        snapAnimationSpec = spring(
+            dampingRatio = Spring.DampingRatioNoBouncy,
+            stiffness = Spring.StiffnessLow
+        )
+    )
 
     androidx.compose.foundation.pager.VerticalPager(
         state = pagerState,
@@ -673,30 +697,36 @@ fun NumberVaultPicker(value: Int, onValueChange: (Int) -> Unit) {
             .height(130.dp)
             .background(SurfaceCard, RoundedCornerShape(16.dp))
             .border(1.dp, Color.White.copy(alpha = 0.1f), RoundedCornerShape(16.dp)),
-        contentPadding = PaddingValues(vertical = 40.dp) // Ensures items are centrally focused
+        contentPadding = PaddingValues(vertical = 40.dp),
+        beyondViewportPageCount = 2,
+        flingBehavior = fling
     ) { page ->
         val itemValue = page % 10
-        val pageOffset = kotlin.math.abs((pagerState.currentPage - page) + pagerState.currentPageOffsetFraction)
-        
-        // 3D effect: scale and fade based on distance from center
-        val scale = 1f - (pageOffset.coerceIn(0f, 1f) * 0.4f)
-        val alpha = 1f - (pageOffset.coerceIn(0f, 1f) * 0.7f)
+        val pageOffset = (pagerState.currentPage - page) + pagerState.currentPageOffsetFraction
+
+        // iOS-style 3D cylinder rotation
+        val rotationX = pageOffset * -30f  // Tilt away like a wheel
+        val scale = 1f - (kotlin.math.abs(pageOffset).coerceIn(0f, 1f) * 0.25f)
+        val alpha = 1f - (kotlin.math.abs(pageOffset).coerceIn(0f, 1f) * 0.6f)
 
         Box(
             modifier = Modifier
                 .fillMaxWidth()
                 .height(50.dp)
                 .graphicsLayer {
+                    this.rotationX = rotationX
                     scaleX = scale
                     scaleY = scale
                     this.alpha = alpha
+                    // Perspective depth
+                    cameraDistance = 12f * density
                 },
             contentAlignment = Alignment.Center
         ) {
             Text(
                 text = itemValue.toString(),
                 style = MaterialTheme.typography.headlineLarge.copy(
-                    fontSize = 32.sp, 
+                    fontSize = 32.sp,
                     fontWeight = FontWeight.Bold
                 ),
                 color = Color.White,
