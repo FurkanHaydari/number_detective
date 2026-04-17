@@ -32,7 +32,7 @@ class NumberDetectiveGame {
         private val LEVEL_3_BC_FIRST_TRUE = listOf("cbxx", "xbxc")
         private val LEVEL_3_BD_FIRST_TRUE = listOf("dbxx", "xbdx")
 
-        private val LEVEL_3_CA_FIRST_TRUE = listOf("acxx", "axxc")
+        private val LEVEL_3_CA_FIRST_TRUE = listOf("xacx", "xcxa")
         private val LEVEL_3_CB_FIRST_TRUE = listOf("bxcx", "xxcb")
         private val LEVEL_3_CD_FIRST_TRUE = listOf("xdcx", "dxcx")
 
@@ -167,8 +167,8 @@ class NumberDetectiveGame {
             3 -> listOf(
                 LEVEL_3_SINGLE_TRUE.get(2),       // Sadece C doğru yerde
                 LEVEL_3_SINGLE_FALSE_C.random(), // Sadece C var ama yanlış yerde
-                LEVEL_3_AB_FIRST_TRUE.random(),  // A ve B var, A doğru yerde
-                LEVEL_3_BD_FIRST_TRUE.random(),  // B ve D var, B doğru yerde
+                LEVEL_3_CA_FIRST_TRUE.random(),  // C ve A var, C doğru yerde
+                LEVEL_3_CB_FIRST_TRUE.random(),  // C ve B var, C doğru yerde
                 LEVEL_3_AD_TRUE.random(),       // A ve D var, ikisi de doğru yerde
             )
             else -> listOf(
