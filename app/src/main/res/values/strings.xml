@@ -126,7 +126,7 @@
     <string name="tutorial_page7_desc">Every assist reduces your score, but your total never drops below zero:\n\n• ARCHIVE CHECK: -50 Points\n• ASSISTED MODE: -150 Points per check in the log.</string>
     <string name="tutorial_continue_button">CONTINUE</string>
     <string name="tutorial_finish_button">ACCEPT MISSION</string>
-    <string name="home_manual_button">MANUAL</string>
+    <string name="home_manual_button">DETECTION GUIDE</string>
 
     <!-- Validation Reports -->
     <string name="report_duplicate_title">DUPLICATE ANALYSIS</string>

@@ -374,14 +374,21 @@ fun ManualButton(onClick: () -> Unit) {
                 .background(Color.White.copy(alpha = 0.05f)),
             contentAlignment = Alignment.Center
         ) {
-            Text(
-                stringResource(R.string.home_manual_button).uppercase(),
-                style = MaterialTheme.typography.titleMedium.copy(
-                    fontWeight = FontWeight.Bold,
-                    letterSpacing = 2.sp
-                ),
-                color = PrimaryCyan.copy(alpha = 0.8f)
-            )
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.Center
+            ) {
+                Text(text = "📖", fontSize = 18.sp)
+                Spacer(modifier = Modifier.width(12.dp))
+                Text(
+                    stringResource(R.string.home_manual_button).uppercase(),
+                    style = MaterialTheme.typography.titleMedium.copy(
+                        fontWeight = FontWeight.Bold,
+                        letterSpacing = 2.sp
+                    ),
+                    color = PrimaryCyan.copy(alpha = 0.8f)
+                )
+            }
         }
     }
 }

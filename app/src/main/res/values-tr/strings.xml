@@ -125,7 +125,7 @@
     <string name="tutorial_page7_desc">Aldığınız her yardım puanınızdan düşer. Ancak toplam puanınız asla sıfırın altına inmez:\n\n• ARŞİV KONTROLÜ: -50 Puan\n• YARDIMCI MOD: Arşivde her hamle başına -150 Puan.</string>
     <string name="tutorial_continue_button">DEVAM ET</string>
     <string name="tutorial_finish_button">GÖREVİ KABUL ET</string>
-    <string name="home_manual_button">REHBER</string>
+    <string name="home_manual_button">DEDEKTİF REHBERİ</string>
 
     <!-- Validation Reports -->
     <string name="report_duplicate_title">MÜKERRER ANALİZ</string>

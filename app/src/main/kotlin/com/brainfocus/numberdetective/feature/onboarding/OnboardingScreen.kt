@@ -11,6 +11,8 @@ import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -142,6 +144,25 @@ fun OnboardingScreen(
             }
             
             Spacer(modifier = Modifier.height(16.dp))
+        }
+
+        // --- Layer 4: Close Button ---
+        IconButton(
+            onClick = onFinish,
+            modifier = Modifier
+                .align(Alignment.TopEnd)
+                .padding(top = 16.dp, end = 16.dp)
+                .statusBarsPadding()
+                .size(44.dp)
+                .background(Color.White.copy(alpha = 0.05f), CircleShape)
+                .border(1.dp, PrimaryCyan.copy(alpha = 0.2f), CircleShape)
+        ) {
+            Icon(
+                imageVector = Icons.Default.Close,
+                contentDescription = "Close Manual",
+                tint = PrimaryCyan.copy(alpha = 0.7f),
+                modifier = Modifier.size(24.dp)
+            )
         }
     }
 }
