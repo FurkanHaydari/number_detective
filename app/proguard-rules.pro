@@ -5,8 +5,9 @@
 -keepattributes Exceptions,InnerClasses
 
 # AdMob rules
-# Note: Modern AdMob SDK includes its own rules, but these can be safety nets if you use custom mediation.
-# Removing the broad 'gms.**' rule to resolve warnings.
+-dontwarn android.media.LoudnessCodecController
+-dontwarn android.media.LoudnessCodecController$OnLoudnessCodecUpdateListener
+-dontwarn com.google.android.gms.internal.ads.**
 
 # Hilt / Dagger rules
 -keep class dagger.hilt.android.internal.managers.ViewComponentManager { *; }
