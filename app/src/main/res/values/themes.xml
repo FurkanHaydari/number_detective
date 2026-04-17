@@ -9,7 +9,7 @@
         <!-- Background colors -->
         <item name="android:windowBackground">@color/colorBackground</item>
         
-        <!-- Status bar ayarları -->
+        <!-- Status bar settings -->
         <item name="android:windowTranslucentStatus">true</item>
         <item name="android:windowDrawsSystemBarBackgrounds">true</item>
         <item name="android:statusBarColor">@android:color/transparent</item>
@@ -17,18 +17,6 @@
         <!-- Text colors -->
         <item name="android:textColor">@color/colorText</item>
         <item name="android:textColorSecondary">@color/colorTextSecondary</item>
-        
-        <!-- Button temasını özelleştir -->
-        <item name="materialButtonStyle">@style/Widget.App.Button</item>
-    </style>
-
-    <style name="Widget.App.Button" parent="Widget.MaterialComponents.Button">
-        <item name="materialThemeOverlay">@style/ThemeOverlay.App.Button</item>
-    </style>
-
-    <style name="ThemeOverlay.App.Button" parent="">
-        <item name="colorPrimary">@android:color/transparent</item>
-        <item name="colorOnPrimary">@android:color/white</item>
     </style>
 
     <style name="Theme.NumberDetective.Fullscreen" parent="Theme.NumberDetective">
@@ -40,4 +28,5 @@
         <item name="android:windowTranslucentNavigation">true</item>
         <item name="android:windowTranslucentStatus">true</item>
     </style>
-</resources> 
+</resources>
+ 
