@@ -211,12 +211,13 @@ class GameViewModel @Inject constructor(
     }
 
     private fun saveCurrentLevelToHistory() {
+        val levelDuration = getTimeInSeconds() - _levelStartSeconds
         val levelScore = calculateLevelScore()
         val levelResult = com.brainfocus.numberdetective.data.storage.LevelResult(
             levelNumber = _currentLevel.value,
             secretNumber = _correctAnswer.value,
             hints = _hints.value,
-            durationSeconds = getTimeInSeconds(),
+            durationSeconds = levelDuration,
             scoreGained = levelScore
         )
         GameResultStorage.currentSessionLevels.add(levelResult)
@@ -346,6 +347,9 @@ class GameViewModel @Inject constructor(
     }
 
     fun dismissReport() {
+        if (_currentReport.value is FieldReport.Promotion) {
+            _levelStartSeconds = getTimeInSeconds()
+        }
         _currentReport.value = null
         _isPaused.value = false
     }

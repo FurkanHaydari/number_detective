@@ -403,16 +403,24 @@ fun LevelHeader(levelResult: com.brainfocus.numberdetective.data.storage.LevelRe
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.Bottom
+            verticalAlignment = Alignment.CenterVertically
         ) {
-            Text(
-                text = stringResource(R.string.case_file_level, levelResult.levelNumber).uppercase(),
-                style = MaterialTheme.typography.titleSmall.copy(
-                    fontWeight = FontWeight.Black,
-                    letterSpacing = 2.sp
-                ),
-                color = PrimaryCyan
-            )
+            Column {
+                Text(
+                    text = stringResource(R.string.case_file_level, levelResult.levelNumber).uppercase(),
+                    style = MaterialTheme.typography.titleSmall.copy(
+                        fontWeight = FontWeight.Black,
+                        letterSpacing = 2.sp
+                    ),
+                    color = PrimaryCyan
+                )
+                Text(
+                    text = stringResource(R.string.score_points, levelResult.scoreGained),
+                    style = MaterialTheme.typography.labelSmall,
+                    color = SuccessGreen.copy(alpha = 0.8f),
+                    letterSpacing = 1.sp
+                )
+            }
             Text(
                 text = levelResult.secretNumber,
                 style = MaterialTheme.typography.titleMedium.copy(

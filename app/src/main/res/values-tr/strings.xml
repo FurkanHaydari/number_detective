@@ -162,7 +162,8 @@
     <string name="label_time">SÜRE</string>
 
     <string name="report_promotion_title">TERFİ ALINDI</string>
-    <string name="report_promotion_msg">Vaka çözüldü! %d. Seviye\'ye terfi ettiniz. Bir sonraki kasaya ilerleyin.</string>
+    <string name="report_promotion_msg">Vaka çözüldü! Seviye %d rütbesine terfi ettin. Bir sonraki kasaya ilerle.</string>
+    <string name="score_points">%1$d PUAN</string>
     <string name="report_compromised_title">GÜVENLİK İHLALİ</string>
     <string name="report_compromised_msg">Hatalı kod dizilimi! Güvenlik sıkılaşıyor. %d deneme hakkınız kaldı.</string>
     <string name="final_report">SONUÇ RAPORU</string>
