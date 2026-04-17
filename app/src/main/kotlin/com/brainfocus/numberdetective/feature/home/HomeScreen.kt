@@ -187,6 +187,10 @@ fun HomeScreen(
                         slideInVertically(animationSpec = tween(1200, delayMillis = 800)) { it / 3 }
             ) {
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    ManualButton(onClick = onManualClick)
+                    
+                    Spacer(modifier = Modifier.height(16.dp))
+
                     PlayButton(onClick = onPlayClick)
                     
                     Spacer(modifier = Modifier.height(32.dp))
@@ -350,4 +354,34 @@ object RowDefaults {
         width = 1.dp,
         brush = CardBorderGradient
     )
+}
+
+@Composable
+fun ManualButton(onClick: () -> Unit) {
+    Button(
+        onClick = onClick,
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(56.dp)
+            .border(1.dp, PrimaryCyan.copy(alpha = 0.4f), RoundedCornerShape(16.dp)),
+        shape = RoundedCornerShape(16.dp),
+        contentPadding = PaddingValues(0.dp),
+        colors = ButtonDefaults.buttonColors(containerColor = Color.Transparent)
+    ) {
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(Color.White.copy(alpha = 0.05f)),
+            contentAlignment = Alignment.Center
+        ) {
+            Text(
+                stringResource(R.string.home_manual_button).uppercase(),
+                style = MaterialTheme.typography.titleMedium.copy(
+                    fontWeight = FontWeight.Bold,
+                    letterSpacing = 2.sp
+                ),
+                color = PrimaryCyan.copy(alpha = 0.8f)
+            )
+        }
+    }
 }
