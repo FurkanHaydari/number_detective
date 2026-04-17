@@ -138,7 +138,7 @@ class GameViewModel @Inject constructor(
             _currentLevel.value = 1
             
             // Clear previous session data
-            com.brainfocus.numberdetective.data.storage.GameResultStorage.currentSessionLevels.clear()
+            GameResultStorage.currentSessionLevels.clear()
         }
         
         _attemptsInLevel = 0
@@ -219,7 +219,7 @@ class GameViewModel @Inject constructor(
             durationSeconds = getTimeInSeconds(),
             scoreGained = levelScore
         )
-        com.brainfocus.numberdetective.data.storage.GameResultStorage.currentSessionLevels.add(levelResult)
+        GameResultStorage.currentSessionLevels.add(levelResult)
     }
 
     private fun finalizeGameSession(isWin: Boolean) {
@@ -227,12 +227,12 @@ class GameViewModel @Inject constructor(
         val session = com.brainfocus.numberdetective.data.storage.GameSession(
             id = java.util.UUID.randomUUID().toString(),
             timestamp = System.currentTimeMillis(),
-            levels = com.brainfocus.numberdetective.data.storage.GameResultStorage.currentSessionLevels.toList(),
+            levels = GameResultStorage.currentSessionLevels.toList(),
             totalScore = _score.value,
             isWin = isWin
         )
-        com.brainfocus.numberdetective.data.storage.GameResultStorage.lastGameSession = session
-        com.brainfocus.numberdetective.data.storage.GameResultStorage.sessionsHistory.add(session)
+        GameResultStorage.lastGameSession = session
+        GameResultStorage.sessionsHistory.add(session)
         
         // Save to persistent storage
         viewModelScope.launch {

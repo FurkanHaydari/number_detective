@@ -36,8 +36,8 @@ object ShareImageGenerator {
             canvas.drawRect(0f, 0f, canvas.width.toFloat(), canvas.height.toFloat(), overlayPaint)
             
             // Retrieve Fonts
-            val typefaceBold = ResourcesCompat.getFont(context, R.font.montserrat_bold) 
-            val typefaceRegular = ResourcesCompat.getFont(context, R.font.poppins_regular)
+            val typefaceBold = ResourcesCompat.getFont(context, R.font.montserrat_bold)
+            ResourcesCompat.getFont(context, R.font.poppins_regular)
             
             val centerX = canvas.width / 2f
             var startY = canvas.height * 0.4f

@@ -47,7 +47,7 @@ fun GameScreen(
     viewModel: GameViewModel = hiltViewModel(),
     onNavigateToResult: (Boolean, Int, String, Int, Int, Int, Int) -> Unit
 ) {
-    val context = LocalContext.current
+    LocalContext.current
     val currentLevel by viewModel.currentLevel.collectAsState()
     val remainingAttempts by viewModel.remainingAttempts.collectAsState()
     val remainingTime by viewModel.remainingTime.collectAsState()
@@ -59,7 +59,6 @@ fun GameScreen(
     val trialHints = hints.drop(5)
     
     val gameState by viewModel.gameState.collectAsState()
-    val guesses by viewModel.guesses.collectAsState()
     val correctAnswer by viewModel.correctAnswer.collectAsState()
     val currentReport by viewModel.currentReport.collectAsState()
     val isPaused by viewModel.isPaused.collectAsState()
@@ -406,12 +405,12 @@ fun StatsDashboard(attempts: Int, time: Int, trialCount: Int, onHistoryClick: ()
 
 @Composable
 fun StatItem(label: String, value: String, color: Color, onClick: (() -> Unit)? = null) {
-    val scale = remember { androidx.compose.animation.core.Animatable(1f) }
+    val scale = remember { Animatable(1f) }
     
     LaunchedEffect(value) {
         if (onClick != null) {
-            scale.animateTo(1.15f, androidx.compose.animation.core.tween(150))
-            scale.animateTo(1f, androidx.compose.animation.core.tween(150))
+            scale.animateTo(1.15f, tween(150))
+            scale.animateTo(1f, tween(150))
         }
     }
 
@@ -441,7 +440,7 @@ fun StatItem(label: String, value: String, color: Color, onClick: (() -> Unit)? 
             if (onClick != null) {
                 Spacer(modifier = Modifier.width(4.dp))
                 Icon(
-                    imageVector = androidx.compose.material.icons.Icons.Default.Info,
+                    imageVector = Icons.Default.Info,
                     contentDescription = null,
                     tint = color.copy(alpha = 0.8f),
                     modifier = Modifier.size(10.dp)

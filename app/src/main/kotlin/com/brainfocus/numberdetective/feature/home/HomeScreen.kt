@@ -202,7 +202,7 @@ fun HomeScreen(
                             .height(60.dp), // Common banner height
                         contentAlignment = Alignment.Center
                     ) {
-                        com.brainfocus.numberdetective.core.designsystem.BannerAd()
+                        BannerAd()
                     }
                 }
             }

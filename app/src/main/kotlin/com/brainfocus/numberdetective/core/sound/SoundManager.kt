@@ -61,8 +61,8 @@ class SoundManager @Inject constructor(
             
             for ((id, name) in resourceIds) {
                 try {
-                    val resourceType = context.resources.getResourceTypeName(id)
-                    val resourceName = context.resources.getResourceEntryName(id)
+                    context.resources.getResourceTypeName(id)
+                    context.resources.getResourceEntryName(id)
                     // android.util.Log.d("SoundManager", "Found resource: $name ($resourceType/$resourceName) with ID: $id")
                 } catch (e: Exception) {
                     android.util.Log.e("SoundManager", "Resource not found: $name (ID: $id)")
