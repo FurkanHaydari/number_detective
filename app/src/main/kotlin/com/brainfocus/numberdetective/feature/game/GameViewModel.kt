@@ -149,7 +149,7 @@ class GameViewModel @Inject constructor(
                 Hint(game.secondHint, 0, 1, descriptionRes = getHintResId(3, 2)),
                 Hint(game.thirdHint, 1, 1, descriptionRes = getHintResId(3, 3)),
                 Hint(game.fourthHint, 1, 1, descriptionRes = getHintResId(3, 4)),
-                Hint(game.fifthHint, 1, 1, descriptionRes = getHintResId(3, 5))
+                Hint(game.fifthHint, 2, 0, descriptionRes = getHintResId(3, 5))
             ))
             _hints.value = hintList
         } else {

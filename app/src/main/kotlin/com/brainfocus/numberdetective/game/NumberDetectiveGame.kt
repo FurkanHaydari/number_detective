@@ -30,7 +30,7 @@ class NumberDetectiveGame {
 
         private val LEVEL_3_BA_FIRST_TRUE = listOf("xbax", "xbxa")
         private val LEVEL_3_BC_FIRST_TRUE = listOf("cbxx", "xbxc")
-        private val LEVEL_3_BD_FIRST_TRUE = listOf("bdxx", "bxdx")
+        private val LEVEL_3_BD_FIRST_TRUE = listOf("dbxx", "xbdx")
 
         private val LEVEL_3_CA_FIRST_TRUE = listOf("acxx", "axxc")
         private val LEVEL_3_CB_FIRST_TRUE = listOf("bxcx", "xxcb")
