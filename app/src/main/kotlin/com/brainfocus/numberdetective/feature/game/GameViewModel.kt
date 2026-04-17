@@ -18,21 +18,29 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import javax.inject.Inject
+import androidx.annotation.StringRes
 
-sealed class FieldReport(val title: String, val message: String, val isPositive: Boolean) {
-    class Promotion(context: android.content.Context, level: Int) : FieldReport(
-        title = context.getString(R.string.report_promotion_title),
-        message = context.getString(R.string.report_promotion_msg, level),
+sealed class FieldReport(
+    @StringRes val titleRes: Int,
+    @StringRes val messageRes: Int,
+    val isPositive: Boolean,
+    val messageArgs: List<Any> = emptyList()
+) {
+    class Promotion(level: Int) : FieldReport(
+        titleRes = R.string.report_promotion_title,
+        messageRes = R.string.report_promotion_msg,
+        messageArgs = listOf(level),
         isPositive = true
     )
-    class Compromised(context: android.content.Context, remaining: Int) : FieldReport(
-        title = context.getString(R.string.report_compromised_title),
-        message = context.getString(R.string.report_compromised_msg, remaining),
+    class Compromised(remaining: Int) : FieldReport(
+        titleRes = R.string.report_compromised_title,
+        messageRes = R.string.report_compromised_msg,
+        messageArgs = listOf(remaining),
         isPositive = false
     )
-    class Validation(title: String, message: String) : FieldReport(
-        title = title,
-        message = message,
+    class Validation(@StringRes title: Int, @StringRes message: Int) : FieldReport(
+        titleRes = title,
+        messageRes = message,
         isPositive = false
     )
 }
@@ -137,20 +145,20 @@ class GameViewModel @Inject constructor(
         val hintList = mutableListOf<Hint>()
         if (_currentLevel.value == 3) {
             hintList.addAll(listOf(
-                Hint(game.firstHint, 1, 0, getHintDescription(3, 1), null, 0),
-                Hint(game.secondHint, 0, 1, getHintDescription(3, 2), null, 0),
-                Hint(game.thirdHint, 1, 1, getHintDescription(3, 3), null, 0),
-                Hint(game.fourthHint, 1, 1, getHintDescription(3, 4), null, 0),
-                Hint(game.fifthHint, 1, 1, getHintDescription(3, 5), null, 0)
+                Hint(game.firstHint, 1, 0, descriptionRes = getHintResId(3, 1)),
+                Hint(game.secondHint, 0, 1, descriptionRes = getHintResId(3, 2)),
+                Hint(game.thirdHint, 1, 1, descriptionRes = getHintResId(3, 3)),
+                Hint(game.fourthHint, 1, 1, descriptionRes = getHintResId(3, 4)),
+                Hint(game.fifthHint, 1, 1, descriptionRes = getHintResId(3, 5))
             ))
             _hints.value = hintList
         } else {
             val h = listOf(
-                Hint(game.firstHint, 1, 0, getHintDescription(_currentLevel.value, 1), null, 0),
-                Hint(game.secondHint, 0, 1, getHintDescription(_currentLevel.value, 2), null, 0),
-                Hint(game.thirdHint, 0, 2, getHintDescription(_currentLevel.value, 3), null, 0),
-                Hint(game.fourthHint, 0, 2, getHintDescription(_currentLevel.value, 4), null, 0),
-                Hint(game.fifthHint, 1, 1, getHintDescription(_currentLevel.value, 5), null, 0)
+                Hint(game.firstHint, 1, 0, descriptionRes = getHintResId(_currentLevel.value, 1)),
+                Hint(game.secondHint, 0, 1, descriptionRes = getHintResId(_currentLevel.value, 2)),
+                Hint(game.thirdHint, 0, 2, descriptionRes = getHintResId(_currentLevel.value, 3)),
+                Hint(game.fourthHint, 0, 2, descriptionRes = getHintResId(_currentLevel.value, 4)),
+                Hint(game.fifthHint, 1, 1, descriptionRes = getHintResId(_currentLevel.value, 5))
             )
             _hints.value = if (_currentLevel.value == 2) h.shuffled() else h
         }
@@ -187,7 +195,7 @@ class GameViewModel @Inject constructor(
         soundManager.playLevelUpSound()
         
         // Trigger Promotion Report
-        _currentReport.value = FieldReport.Promotion(getApplication(), nextLvl)
+        _currentReport.value = FieldReport.Promotion(nextLvl)
         _isPaused.value = true
         
         startNewGame(false)
@@ -199,8 +207,8 @@ class GameViewModel @Inject constructor(
         // Protocol Check: Unique Digits
         if (guess.toSet().size != guess.length) {
             _currentReport.value = FieldReport.Validation(
-                title = getApplication<Application>().getString(R.string.report_unique_title),
-                message = getApplication<Application>().getString(R.string.report_unique_msg)
+                title = R.string.report_unique_title,
+                message = R.string.report_unique_msg
             )
             _isPaused.value = true
             soundManager.playPartialWrongSound()
@@ -210,8 +218,8 @@ class GameViewModel @Inject constructor(
         // Analysis Check: Duplicate Guess
         if (_guesses.value.contains(guess)) {
             _currentReport.value = FieldReport.Validation(
-                title = getApplication<Application>().getString(R.string.report_duplicate_title),
-                message = getApplication<Application>().getString(R.string.report_duplicate_msg)
+                title = R.string.report_duplicate_title,
+                message = R.string.report_duplicate_msg
             )
             _isPaused.value = true
             soundManager.playPartialWrongSound()
@@ -237,7 +245,7 @@ class GameViewModel @Inject constructor(
             guess = guess,
             correct = result.correct,
             misplaced = result.misplaced,
-            description = if (result.correct == requiredDigits) "" else getApplication<Application>().getString(R.string.log_analysis_attempt),
+            descriptionRes = if (result.correct == requiredDigits) null else R.string.log_analysis_attempt,
             digitStatuses = digitStatuses,
             timestamp = getTimeInSeconds()
         )
@@ -280,7 +288,7 @@ class GameViewModel @Inject constructor(
                 // Simple workaround: the ViewModel can have a local variable updated by the flow.
                 
                 
-                _currentReport.value = FieldReport.Compromised(getApplication(), _remainingAttempts.value)
+                _currentReport.value = FieldReport.Compromised(_remainingAttempts.value)
                 _isPaused.value = true
                 GuessResult.Partial(result.correct, result.misplaced)
             }
@@ -350,8 +358,8 @@ class GameViewModel @Inject constructor(
 
     fun getTimeInSeconds(): Int = ((System.currentTimeMillis() - startTime) / 1000).toInt()
 
-    private fun getHintDescription(level: Int, hintNumber: Int): String {
-        val resId = if (level == 3) {
+    private fun getHintResId(level: Int, hintNumber: Int): Int? {
+        return if (level == 3) {
             when (hintNumber) {
                 1 -> R.string.hint_l3_1
                 2 -> R.string.hint_l3_2
@@ -370,7 +378,6 @@ class GameViewModel @Inject constructor(
                 else -> null
             }
         }
-        return resId?.let { getApplication<Application>().getString(it) } ?: ""
     }
 
     companion object {

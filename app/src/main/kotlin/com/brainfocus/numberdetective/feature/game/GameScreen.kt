@@ -302,8 +302,8 @@ fun FieldReportOverlay(report: FieldReport, onDismiss: () -> Unit) {
                 Spacer(modifier = Modifier.height(20.dp))
 
                 Text(
-                    text = report.title,
-                    style = MaterialTheme.typography.titleLarge.copy(fontFamily = Montserrat),
+                    text = stringResource(report.titleRes).uppercase(),
+                    style = MaterialTheme.typography.titleLarge.copy(fontFamily = Montserrat, fontWeight = FontWeight.Bold, letterSpacing = 2.sp),
                     color = if (report.isPositive) PrimaryCyan else ErrorRed,
                     textAlign = TextAlign.Center
                 )
@@ -311,7 +311,7 @@ fun FieldReportOverlay(report: FieldReport, onDismiss: () -> Unit) {
                 Spacer(modifier = Modifier.height(12.dp))
 
                 Text(
-                    text = report.message,
+                    text = stringResource(report.messageRes, *report.messageArgs.toTypedArray()),
                     style = MaterialTheme.typography.bodyLarge,
                     color = TextPrimary,
                     textAlign = TextAlign.Center,
@@ -359,13 +359,14 @@ fun GameTopBar(level: Int) {
         verticalAlignment = Alignment.CenterVertically
     ) {
         Text(
-            text = "CASE FILE: LEVEL $level",
+            text = stringResource(R.string.case_file_level, level).uppercase(),
             style = MaterialTheme.typography.titleMedium.copy(
                 fontFamily = Montserrat,
                 letterSpacing = 2.sp,
-                fontSize = 16.sp
+                fontSize = 14.sp,
+                fontWeight = FontWeight.Bold
             ),
-            color = Color.White.copy(alpha = 0.7f)
+            color = PrimaryCyan.copy(alpha = 0.7f)
         )
     }
 }
@@ -383,9 +384,9 @@ fun StatsDashboard(attempts: Int, time: Int, trialCount: Int, onHistoryClick: ()
             horizontalArrangement = Arrangement.SpaceEvenly,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            StatItem(label = "LIVES", value = "x$attempts", color = ErrorRed)
+            StatItem(label = stringResource(R.string.label_lives), value = "x$attempts", color = ErrorRed)
             VerticalDivider(modifier = Modifier.height(24.dp).width(1.dp), color = Color.White.copy(alpha = 0.1f))
-            StatItem(label = "TIME", value = String.format("%02d:%02d", time / 60, time % 60), color = PrimaryCyan)
+            StatItem(label = stringResource(R.string.label_time), value = String.format("%02d:%02d", time / 60, time % 60), color = PrimaryCyan)
             VerticalDivider(modifier = Modifier.height(24.dp).width(1.dp), color = Color.White.copy(alpha = 0.1f))
             StatItem(
                 label = stringResource(R.string.label_trials), 
@@ -486,7 +487,12 @@ fun HintCard(hint: Hint) {
                 }
             }
             Spacer(modifier = Modifier.width(16.dp))
-            Text(text = hint.description, style = MaterialTheme.typography.bodyMedium, color = TextPrimary, modifier = Modifier.weight(1f), lineHeight = 18.sp)
+            val hintText = if (hint.descriptionRes != null) {
+                stringResource(hint.descriptionRes, *hint.descriptionArgs.toTypedArray())
+            } else {
+                hint.description
+            }
+            Text(text = hintText, style = MaterialTheme.typography.bodyMedium, color = TextPrimary, modifier = Modifier.weight(1f), lineHeight = 18.sp)
         }
     }
 }

@@ -370,21 +370,16 @@ fun CaseArchiveView(correctAnswer: String) {
         verticalArrangement = Arrangement.spacedBy(12.dp),
         contentPadding = PaddingValues(bottom = 24.dp)
     ) {
-        // Count how many hints are not user guesses to offset the analysis number correctly
-        val initialHintsCount = hints.count { it.description != "" && it.description != "ANALYZING..." } 
-        // Note: isUserGuess is checked by R.string.log_analysis_attempt which resolves to "ANALYZING...". 
-        // We'll calculate it properly below.
-
         items(hints.size) { globalIndex ->
             val hint = hints[globalIndex]
             
-            // If the hint falls after the initial block, it's a guess.
-            val isUserGuess = hint.description == context.getString(R.string.log_analysis_attempt)
+            // Check if it's a user guess using the resource ID
+            val isUserGuess = hint.descriptionRes == R.string.log_analysis_attempt
             
             // To find the actual number (1, 2, 3...) of this specific analysis
             val analysisNumber = if (isUserGuess) {
                 // Determine how many preceding items were user guesses
-                hints.take(globalIndex + 1).count { it.description == context.getString(R.string.log_analysis_attempt) }
+                hints.take(globalIndex + 1).count { it.descriptionRes == R.string.log_analysis_attempt }
             } else {
                 0
             }
@@ -396,9 +391,8 @@ fun CaseArchiveView(correctAnswer: String) {
 
 @Composable
 fun ArchiveHintCard(hint: com.brainfocus.numberdetective.data.model.Hint, analysisNumber: Int) {
-    val context = LocalContext.current
-    val isUserGuess = hint.description == context.getString(R.string.log_analysis_attempt)
-    
+    val isUserGuess = hint.descriptionRes == R.string.log_analysis_attempt
+
     Surface(
         color = SurfaceCard,
         shape = RoundedCornerShape(16.dp),
@@ -406,14 +400,14 @@ fun ArchiveHintCard(hint: com.brainfocus.numberdetective.data.model.Hint, analys
         modifier = Modifier.fillMaxWidth()
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
-            // Header: Title and Time
+            // header logic
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    text = if (isUserGuess) context.getString(R.string.log_analysis_number, analysisNumber) else context.getString(R.string.initial_intelligence),
+                    text = if (isUserGuess) stringResource(R.string.log_analysis_number, analysisNumber) else stringResource(R.string.initial_intelligence),
                     style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold),
                     color = if (isUserGuess) PrimaryCyan else TextSecondary,
                     letterSpacing = 1.sp
@@ -428,9 +422,9 @@ fun ArchiveHintCard(hint: com.brainfocus.numberdetective.data.model.Hint, analys
                     )
                 }
             }
-            
+
             Spacer(modifier = Modifier.height(12.dp))
-            
+
             // Digits Array
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 hint.guess.forEachIndexed { charIndex, char ->
@@ -462,11 +456,17 @@ fun ArchiveHintCard(hint: com.brainfocus.numberdetective.data.model.Hint, analys
                         )
                     }
                 }
-                
-                if (hint.description.isNotEmpty() && !isUserGuess) {
+
+                val hintDesc = if (hint.descriptionRes != null) {
+                    stringResource(hint.descriptionRes, *hint.descriptionArgs.toTypedArray())
+                } else {
+                    hint.description
+                }
+
+                if (hintDesc.isNotEmpty() && !isUserGuess) {
                     Spacer(modifier = Modifier.width(16.dp))
                     Text(
-                        text = hint.description,
+                        text = hintDesc,
                         style = MaterialTheme.typography.bodySmall,
                         color = TextPrimary.copy(alpha = 0.9f),
                         modifier = Modifier.align(Alignment.CenterVertically),
