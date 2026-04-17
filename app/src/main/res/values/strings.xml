@@ -189,6 +189,7 @@
     <string name="settings_helper">ASSISTED MODE</string>
     <string name="settings_helper_desc">Enables color-coded logic feedback for each digit in the interrogation log.</string>
     <string name="log_analysis_attempt">ANALYSIS ATTEMPT</string>
+    <string name="log_analysis_success">ACCESS GRANTED</string>
     <string name="label_trials">TRIALS</string>
     <string name="label_case_archive">CASE ARCHIVE</string>
     <string name="msg_analysis_active">SIA ANALYSIS ACTIVE</string>

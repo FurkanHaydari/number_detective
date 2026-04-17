@@ -276,7 +276,7 @@ class GameViewModel @Inject constructor(
             guess = guess,
             correct = result.correct,
             misplaced = result.misplaced,
-            descriptionRes = if (result.correct == requiredDigits) null else R.string.log_analysis_attempt,
+            descriptionRes = if (result.correct == requiredDigits) R.string.log_analysis_success else R.string.log_analysis_attempt,
             digitStatuses = digitStatuses,
             timestamp = getTimeInSeconds()
         )

@@ -110,9 +110,9 @@ fun HistoryDetailScreen(
                         
                         items(levelResult.hints.size) { globalIndex ->
                             val hint = levelResult.hints[globalIndex]
-                            val isUserGuess = hint.descriptionRes == R.string.log_analysis_attempt
+                            val isUserGuess = hint.descriptionRes == R.string.log_analysis_attempt || hint.descriptionRes == R.string.log_analysis_success
                             val analysisNumber = if (isUserGuess) {
-                                levelResult.hints.take(globalIndex + 1).count { it.descriptionRes == R.string.log_analysis_attempt }
+                                levelResult.hints.take(globalIndex + 1).count { it.descriptionRes == R.string.log_analysis_attempt || it.descriptionRes == R.string.log_analysis_success }
                             } else {
                                 0
                             }

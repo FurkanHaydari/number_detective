@@ -432,7 +432,7 @@ fun LevelHeader(levelResult: com.brainfocus.numberdetective.data.storage.LevelRe
 
 @Composable
 fun ArchiveHintCard(hint: com.brainfocus.numberdetective.data.model.Hint, analysisNumber: Int) {
-    val isUserGuess = hint.descriptionRes == R.string.log_analysis_attempt
+    val isUserGuess = hint.descriptionRes == R.string.log_analysis_attempt || hint.descriptionRes == R.string.log_analysis_success
 
     Surface(
         color = SurfaceCard,
@@ -448,9 +448,17 @@ fun ArchiveHintCard(hint: com.brainfocus.numberdetective.data.model.Hint, analys
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    text = if (isUserGuess) stringResource(R.string.log_analysis_number, analysisNumber) else stringResource(R.string.initial_intelligence),
+                    text = if (hint.descriptionRes == R.string.log_analysis_success) {
+                        stringResource(R.string.log_analysis_success).uppercase()
+                    } else if (isUserGuess) {
+                        stringResource(R.string.log_analysis_number, analysisNumber)
+                    } else {
+                        stringResource(R.string.initial_intelligence)
+                    },
                     style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold),
-                    color = if (isUserGuess) PrimaryCyan else TextSecondary,
+                    color = if (hint.descriptionRes == R.string.log_analysis_success) SuccessGreen 
+                            else if (isUserGuess) PrimaryCyan 
+                            else TextSecondary,
                     letterSpacing = 1.sp
                 )
                 if (hint.timestamp != null && hint.timestamp > 0) {

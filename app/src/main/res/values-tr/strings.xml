@@ -188,6 +188,7 @@
     <string name="settings_helper">YARDIMCI MOD</string>
     <string name="settings_helper_desc">Sorgu günlüğündeki her rakam için renkli mantık geri bildirimini açar.</string>
     <string name="log_analysis_attempt">ANALİZ GİRİŞİMİ</string>
+    <string name="log_analysis_success">ERİŞİM SAĞLANDI</string>
     <string name="label_trials">DENEMELER</string>
     <string name="label_case_archive">VAKA ARŞİVİ</string>
     <string name="msg_analysis_active">SIA ANALİZİ AKTİF</string>
