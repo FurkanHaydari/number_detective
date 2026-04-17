@@ -26,10 +26,10 @@ sealed class FieldReport(
     val isPositive: Boolean,
     val messageArgs: List<Any> = emptyList()
 ) {
-    class Promotion(level: Int) : FieldReport(
+    class Promotion(level: Int, bonusAttempts: Int, bonusTime: Int) : FieldReport(
         titleRes = R.string.report_promotion_title,
         messageRes = R.string.report_promotion_msg,
-        messageArgs = listOf(level),
+        messageArgs = listOf(level, bonusAttempts, bonusTime),
         isPositive = true
     )
     class Compromised(remaining: Int) : FieldReport(
@@ -93,6 +93,9 @@ class GameViewModel @Inject constructor(
     private val _isPaused = MutableStateFlow(false)
     val isPaused: StateFlow<Boolean> = _isPaused
 
+    private val _countdownValue = MutableStateFlow<Int?>(null)
+    val countdownValue: StateFlow<Int?> = _countdownValue
+
     // Settings Flows
     val dailyHighScore = dataStoreManager.highScoreFlow
     val allTimeHighScore = dataStoreManager.allTimeHighScoreFlow
@@ -101,6 +104,7 @@ class GameViewModel @Inject constructor(
     private var isHelperModeEnabledLocal = false
 
     private var timerJob: Job? = null
+    private var countdownJob: Job? = null
     var startTime = System.currentTimeMillis()
 
     val attempts: Int get() = _attempts
@@ -179,6 +183,7 @@ class GameViewModel @Inject constructor(
         
         if (isFirstGame) {
             startTimer()
+            startCountdown()
         }
     }
 
@@ -195,21 +200,25 @@ class GameViewModel @Inject constructor(
         _currentLevel.value = nextLvl
         
         // Dynamic bonuses
+        var bonusAttempts = 0
+        var bonusTime = 0
         when (nextLvl) {
             2 -> {
-                _remainingAttempts.value += 2
-                _remainingTime.value += 40
+                bonusAttempts = 2
+                bonusTime = 40
             }
             3 -> {
-                _remainingAttempts.value += 3
-                _remainingTime.value += 80
+                bonusAttempts = 3
+                bonusTime = 80
             }
         }
+        _remainingAttempts.value += bonusAttempts
+        _remainingTime.value += bonusTime
         
         soundManager.playLevelUpSound()
         
         // Trigger Promotion Report
-        _currentReport.value = FieldReport.Promotion(nextLvl)
+        _currentReport.value = FieldReport.Promotion(nextLvl, bonusAttempts, bonusTime)
         _isPaused.value = true
         
         startNewGame(false)
@@ -353,14 +362,34 @@ class GameViewModel @Inject constructor(
 
     fun dismissReport() {
         if (_currentReport.value is FieldReport.Promotion) {
-            _levelStartSeconds = getTimeInSeconds()
+            _currentReport.value = null
+            startCountdown()
+            return
         }
         _currentReport.value = null
         _isPaused.value = false
     }
 
+    private fun startCountdown() {
+        countdownJob?.cancel()
+        _isPaused.value = true
+        countdownJob = viewModelScope.launch {
+            for (i in 3 downTo 1) {
+                _countdownValue.value = i
+                soundManager.playBeepSound()
+                delay(1000)
+            }
+            _countdownValue.value = 0 // "GO!"
+            delay(500)
+            _countdownValue.value = null
+            _isPaused.value = false
+            _levelStartSeconds = getTimeInSeconds()
+        }
+    }
+
     fun pauseGame() {
         if (_gameState.value is GameState.Playing && _currentReport.value == null) {
+            countdownJob?.cancel()
             _isPaused.value = true
             _currentReport.value = FieldReport.Pause()
         }
@@ -368,7 +397,9 @@ class GameViewModel @Inject constructor(
 
     fun resumeGame() {
         if (_currentReport.value is FieldReport.Pause) {
-            dismissReport()
+            _currentReport.value = null
+            // If we were supposed to be in countdown, start it again
+            startCountdown()
         }
     }
 

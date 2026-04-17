@@ -163,7 +163,7 @@
     <string name="label_time">TIME</string>
 
     <string name="report_promotion_title">PROMOTION GRANTED</string>
-    <string name="report_promotion_msg">Case solved! You\'ve been promoted to Level %d. Proceed to the next vault.</string>
+    <string name="report_promotion_msg">Level %1$d reached. Added %2$d extra attempts and %3$d seconds bonus. Ready for the next phase?</string>
     <string name="score_points">%1$d PTS</string>
     <string name="report_compromised_title">SECURITY BREACH</string>
     <string name="report_compromised_msg">Incorrect code sequence! Security is tightening. You have %d attempts left.</string>
@@ -172,4 +172,5 @@
     <string name="report_pause_msg">The countdown has been halted. Your current intelligence is preserved.</string>
     <string name="exit_mission">ABORT MISSION</string>
     <string name="resume_mission">RESUME MISSION</string>
+    <string name="countdown_go">GO!</string>
 </resources>

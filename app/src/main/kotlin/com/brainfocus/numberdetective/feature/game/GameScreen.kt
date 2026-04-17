@@ -66,6 +66,7 @@ fun GameScreen(
     val currentReport by viewModel.currentReport.collectAsState()
     val isPaused by viewModel.isPaused.collectAsState()
     val isHelperModeEnabled by viewModel.isHelperModeEnabled.collectAsState(initial = false)
+    val countdownValue by viewModel.countdownValue.collectAsState()
     val attempts = viewModel.attempts
 
     val sheetState = rememberModalBottomSheetState()
@@ -129,7 +130,8 @@ fun GameScreen(
                 .fillMaxSize()
                 .statusBarsPadding()
                 .navigationBarsPadding()
-                .padding(horizontal = 20.dp),
+                .padding(horizontal = 20.dp)
+                .blur(if (currentReport != null) 20.dp else 0.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             GameTopBar(level = currentLevel)
@@ -150,9 +152,12 @@ fun GameScreen(
 
             Box(modifier = Modifier.weight(1f)) {
                 Column(modifier = Modifier.fillMaxSize()) {
-                    // Minimized Placeholder Header
+                    // Minimized Placeholder Header (Visible when not counting down)
                     Row(
-                        modifier = Modifier.fillMaxWidth().padding(bottom = 12.dp),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(bottom = 12.dp)
+                            .blur(if (countdownValue != null) 20.dp else 0.dp),
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.Center
                     ) {
@@ -177,12 +182,49 @@ fun GameScreen(
 
                     // Evidence List (Persistent)
                     LazyColumn(
-                        modifier = Modifier.fillMaxSize(),
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .blur(if (countdownValue != null) 20.dp else 0.dp),
                         verticalArrangement = Arrangement.spacedBy(8.dp),
                         contentPadding = PaddingValues(bottom = 16.dp)
                     ) {
                         items(evidenceHints) { hint ->
                             HintCard(hint = hint, isHelperModeEnabled = isHelperModeEnabled)
+                        }
+                    }
+                }
+
+                // --- Layer 3: Countdown Overlay (Localized) ---
+                androidx.compose.animation.AnimatedVisibility(
+                    visible = countdownValue != null,
+                    enter = fadeIn(),
+                    exit = fadeOut()
+                ) {
+                    Box(
+                        modifier = Modifier.fillMaxSize(),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        AnimatedContent(
+                            targetState = countdownValue,
+                            transitionSpec = {
+                                (scaleIn(animationSpec = tween(300, easing = FastOutSlowInEasing)) + fadeIn())
+                                    .togetherWith(scaleOut(animationSpec = tween(300)) + fadeOut())
+                            },
+                            label = "CountdownAnimation"
+                        ) { value ->
+                            if (value != null) {
+                                Text(
+                                    text = if (value == 0) stringResource(R.string.countdown_go) else value.toString(),
+                                    style = MaterialTheme.typography.displayLarge.copy(
+                                        fontWeight = FontWeight.Black,
+                                        fontSize = 80.sp,
+                                        fontFamily = Montserrat,
+                                        letterSpacing = 4.sp
+                                    ),
+                                    color = PrimaryCyan,
+                                    textAlign = TextAlign.Center
+                                )
+                            }
                         }
                     }
                 }
@@ -291,6 +333,7 @@ fun GameScreen(
                 )
             }
         }
+
     }
 }
 

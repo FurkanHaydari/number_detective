@@ -161,8 +161,8 @@
     <string name="label_lives">CAN</string>
     <string name="label_time">SÜRE</string>
 
-    <string name="report_promotion_title">TERFİ ALINDI</string>
-    <string name="report_promotion_msg">Vaka çözüldü! Seviye %d rütbesine terfi ettin. Bir sonraki kasaya ilerle.</string>
+    <string name="report_promotion_title">TERFİ ALDIN</string>
+    <string name="report_promotion_msg">Seviye %1$d\'e ulaşıldı. %2$d ekstra deneme hakkı ve %3$d saniye bonus eklendi. Sonraki aşamaya hazır mısın?</string>
     <string name="score_points">%1$d PUAN</string>
     <string name="report_compromised_title">GÜVENLİK İHLALİ</string>
     <string name="report_compromised_msg">Hatalı kod dizilimi! Güvenlik sıkılaşıyor. %d deneme hakkınız kaldı.</string>
@@ -171,4 +171,5 @@
     <string name="report_pause_msg">Zamanlayıcı durduruldu. Mevcut verileriniz koruma altında.</string>
     <string name="exit_mission">GÖREVİ İPTAL ET</string>
     <string name="resume_mission">GÖREVE DEVAM ET</string>
+    <string name="countdown_go">BAŞLA!</string>
 </resources>
