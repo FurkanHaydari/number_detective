@@ -13,12 +13,14 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.KeyboardArrowDown
-import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.activity.compose.BackHandler
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
+import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.blur
@@ -45,7 +47,8 @@ import com.brainfocus.numberdetective.feature.home.RowDefaults
 @Composable
 fun GameScreen(
     viewModel: GameViewModel = hiltViewModel(),
-    onNavigateToResult: (Boolean, Int, String, Int, Int, Int, Int) -> Unit
+    onNavigateToResult: (Boolean, Int, String, Int, Int, Int, Int) -> Unit,
+    onNavigateBack: () -> Unit
 ) {
     LocalContext.current
     val currentLevel by viewModel.currentLevel.collectAsState()
@@ -82,6 +85,25 @@ fun GameScreen(
                 onNavigateToResult(false, score, correctAnswer, attempts, viewModel.getTimeInSeconds(), dailyHighScore, allTimeHighScore)
             }
             else -> {}
+        }
+    }
+
+    // Handle system back button
+    BackHandler(enabled = gameState is GameState.Playing && currentReport == null) {
+        viewModel.pauseGame()
+    }
+
+    // Handle lifecycle changes (phone calls, backgrounding)
+    val lifecycleOwner = LocalLifecycleOwner.current
+    DisposableEffect(lifecycleOwner) {
+        val observer = LifecycleEventObserver { _, event ->
+            if (event == Lifecycle.Event.ON_PAUSE) {
+                viewModel.pauseGame()
+            }
+        }
+        lifecycleOwner.lifecycle.addObserver(observer)
+        onDispose {
+            lifecycleOwner.lifecycle.removeObserver(observer)
         }
     }
 
@@ -263,7 +285,9 @@ fun GameScreen(
             currentReport?.let { report ->
                 FieldReportOverlay(
                     report = report,
-                    onDismiss = { viewModel.dismissReport() }
+                    onDismiss = { viewModel.dismissReport() },
+                    onExit = onNavigateBack,
+                    remainingTime = remainingTime
                 )
             }
         }
@@ -271,11 +295,18 @@ fun GameScreen(
 }
 
 @Composable
-fun FieldReportOverlay(report: FieldReport, onDismiss: () -> Unit) {
+fun FieldReportOverlay(
+    report: FieldReport, 
+    onDismiss: () -> Unit,
+    onExit: () -> Unit,
+    remainingTime: Int
+) {
+    val isPauseReport = report is FieldReport.Pause
+    
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color.Black.copy(alpha = 0.4f))
+            .background(Color.Black.copy(alpha = 0.6f))
             .clickable(enabled = false) {},
         contentAlignment = Alignment.Center
     ) {
@@ -295,13 +326,25 @@ fun FieldReportOverlay(report: FieldReport, onDismiss: () -> Unit) {
                     modifier = Modifier
                         .size(64.dp)
                         .background(
-                            if (report.isPositive) SuccessGreen.copy(alpha = 0.1f) else ErrorRed.copy(alpha = 0.1f),
+                            when {
+                                isPauseReport -> PrimaryCyan.copy(alpha = 0.1f)
+                                report.isPositive -> SuccessGreen.copy(alpha = 0.1f)
+                                else -> ErrorRed.copy(alpha = 0.1f)
+                            },
                             CircleShape
                         )
-                        .border(1.dp, if (report.isPositive) SuccessGreen else ErrorRed, CircleShape),
+                        .border(
+                            1.dp, 
+                            when {
+                                isPauseReport -> PrimaryCyan
+                                report.isPositive -> SuccessGreen
+                                else -> ErrorRed
+                            }, 
+                            CircleShape
+                        ),
                     contentAlignment = Alignment.Center
                 ) {
-                    Text(text = if (report.isPositive) "🎖️" else "⚠️", fontSize = 32.sp)
+                    Text(text = if (isPauseReport) "⏸️" else if (report.isPositive) "🎖️" else "⚠️", fontSize = 32.sp)
                 }
 
                 Spacer(modifier = Modifier.height(20.dp))
@@ -309,7 +352,7 @@ fun FieldReportOverlay(report: FieldReport, onDismiss: () -> Unit) {
                 Text(
                     text = stringResource(report.titleRes).uppercase(),
                     style = MaterialTheme.typography.titleLarge.copy(fontFamily = Montserrat, fontWeight = FontWeight.Bold, letterSpacing = 2.sp),
-                    color = if (report.isPositive) PrimaryCyan else ErrorRed,
+                    color = if (isPauseReport) PrimaryCyan else if (report.isPositive) PrimaryCyan else ErrorRed,
                     textAlign = TextAlign.Center
                 )
 
@@ -323,32 +366,81 @@ fun FieldReportOverlay(report: FieldReport, onDismiss: () -> Unit) {
                     lineHeight = 22.sp
                 )
 
+                if (isPauseReport) {
+                    Spacer(modifier = Modifier.height(16.dp))
+                    Surface(
+                        color = Color.White.copy(alpha = 0.05f),
+                        shape = RoundedCornerShape(12.dp),
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Row(
+                            modifier = Modifier.padding(16.dp),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text(
+                                text = stringResource(R.string.label_time).uppercase(),
+                                style = MaterialTheme.typography.labelMedium,
+                                color = TextSecondary
+                            )
+                            Text(
+                                text = String.format("%02d:%02d", remainingTime / 60, remainingTime % 60),
+                                style = MaterialTheme.typography.titleMedium,
+                                color = PrimaryCyan,
+                                fontWeight = FontWeight.Bold
+                            )
+                        }
+                    }
+                }
+
                 Spacer(modifier = Modifier.height(32.dp))
 
-                Button(
-                    onClick = onDismiss,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(56.dp)
-                        .border(1.dp, PrimaryCyan.copy(alpha = 0.5f), RoundedCornerShape(16.dp)),
-                    shape = RoundedCornerShape(16.dp),
-                    contentPadding = PaddingValues(0.dp),
-                    colors = ButtonDefaults.buttonColors(containerColor = Color.Transparent)
-                ) {
-                    Box(
+                Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                    Button(
+                        onClick = onDismiss,
                         modifier = Modifier
-                            .fillMaxSize()
-                            .background(PlayButtonGradient),
-                        contentAlignment = Alignment.Center
+                            .fillMaxWidth()
+                            .height(56.dp)
+                            .border(1.dp, PrimaryCyan.copy(alpha = 0.5f), RoundedCornerShape(16.dp)),
+                        shape = RoundedCornerShape(16.dp),
+                        contentPadding = PaddingValues(0.dp),
+                        colors = ButtonDefaults.buttonColors(containerColor = Color.Transparent)
                     ) {
-                        Text(
-                            text = stringResource(R.string.continue_mission),
-                            style = MaterialTheme.typography.titleMedium.copy(
-                                fontFamily = Montserrat,
-                                letterSpacing = 1.sp
-                            ),
-                            color = Color.White
-                        )
+                        Box(
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .background(PlayButtonGradient),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(
+                                text = stringResource(if (isPauseReport) R.string.resume_mission else R.string.continue_mission),
+                                style = MaterialTheme.typography.titleMedium.copy(
+                                    fontFamily = Montserrat,
+                                    letterSpacing = 1.sp
+                                ),
+                                color = Color.White
+                            )
+                        }
+                    }
+
+                    if (isPauseReport) {
+                        OutlinedButton(
+                            onClick = onExit,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(56.dp),
+                            shape = RoundedCornerShape(16.dp),
+                            colors = ButtonDefaults.outlinedButtonColors(contentColor = ErrorRed),
+                            border = RowDefaults.CardBorder
+                        ) {
+                            Text(
+                                text = stringResource(R.string.exit_mission),
+                                style = MaterialTheme.typography.titleMedium.copy(
+                                    fontFamily = Montserrat,
+                                    letterSpacing = 1.sp
+                                )
+                            )
+                        }
                     }
                 }
             }

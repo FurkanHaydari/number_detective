@@ -43,6 +43,11 @@ sealed class FieldReport(
         messageRes = message,
         isPositive = false
     )
+    class Pause : FieldReport(
+        titleRes = R.string.report_pause_title,
+        messageRes = R.string.report_pause_msg,
+        isPositive = true
+    )
 }
 
 @HiltViewModel
@@ -352,6 +357,19 @@ class GameViewModel @Inject constructor(
         }
         _currentReport.value = null
         _isPaused.value = false
+    }
+
+    fun pauseGame() {
+        if (_gameState.value is GameState.Playing && _currentReport.value == null) {
+            _isPaused.value = true
+            _currentReport.value = FieldReport.Pause()
+        }
+    }
+
+    fun resumeGame() {
+        if (_currentReport.value is FieldReport.Pause) {
+            dismissReport()
+        }
     }
 
     fun recordArchiveOpen() {

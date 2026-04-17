@@ -88,6 +88,9 @@ fun AppNavigation(
                     navController.navigate("result/$isWin/$score/$correctAnswer/$attempts/$timeInSeconds/$dailyHighScore/$allTimeHighScore") {
                         popUpTo("home")
                     }
+                },
+                onNavigateBack = {
+                    navController.popBackStack("home", inclusive = false)
                 }
             )
         }

@@ -167,4 +167,8 @@
     <string name="report_compromised_title">GÜVENLİK İHLALİ</string>
     <string name="report_compromised_msg">Hatalı kod dizilimi! Güvenlik sıkılaşıyor. %d deneme hakkınız kaldı.</string>
     <string name="final_report">SONUÇ RAPORU</string>
+    <string name="report_pause_title">SORUŞTURMA DURAKLATILDI</string>
+    <string name="report_pause_msg">Zamanlayıcı durduruldu. Mevcut verileriniz koruma altında.</string>
+    <string name="exit_mission">GÖREVİ İPTAL ET</string>
+    <string name="resume_mission">GÖREVE DEVAM ET</string>
 </resources>
