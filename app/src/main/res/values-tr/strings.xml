@@ -3,7 +3,6 @@
     <string name="app_name">Number Detective</string>
 
     <!-- Game Activity -->
-    <string name="guess_button">TAHMİN ET</string>
     <string name="submit_button">GÖNDER</string>
 
     <!-- Seviye 3 İpuçları -->
@@ -21,27 +20,12 @@
     <string name="hint_5">İki rakam doğru, biri doğru yerde</string>
 
 
-    <string name="remaining_attempts">Kalan Hak: %d</string>
-    <string name="hint_correct">Tebrikler! Doğru tahmin!</string>
-    <string name="hint_partial">%1$d rakam doğru, %2$d rakam yanlış yerde</string>
-    <string name="hint_wrong">Hiç eşleşme yok</string>
-
     <!-- Game Result Activity -->
-    <string name="result_congrats">Tebrikler!</string>
-    <string name="result_try_again">Tekrar Dene!</string>
     <string name="score_text">GÜNÜN SKORU: %1$d</string>
-    <string name="attempts_text">Deneme: %1$d</string>
-    <string name="time_text">Süre: %1$ds</string>
     <string name="share_button">Paylaş</string>
     <string name="play_again_button">Tekrar Oyna</string>
-    <string name="share_score_text">Number Detective oyununda %1$d puan kazandım!</string>
-    <string name="win_text">TEBRİKLER!</string>
-    <string name="game_over_text">Oyun Bitti!</string>
     <string name="win_motivation">Harika bir oyun! Devam et!</string>
     <string name="lose_motivation">Daha iyisini yapabilirsin! Tekrar dene!</string>
-    <string name="share_win_text">🎉 Number Detective\'de kazandım! Skorum: %1$d 🎮</string>
-    <string name="share_lose_text">🎮 Number Detective\'de skorumu geçebilir misin? Skorum: %1$d</string>
-    <string name="share_title">Sonucu Paylaş</string>
 
     <!-- Main Activity -->
     <string name="app_title_1">Sayı</string>
@@ -49,31 +33,12 @@
     <string name="start_button">OYUNA BAŞLA</string>
     
     <!-- Features -->
-    <string name="feature_attention">Dikkat</string>
-    <string name="feature_memory">Hafıza</string>
-    <string name="feature_logic">Mantık</string>
-    <string name="quote_author">- %1$s</string>
 
     <!-- Dialog -->
-    <string name="dialog_ok">TAMAM</string>
-    <string name="number_zero">0</string>
 
     <!-- Common -->
-    <string name="refresh">Yenile</string>
-    <string name="back">Geri</string>
-    <string name="error">Hata</string>
-    <string name="ok">TAMAM</string>
-    <string name="cancel">İptal</string>
-    <string name="settings">AYARLAR</string>
-    <string name="press_back_again_to_exit">Çıkmak için tekrar basın</string>
-    <string name="number_up_button">Arttır</string>
-    <string name="number_down_button">Azalt</string>
 
     <string name="back_to_menu">ANA MENÜ</string>
-    <string name="play_again">TEKRAR OYNA</string>
-    <string name="share">PAYLAŞ</string>
-
-    <string name="tahmin_et">TAHMİN ET</string>
 
     <string-array name="game_quotes">
         <item>"Düşünmek en büyük eylemdir." - Blaise Pascal</item>
@@ -122,30 +87,13 @@
     <!-- Result Screen -->
     <string name="correct_answer">Doğru Cevap</string>
     <string name="attempts">Deneme</string>
-    <string name="your_guesses">Tahminleriniz</string>
     <string name="time">Süre</string>
 
-    <string name="brain_rot_title">Beyin Sağlığınız İçin Egzersiz Zamanı!</string>
-    <string name="brain_rot_message">Sosyal medyanın kısa içerikleri beynimizi tehdit ediyor! Araştırmalar, sürekli kısa içeriklere maruz kalmanın \'Brain Rot\' (Beyin Çürümesi) riskini artırdığını gösteriyor.\n\nSayı Dedektifi ile beyninizi zinde tutun, mantık yürütme ve problem çözme yeteneklerinizi geliştirin!</string>
-
     <!-- Toast Messages -->
-    <string name="toast_enter_guess">Lütfen bir tahmin girin</string>
-    <string name="toast_invalid_guess">Geçersiz tahmin! Her rakam farklı olmalı</string>
-    <string name="toast_guess_length">Tahmin %d basamaklı olmalıdır</string>
-    <string name="toast_duplicate_guess">Bu tahmini daha önce yaptınız</string>
-    <string name="toast_remaining_attempts">Yanlış tahmin! %d hakkınız kaldı</string>
-    <string name="toast_game_over">Oyun bitti! Doğru cevap: %s</string>
-    <string name="toast_score_not_saved">Skor kaydedilemedi</string>
-    
+
     <!-- Level Up Messages -->
-    <string name="toast_level_up_with_bonus">Tebrikler! %1$d. seviyeye geçtiniz\n+%2$d Can ve +%3$d saniye bonus!</string>
-    <string name="toast_level_up">Tebrikler! %d. seviyeye geçtiniz</string>
-    
+
     <!-- Hint Messages -->
-    <string name="hint_correct_and_wrong">%1$d rakam doğru yerde, %2$d rakam yanlış yerde</string>
-    <string name="hint_correct_only">%d rakam doğru yerde</string>
-    <string name="hint_wrong_only">%d rakam yanlış yerde</string>
-    <string name="hint_no_match">Hiç eşleşme yok</string>
 
     <string name="share_score_message">Sayı Dedektifi\'nde %1$d puan topladım! %3$s sürede %2$d deneme yaptım. Skorumu geçebilir misin? 🎮</string>
     <string name="share_score_title">Skoru Paylaş</string>
@@ -206,7 +154,6 @@
     <string name="mission_accomplished">GÖREV TAMAMLANDI</string>
     <string name="mission_failed">GÖREV BAŞARISIZ</string>
     <string name="final_score">TOPLAM SKOR</string>
-    <string name="interrogation_log">SORGU GÜNLÜĞÜ</string>
     <string name="continue_mission">GÖREVE DEVAM ET</string>
     <string name="initial_intelligence">BAŞLANGIÇ İSTİHBARATI</string>
     <string name="log_analysis_number">ANALİZ %1$d</string>
@@ -219,5 +166,4 @@
     <string name="report_compromised_title">GÜVENLİK İHLALİ</string>
     <string name="report_compromised_msg">Hatalı kod dizilimi! Güvenlik sıkılaşıyor. %d deneme hakkınız kaldı.</string>
     <string name="final_report">SONUÇ RAPORU</string>
-    <string name="archive_button">ARŞİV</string>
 </resources>

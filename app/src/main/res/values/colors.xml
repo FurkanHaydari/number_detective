@@ -1,76 +1,33 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <!-- Ana Renkler -->
-    <color name="purple_200">#FFBB86FC</color>
     <color name="purple_500">#FF6200EE</color>
     <color name="purple_700">#FF3700B3</color>
     <color name="teal_200">#FF03DAC5</color>
-    <color name="teal_700">#FF018786</color>
-    <color name="black">#FF000000</color>
-    <color name="white">#FFFFFFFF</color>
     <color name="colorPrimary">@color/purple_500</color>
     <color name="colorPrimaryDark">@color/purple_700</color>
     <color name="colorAccent">@color/teal_200</color>
     
     <!-- Arkaplan Renkleri -->
-    <color name="colorBackground">#F5F5F5</color>  
-    <color name="colorSurface">#FFFFFF</color>
-    <color name="colorCardBackground">#FFFFFF</color>
-    <color name="colorCardStroke">#E5E5EA</color>  
-    <color name="current_user_background">#1A6200EE</color>
-    
+    <color name="colorBackground">#F5F5F5</color>
+
     <!-- Metin Renkleri -->
     <color name="colorText">#212121</color>
-    <color name="colorTextSecondary">#757575</color>  
-    <color name="titleTextColor">#FFFFFF</color>     
-    <color name="subtitleTextColor">#E6FFFFFF</color> 
-    <color name="quoteTextColor">#CCFFFFFF</color>    
-    <color name="bodyTextColor">#F2FFFFFF</color>     
-    
+    <color name="colorTextSecondary">#757575</color>
+
     <!-- Oyun Renkleri -->
-    <color name="colorCorrect">#34C759</color>     
-    <color name="colorMisplaced">#FF9500</color>    
-    <color name="colorIncorrect">#FF3B30</color>    
-    
+
     <!-- Buton Renkleri -->
-    <color name="primaryButton">#007AFF</color>
-    <color name="primaryButtonRipple">#0056B3</color>
-    <color name="button_color_normal">#FF2196F3</color>
-    <color name="button_color_glow">#FF64B5F6</color>
-    
+
     <!-- Gradient ve Border -->
-    <color name="gradientStart">#FF2D55</color>    
-    <color name="gradientMiddle">#7B68EE</color>   
-    <color name="gradientEnd">#007AFF</color>      
-    <color name="colorBorder">#E5E5EA</color>
-    
+
     <!-- Neon Efektler -->
-    <color name="neonBlue">#007AFF</color>
-    <color name="neonCyan">#32ADE6</color>         
-    <color name="warmOrange">#FF9500</color>  
-    <color name="warmOrangeNew">#FF5722</color>  
-    
+
     <!-- Gradient Renkler -->
-    <color name="gradientStartNew">#4568DC</color>    
-    <color name="gradientMiddleNew">#B06AB3</color>   
-    <color name="gradientEndNew">#D1437A</color>      
-    
+
     <!-- Container Renkler -->
-    <color name="containerBackground">#26FFFFFF</color>
-    <color name="containerStroke">#33FFFFFF</color>
-    <color name="containerShadow">#40000000</color>
-    
+
     <!-- Metin Gölge ve Kontrast -->
-    <color name="textShadow">#40000000</color>
-    <color name="textOverlayDark">#99000000</color>
-    <color name="buttonShadow">#26000000</color>
-    
+
     <!-- Yeni Renkler -->
-    <color name="colorPrimaryNew">#2196F3</color>
-    <color name="colorPrimaryDarkNew">#1976D2</color>
-    <color name="colorAccentNew">#FF4081</color>
-    <color name="colorBackgroundNew">#FFFFFF</color>
-    <color name="colorWin">#4CAF50</color>
-    <color name="colorLose">#F44336</color>
-    <color name="colorHint">#9E9E9E</color>
 </resources>

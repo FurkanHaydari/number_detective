@@ -3,7 +3,6 @@
     <string name="app_name">Number Detective</string>
 
     <!-- Game Activity -->
-    <string name="guess_button">GUESS</string>
     <string name="submit_button">SUBMIT</string>
     
     <!-- Seviye 3 İpuçları -->
@@ -21,60 +20,26 @@
     <string name="hint_5">Two correct, one in position</string>
 
 
-    <string name="remaining_attempts">Remaining Attempts: %d</string>
-    <string name="hint_correct">Congratulations! Correct guess!</string>
-    <string name="hint_partial">%1$d digit(s) correct, %2$d digit(s) in the wrong place</string>
-    <string name="hint_wrong">No matches</string>
-
     <!-- Game Result Activity -->
-    <string name="result_congrats">Congratulations!</string>
-    <string name="result_try_again">Try Again!</string>
     <string name="score_text">DAILY SCORE: %1$d</string>
-    <string name="attempts_text">Attempts: %1$d</string>
-    <string name="time_text">Time: %1$ds</string>
     <string name="share_button">Share</string>
     <string name="play_again_button">Play Again</string>
-    <string name="share_score_text">I scored %1$d points in Number Detective!</string>
-    <string name="win_text">CONGRATULATIONS!</string>
-    <string name="game_over_text">Game Over!</string>
     <string name="win_motivation">Great game! Keep going!</string>
     <string name="lose_motivation">You can do better! Try again!</string>
-    <string name="share_win_text">🎉 I won in Number Detective! My score: %1$d 🎮</string>
-    <string name="share_lose_text">🎮 Can you beat my score in Number Detective? My score: %1$d</string>
-    <string name="share_title">Share Result</string>
     <!-- Main Activity -->
     <string name="app_title_1">Number</string>
     <string name="app_title_2">Detective</string>
     <string name="start_button">START GAME</string>
     
     <!-- Features -->
-    <string name="feature_attention">Attention</string>
-    <string name="feature_memory">Memory</string>
-    <string name="feature_logic">Logic</string>
-    <string name="quote_author">- %1$s</string>
 
     <!-- Dialog -->
-    <string name="dialog_ok">OK</string>
-    <string name="number_zero">0</string>
 
     <!-- Common -->
-    <string name="refresh">Refresh</string>
-    <string name="back">Back</string>
-    <string name="error">Error</string>
-    <string name="ok">OK</string>
-    <string name="cancel">Cancel</string>
-    <string name="settings">SETTINGS</string>
-    <string name="press_back_again_to_exit">Press again to exit</string>
 
     <!-- Number Input Buttons -->
-    <string name="number_up_button">Increase</string>
-    <string name="number_down_button">Decrease</string>
 
     <string name="back_to_menu">MAIN MENU</string>
-    <string name="play_again">PLAY AGAIN</string>
-    <string name="share">SHARE</string>
-
-    <string name="tahmin_et">GUESS</string>
 
     <string-array name="game_quotes">
         <item>"Thinking is the greatest action." - Blaise Pascal</item>
@@ -123,30 +88,13 @@
     <!-- Result Screen -->
     <string name="correct_answer">Correct Answer</string>
     <string name="attempts">Attempts</string>
-    <string name="your_guesses">Your Guesses</string>
     <string name="time">Time</string>
 
-    <string name="brain_rot_title">Time to Exercise Your Brain!</string>
-    <string name="brain_rot_message">Short-form content on social media is threatening our brains! Research shows that constant exposure to short content increases the risk of \'Brain Rot.\'\n\nKeep your mind sharp with Number Detective, and improve your logical thinking and problem-solving skills!</string>
-
     <!-- Toast Messages -->
-    <string name="toast_enter_guess">Please enter a guess</string>
-    <string name="toast_invalid_guess">Invalid guess! Each digit must be different</string>
-    <string name="toast_guess_length">Guess must be %d digits</string>
-    <string name="toast_duplicate_guess">You\'ve already made this guess</string>
-    <string name="toast_remaining_attempts">Wrong guess! %d attempts remaining</string>
-    <string name="toast_game_over">Game Over! Correct answer: %s</string>
-    <string name="toast_score_not_saved">Score could not be saved</string>
-    
+
     <!-- Level Up Messages -->
-    <string name="toast_level_up_with_bonus">Congratulations! Level %1$d\n+%2$d Lives and +%3$d seconds bonus!</string>
-    <string name="toast_level_up">Congratulations! Level %d</string>
-    
+
     <!-- Hint Messages -->
-    <string name="hint_correct_and_wrong">%1$d digits in correct position, %2$d digits in wrong position</string>
-    <string name="hint_correct_only">%d digits in correct position</string>
-    <string name="hint_wrong_only">%d digits in wrong position</string>
-    <string name="hint_no_match">No matching digits</string>
 
     <string name="share_score_message">I scored %1$d points in Number Detective! Used %2$d attempts in %3$s. Can you beat my score? 🎮</string>
     <string name="share_score_title">Share Score</string>
@@ -207,7 +155,6 @@
     <string name="mission_accomplished">MISSION ACCOMPLISHED</string>
     <string name="mission_failed">MISSION FAILED</string>
     <string name="final_score">FINAL SCORE</string>
-    <string name="interrogation_log">INTERROGATION LOG</string>
     <string name="continue_mission">CONTINUE MISSION</string>
     <string name="initial_intelligence">INITIAL INTELLIGENCE</string>
     <string name="log_analysis_number">ANALYSIS %1$d</string>
@@ -220,5 +167,4 @@
     <string name="report_compromised_title">SECURITY BREACH</string>
     <string name="report_compromised_msg">Incorrect code sequence! Security is tightening. You have %d attempts left.</string>
     <string name="final_report">FINAL REPORT</string>
-    <string name="archive_button">ARCHIVE</string>
 </resources>
