@@ -53,6 +53,9 @@ class GameViewModel @Inject constructor(
     private val dataStoreManager: DataStoreManager
 ) : AndroidViewModel(application) {
     private var _attempts = 0
+    private var _attemptsInLevel = 0
+    private var _levelStartSeconds = 0
+    private var _archiveChecksInLevel = 0
     private val _wrongAttempts = MutableStateFlow(0)
     
     private val _currentReport = MutableStateFlow<FieldReport?>(null)
@@ -138,6 +141,9 @@ class GameViewModel @Inject constructor(
             com.brainfocus.numberdetective.data.storage.GameResultStorage.currentSessionLevels.clear()
         }
         
+        _attemptsInLevel = 0
+        _archiveChecksInLevel = 0
+        _levelStartSeconds = getTimeInSeconds()
         _guesses.value = emptyList()
         game.startNewGame(_currentLevel.value)
         _correctAnswer.value = game.getCorrectAnswer()
@@ -260,6 +266,7 @@ class GameViewModel @Inject constructor(
         }
 
         _attempts++
+        _attemptsInLevel++
         val currentGuesses = _guesses.value.toMutableList()
         currentGuesses.add(guess)
         _guesses.value = currentGuesses
@@ -343,11 +350,39 @@ class GameViewModel @Inject constructor(
         _isPaused.value = false
     }
 
+    fun recordArchiveOpen() {
+        _archiveChecksInLevel++
+    }
+
     private fun calculateLevelScore(): Int {
-        val maxScorePerLevel = 1000
-        val timePenalty = (180 - _remainingTime.value) * 2
-        val attemptsPenalty = _attempts * 50
-        val levelScore = maxOf(0, maxScorePerLevel - timePenalty - attemptsPenalty)
+        val baseScore = when (_currentLevel.value) {
+            1 -> 1000
+            2 -> 2500
+            3 -> 5000
+            else -> 1000
+        }
+        
+        val timeTakenInLevel = getTimeInSeconds() - _levelStartSeconds
+        val timePenalty = timeTakenInLevel * 5 // 5 points per second
+        val attemptsPenalty = _attemptsInLevel * 100 // 100 points per attempt
+        
+        // --- Archive & Assistance Penalties ---
+        val perCheckPenalty = if (isHelperModeEnabledLocal) 150 else 50
+        val archivePenalty = _archiveChecksInLevel * perCheckPenalty
+        
+        var levelScore = maxOf(0, baseScore - timePenalty - attemptsPenalty - archivePenalty)
+        
+        // --- Skill Bonuses (Added after zero-floor protection) ---
+        // 1. Deduction Bonus: Solved in 2 or fewer attempts
+        if (_attemptsInLevel <= 2) {
+            levelScore += 500
+        }
+        
+        // 2. Flash Clearance: Solved in under 20 seconds
+        if (timeTakenInLevel < 20) {
+            levelScore += 300
+        }
+        
         _score.value += levelScore
         return levelScore
     }

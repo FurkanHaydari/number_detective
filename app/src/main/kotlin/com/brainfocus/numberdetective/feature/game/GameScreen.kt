@@ -118,7 +118,12 @@ fun GameScreen(
                 attempts = remainingAttempts,
                 time = remainingTime,
                 trialCount = trialHints.size,
-                onHistoryClick = { if (!isPaused) showHistorySheet = true }
+                onHistoryClick = { 
+                    if (!isPaused) {
+                        viewModel.recordArchiveOpen()
+                        showHistorySheet = true 
+                    }
+                }
             )
             Spacer(modifier = Modifier.height(16.dp))
 
