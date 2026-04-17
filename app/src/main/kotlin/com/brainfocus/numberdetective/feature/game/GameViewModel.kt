@@ -133,6 +133,9 @@ class GameViewModel @Inject constructor(
             startTime = System.currentTimeMillis()
             _remainingTime.value = 180
             _currentLevel.value = 1
+            
+            // Clear previous session data
+            com.brainfocus.numberdetective.data.storage.GameResultStorage.currentSessionLevels.clear()
         }
         
         _guesses.value = emptyList()
@@ -201,6 +204,36 @@ class GameViewModel @Inject constructor(
         startNewGame(false)
     }
 
+    private fun saveCurrentLevelToHistory() {
+        val levelScore = calculateLevelScore()
+        val levelResult = com.brainfocus.numberdetective.data.storage.LevelResult(
+            levelNumber = _currentLevel.value,
+            secretNumber = _correctAnswer.value,
+            hints = _hints.value,
+            durationSeconds = getTimeInSeconds(),
+            scoreGained = levelScore
+        )
+        com.brainfocus.numberdetective.data.storage.GameResultStorage.currentSessionLevels.add(levelResult)
+    }
+
+    private fun finalizeGameSession(isWin: Boolean) {
+        saveCurrentLevelToHistory()
+        val session = com.brainfocus.numberdetective.data.storage.GameSession(
+            id = java.util.UUID.randomUUID().toString(),
+            timestamp = System.currentTimeMillis(),
+            levels = com.brainfocus.numberdetective.data.storage.GameResultStorage.currentSessionLevels.toList(),
+            totalScore = _score.value,
+            isWin = isWin
+        )
+        com.brainfocus.numberdetective.data.storage.GameResultStorage.lastGameSession = session
+        com.brainfocus.numberdetective.data.storage.GameResultStorage.sessionsHistory.add(session)
+        
+        // Save to persistent storage
+        viewModelScope.launch {
+            dataStoreManager.saveGameSession(session)
+        }
+    }
+
     fun makeGuess(guess: String): GuessResult {
         if (guess.isBlank() || !guess.all { it.isDigit() }) return GuessResult.Invalid
         
@@ -235,10 +268,8 @@ class GameViewModel @Inject constructor(
         val result = game.makeGuess(guess)
         val requiredDigits = if (_currentLevel.value == 3) 4 else 3
         
-        // Calculate Digit Statuses if Helper Mode is ON
-        val digitStatuses = if (isHelperModeEnabledLocal) {
-            calculateDigitStatuses(guess, _correctAnswer.value)
-        } else null
+        // Calculate Digit Statuses ALWAYS (for history), but UI determines if shown in Game
+        val digitStatuses = calculateDigitStatuses(guess, _correctAnswer.value)
 
         // Add this guess as a new Hint to the log
         val newHint = Hint(
@@ -256,22 +287,20 @@ class GameViewModel @Inject constructor(
         
         return when {
             result.correct == requiredDigits -> {
-                calculateLevelScore()
                 if (_currentLevel.value >= MAX_LEVELS) {
-                    GameResultStorage.lastGameHints = _hints.value
-                    GameResultStorage.lastGameDurationSeconds = getTimeInSeconds()
+                    finalizeGameSession(true)
                     _gameState.value = GameState.Win(_score.value)
                     soundManager.playWinSound()
                     timerJob?.cancel()
                     viewModelScope.launch { dataStoreManager.saveHighScore(_score.value) }
                 } else {
+                    saveCurrentLevelToHistory()
                     nextLevel()
                 }
                 GuessResult.Correct
             }
             _remainingAttempts.value <= 0 -> {
-                GameResultStorage.lastGameHints = _hints.value
-                GameResultStorage.lastGameDurationSeconds = getTimeInSeconds()
+                finalizeGameSession(false)
                 _gameState.value = GameState.GameOver(_score.value)
                 soundManager.playLoseSound()
                 timerJob?.cancel()
@@ -314,12 +343,13 @@ class GameViewModel @Inject constructor(
         _isPaused.value = false
     }
 
-    private fun calculateLevelScore() {
+    private fun calculateLevelScore(): Int {
         val maxScorePerLevel = 1000
         val timePenalty = (180 - _remainingTime.value) * 2
         val attemptsPenalty = _attempts * 50
         val levelScore = maxOf(0, maxScorePerLevel - timePenalty - attemptsPenalty)
         _score.value += levelScore
+        return levelScore
     }
 
     private fun startTimer() {
@@ -346,8 +376,7 @@ class GameViewModel @Inject constructor(
                 delay(1000)
                 
                 if (_remainingTime.value == 0) {
-                    GameResultStorage.lastGameHints = _hints.value
-                    GameResultStorage.lastGameDurationSeconds = getTimeInSeconds()
+                    finalizeGameSession(false)
                     _gameState.value = GameState.GameOver(_score.value)
                     soundManager.playLoseSound()
                     dataStoreManager.saveHighScore(_score.value)

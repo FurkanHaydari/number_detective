@@ -10,6 +10,9 @@ import kotlinx.coroutines.flow.map
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
+import com.google.gson.Gson
+import com.google.gson.reflect.TypeToken
+import com.brainfocus.numberdetective.data.storage.GameSession
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -19,6 +22,7 @@ private val Context.dataStore: DataStore<Preferences> by preferencesDataStore(na
 class DataStoreManager @Inject constructor(
     @ApplicationContext private val context: Context
 ) {
+    private val gson = Gson()
 
     private object PreferencesKeys {
         val HIGH_SCORE = intPreferencesKey("high_score")
@@ -32,6 +36,7 @@ class DataStoreManager @Inject constructor(
         val IS_HELPER_MODE_ENABLED = booleanPreferencesKey("is_helper_mode_enabled")
         val ALL_TIME_HIGH_SCORE = intPreferencesKey("all_time_high_score")
         val LAST_SCORE_DATE = stringPreferencesKey("last_score_date")
+        val SESSIONS_HISTORY = stringPreferencesKey("sessions_history")
     }
 
     // High Score Flow
@@ -153,6 +158,41 @@ class DataStoreManager @Inject constructor(
             preferences.remove(PreferencesKeys.REMAINING_TIME)
             preferences.remove(PreferencesKeys.CURRENT_SCORE)
             preferences.remove(PreferencesKeys.CORRECT_ANSWER)
+        }
+    }
+
+    // Sessions History
+    val historyFlow: Flow<List<GameSession>> = context.dataStore.data.map { preferences ->
+        val json = preferences[PreferencesKeys.SESSIONS_HISTORY] ?: "[]"
+        val type = object : TypeToken<List<GameSession>>() {}.type
+        try {
+            gson.fromJson<List<GameSession>>(json, type) ?: emptyList()
+        } catch (e: Exception) {
+            emptyList()
+        }
+    }
+
+    suspend fun saveGameSession(session: GameSession) {
+        context.dataStore.edit { preferences ->
+            val json = preferences[PreferencesKeys.SESSIONS_HISTORY] ?: "[]"
+            val type = object : TypeToken<List<GameSession>>() {}.type
+            val currentHistory: MutableList<GameSession> = try {
+                gson.fromJson<List<GameSession>>(json, type)?.toMutableList() ?: mutableListOf()
+            } catch (e: Exception) {
+                mutableListOf()
+            }
+
+            // Add new session at the beginning
+            currentHistory.add(0, session)
+
+            // Keep only the last 50 games
+            val limitedHistory = if (currentHistory.size > 50) {
+                currentHistory.take(50)
+            } else {
+                currentHistory
+            }
+
+            preferences[PreferencesKeys.SESSIONS_HISTORY] = gson.toJson(limitedHistory)
         }
     }
 }

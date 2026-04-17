@@ -166,7 +166,7 @@ fun ResultScreen(
                         dailyHighScore = dailyHighScore,
                         allTimeHighScore = allTimeHighScore
                     )
-                    1 -> CaseArchiveView(correctAnswer = correctAnswer)
+                    1 -> CaseArchiveView()
                 }
             }
 
@@ -349,10 +349,10 @@ fun BriefingView(
 }
 
 @Composable
-fun CaseArchiveView(correctAnswer: String) {
-    val hints = GameResultStorage.lastGameHints
+fun CaseArchiveView() {
+    val session = GameResultStorage.lastGameSession
     
-    if (hints.isEmpty()) {
+    if (session == null || session.levels.isEmpty()) {
         Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
             Text(
                 text = stringResource(R.string.msg_no_evidence_waiting),
@@ -363,29 +363,70 @@ fun CaseArchiveView(correctAnswer: String) {
         return
     }
 
-    val context = LocalContext.current
-
     LazyColumn(
         modifier = Modifier.fillMaxSize(),
-        verticalArrangement = Arrangement.spacedBy(12.dp),
+        verticalArrangement = Arrangement.spacedBy(16.dp),
         contentPadding = PaddingValues(bottom = 24.dp)
     ) {
-        items(hints.size) { globalIndex ->
-            val hint = hints[globalIndex]
-            
-            // Check if it's a user guess using the resource ID
-            val isUserGuess = hint.descriptionRes == R.string.log_analysis_attempt
-            
-            // To find the actual number (1, 2, 3...) of this specific analysis
-            val analysisNumber = if (isUserGuess) {
-                // Determine how many preceding items were user guesses
-                hints.take(globalIndex + 1).count { it.descriptionRes == R.string.log_analysis_attempt }
-            } else {
-                0
+        session.levels.forEach { levelResult ->
+            item {
+                LevelHeader(levelResult)
             }
+            
+            items(levelResult.hints.size) { globalIndex ->
+                val hint = levelResult.hints[globalIndex]
+                
+                // Check if it's a user guess using the resource ID
+                val isUserGuess = hint.descriptionRes == R.string.log_analysis_attempt
+                
+                // To find the actual number (1, 2, 3...) of this specific analysis
+                val analysisNumber = if (isUserGuess) {
+                    // Determine how many preceding items were user guesses
+                    levelResult.hints.take(globalIndex + 1).count { it.descriptionRes == R.string.log_analysis_attempt }
+                } else {
+                    0
+                }
 
-            ArchiveHintCard(hint = hint, analysisNumber = analysisNumber)
+                ArchiveHintCard(hint = hint, analysisNumber = analysisNumber)
+            }
         }
+    }
+}
+
+@Composable
+fun LevelHeader(levelResult: com.brainfocus.numberdetective.data.storage.LevelResult) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(top = 8.dp, bottom = 4.dp)
+    ) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.Bottom
+        ) {
+            Text(
+                text = stringResource(R.string.case_file_level, levelResult.levelNumber).uppercase(),
+                style = MaterialTheme.typography.titleSmall.copy(
+                    fontWeight = FontWeight.Black,
+                    letterSpacing = 2.sp
+                ),
+                color = PrimaryCyan
+            )
+            Text(
+                text = levelResult.secretNumber,
+                style = MaterialTheme.typography.titleMedium.copy(
+                    fontWeight = FontWeight.Bold,
+                    fontFamily = Poppins
+                ),
+                color = SuccessGreen
+            )
+        }
+        HorizontalDivider(
+            modifier = Modifier.padding(top = 4.dp),
+            color = Color.White.copy(alpha = 0.1f),
+            thickness = 1.dp
+        )
     }
 }
 

@@ -214,4 +214,6 @@
     <string name="report_promotion_msg">Case solved! You\'ve been promoted to Level %d. Proceed to the next vault.</string>
     <string name="report_compromised_title">SECURITY BREACH</string>
     <string name="report_compromised_msg">Incorrect code sequence! Security is tightening. You have %d attempts left.</string>
+    <string name="final_report">FINAL REPORT</string>
+    <string name="archive_button">ARCHIVE</string>
 </resources>

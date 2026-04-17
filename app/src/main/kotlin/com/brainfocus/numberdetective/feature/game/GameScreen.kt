@@ -63,6 +63,7 @@ fun GameScreen(
     val correctAnswer by viewModel.correctAnswer.collectAsState()
     val currentReport by viewModel.currentReport.collectAsState()
     val isPaused by viewModel.isPaused.collectAsState()
+    val isHelperModeEnabled by viewModel.isHelperModeEnabled.collectAsState(initial = false)
     val attempts = viewModel.attempts
 
     val sheetState = rememberModalBottomSheetState()
@@ -155,7 +156,7 @@ fun GameScreen(
                         contentPadding = PaddingValues(bottom = 16.dp)
                     ) {
                         items(evidenceHints) { hint ->
-                            HintCard(hint = hint)
+                            HintCard(hint = hint, isHelperModeEnabled = isHelperModeEnabled)
                         }
                     }
                 }
@@ -241,7 +242,7 @@ fun GameScreen(
                             verticalArrangement = Arrangement.spacedBy(10.dp)
                         ) {
                             items(trialHints) { hint -> 
-                                HintCard(hint = hint) 
+                                HintCard(hint = hint, isHelperModeEnabled = isHelperModeEnabled) 
                             }
                         }
                     }
@@ -447,7 +448,7 @@ fun StatItem(label: String, value: String, color: Color, onClick: (() -> Unit)? 
 }
 
 @Composable
-fun HintCard(hint: Hint) {
+fun HintCard(hint: Hint, isHelperModeEnabled: Boolean) {
     Surface(
         color = SurfaceCard,
         shape = RoundedCornerShape(16.dp),
@@ -457,7 +458,7 @@ fun HintCard(hint: Hint) {
         Row(modifier = Modifier.padding(12.dp), verticalAlignment = Alignment.CenterVertically) {
             Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
                 hint.guess.forEachIndexed { index, char ->
-                    val status = hint.digitStatuses?.getOrNull(index)
+                    val status = if (isHelperModeEnabled) hint.digitStatuses?.getOrNull(index) else null
                     val bgColor = when (status) {
                         com.brainfocus.numberdetective.data.model.DigitStatus.CORRECT_POS -> SuccessGreen.copy(alpha = 0.2f)
                         com.brainfocus.numberdetective.data.model.DigitStatus.WRONG_POS -> WarningYellow.copy(alpha = 0.2f)

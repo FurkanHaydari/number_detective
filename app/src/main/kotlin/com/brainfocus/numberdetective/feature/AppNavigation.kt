@@ -9,9 +9,10 @@ import com.brainfocus.numberdetective.feature.home.HomeScreen
 import com.brainfocus.numberdetective.feature.game.GameScreen
 import com.brainfocus.numberdetective.feature.result.ResultScreen
 import com.brainfocus.numberdetective.feature.game.GameViewModel
-
 import com.brainfocus.numberdetective.feature.onboarding.OnboardingScreen
 import com.brainfocus.numberdetective.feature.onboarding.OnboardingViewModel
+import com.brainfocus.numberdetective.feature.history.HistoryScreen
+import com.brainfocus.numberdetective.feature.history.HistoryDetailScreen
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.foundation.layout.Box
@@ -57,8 +58,26 @@ fun AppNavigation(
                 onManualClick = {
                     navController.navigate("onboarding")
                 },
+                onHistoryClick = {
+                    navController.navigate("history")
+                },
                 onLanguageChange = onLanguageChange,
                 currentLanguage = currentLanguage
+            )
+        }
+        composable("history") {
+            HistoryScreen(
+                onNavigateBack = { navController.popBackStack() },
+                onNavigateToDetail = { sessionId ->
+                    navController.navigate("history_detail/$sessionId")
+                }
+            )
+        }
+        composable("history_detail/{sessionId}") { backStackEntry ->
+            val sessionId = backStackEntry.arguments?.getString("sessionId") ?: ""
+            HistoryDetailScreen(
+                sessionId = sessionId,
+                onNavigateBack = { navController.popBackStack() }
             )
         }
         composable("game") {

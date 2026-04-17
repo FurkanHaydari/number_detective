@@ -34,6 +34,7 @@ fun HomeScreen(
     viewModel: HomeViewModel = hiltViewModel(),
     onPlayClick: () -> Unit,
     onManualClick: () -> Unit,
+    onHistoryClick: () -> Unit,
     onLanguageChange: (String) -> Unit,
     currentLanguage: String
 ) {
@@ -81,6 +82,23 @@ fun HomeScreen(
                     horizontalArrangement = Arrangement.End,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
+                    IconButton(
+                        onClick = onHistoryClick,
+                        modifier = Modifier
+                            .size(40.dp)
+                            .background(Color.White.copy(alpha = 0.05f), CircleShape)
+                            .border(1.dp, PrimaryCyan.copy(alpha = 0.2f), CircleShape)
+                    ) {
+                        Icon(
+                            painter = painterResource(id = R.drawable.ic_attention),
+                            contentDescription = "Archive",
+                            tint = PrimaryCyan,
+                            modifier = Modifier.size(20.dp)
+                        )
+                    }
+
+                    Spacer(modifier = Modifier.width(12.dp))
+
                     IconButton(
                         onClick = { showSettings = true },
                         modifier = Modifier
