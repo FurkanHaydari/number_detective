@@ -241,7 +241,7 @@ fun GameScreen(
                     NumberVaultPicker(
                         value = value,
                         onValueChange = { newValue ->
-                            if (!isPaused) {
+                            if (newValue != pickerValues[index]) {
                                 val newList = pickerValues.toMutableList()
                                 newList[index] = newValue
                                 pickerValues = newList
@@ -647,17 +647,17 @@ fun NumberVaultPicker(value: Int, onValueChange: (Int) -> Unit) {
         pageCount = { pageCount }
     )
 
+    // Always hold the latest callback to avoid stale lambda in long-lived effects
+    val currentOnValueChange by rememberUpdatedState(onValueChange)
+
     // Haptic feedback for premium feel
     val haptic = androidx.compose.ui.platform.LocalHapticFeedback.current
 
-    // Use settledPage to avoid race conditions
+    // Sync value on every settled page change (including initial)
     LaunchedEffect(pagerState) {
         snapshotFlow { pagerState.settledPage }
             .collect { page ->
-                val currVal = page % 10
-                if (currVal != value) {
-                    onValueChange(currVal)
-                }
+                currentOnValueChange(page % 10)
             }
     }
 
@@ -682,11 +682,11 @@ fun NumberVaultPicker(value: Int, onValueChange: (Int) -> Unit) {
 
     val fling = androidx.compose.foundation.pager.PagerDefaults.flingBehavior(
         state = pagerState,
-        pagerSnapDistance = androidx.compose.foundation.pager.PagerSnapDistance.atMost(6),
-        snapPositionalThreshold = 0.2f,
+        pagerSnapDistance = androidx.compose.foundation.pager.PagerSnapDistance.atMost(4),
+        snapPositionalThreshold = 0.4f,
         snapAnimationSpec = spring(
             dampingRatio = Spring.DampingRatioNoBouncy,
-            stiffness = Spring.StiffnessLow
+            stiffness = Spring.StiffnessMediumLow
         )
     )
 

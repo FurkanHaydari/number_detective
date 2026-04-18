@@ -24,7 +24,4 @@ object GameResultStorage {
     
     // Last completed session for Result screen
     var lastGameSession: GameSession? = null
-    
-    // Optional: Full history
-    var sessionsHistory = mutableListOf<GameSession>()
 }

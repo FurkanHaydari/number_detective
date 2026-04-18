@@ -35,8 +35,6 @@ class SoundManager @Inject constructor(
         if (isInitialized) return
         
         try {
-            android.util.Log.d("SoundManager", "Initializing SoundManager...")
-            
             val attributes = AudioAttributes.Builder()
                 .setUsage(AudioAttributes.USAGE_GAME)
                 .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
@@ -47,39 +45,13 @@ class SoundManager @Inject constructor(
                 .setAudioAttributes(attributes)
                 .build()
             
-            // Verify resources exist before loading
-            val resourceIds = listOf(
-                R.raw.tick_sound to "tick_sound",
-                R.raw.win_sound to "win_sound",
-                R.raw.wrong_guess to "wrong_guess",
-                R.raw.correct_guess to "correct_guess",
-                R.raw.button_click to "button_click",
-                R.raw.lose_sound to "lose_sound",
-                R.raw.level_up to "level_up",
-                R.raw.partial_or_wrong_guess to "partial_wrong"
-            )
-            
-            for ((id, name) in resourceIds) {
-                try {
-                    context.resources.getResourceTypeName(id)
-                    context.resources.getResourceEntryName(id)
-                    // android.util.Log.d("SoundManager", "Found resource: $name ($resourceType/$resourceName) with ID: $id")
-                } catch (e: Exception) {
-                    android.util.Log.e("SoundManager", "Resource not found: $name (ID: $id)")
-                }
-            }
-            
-            soundPool?.setOnLoadCompleteListener { _, sampleId, status ->
+            soundPool?.setOnLoadCompleteListener { _, _, status ->
                 synchronized(this) {
                     if (status == 0) {
                         loadedSounds++
-                        // android.util.Log.d("SoundManager", "Sound loaded successfully: $sampleId, Total: $loadedSounds/$totalSounds")
                         if (loadedSounds == totalSounds) {
                             isInitialized = true
-                            // android.util.Log.d("SoundManager", "All sounds loaded successfully")
                         }
-                    } else {
-                        android.util.Log.e("SoundManager", "Failed to load sound $sampleId with status $status")
                     }
                 }
             }
@@ -93,9 +65,6 @@ class SoundManager @Inject constructor(
             levelUpSoundId = 0
             partialWrongSoundId = 0
             
-            // android.util.Log.d("SoundManager", "Starting to load sounds...")
-            
-            // Load all sounds
             tickSoundId = loadSound(R.raw.tick_sound)
             winSoundId = loadSound(R.raw.win_sound)
             wrongSoundId = loadSound(R.raw.wrong_guess)
@@ -105,8 +74,6 @@ class SoundManager @Inject constructor(
             levelUpSoundId = loadSound(R.raw.level_up)
             partialWrongSoundId = loadSound(R.raw.partial_or_wrong_guess)
             beepSoundId = loadSound(R.raw.beep)
-            
-            // android.util.Log.d("SoundManager", "Sound loading initiated")
             
         } catch (e: Exception) {
             android.util.Log.e("SoundManager", "Error initializing SoundManager", e)
@@ -223,18 +190,9 @@ class SoundManager @Inject constructor(
 
     private fun loadSound(resId: Int): Int {
         return try {
-            // Validate resource exists
-            val resourceName = context.resources.getResourceEntryName(resId)
-            // val resourceType = context.resources.getResourceTypeName(resId)
-            
-            // android.util.Log.d("SoundManager", "Attempting to load sound: name=$resourceName, type=$resourceType, id=$resId")
-            
-            // Load using resource ID
             val soundId = soundPool?.load(context, resId, 1) ?: 0
             if (soundId == 0) {
-                android.util.Log.e("SoundManager", "Failed to load sound: $resourceName (ID: $resId)")
-            } else {
-                // android.util.Log.d("SoundManager", "Successfully loaded sound: $resourceName (ID: $resId) => $soundId")
+                android.util.Log.e("SoundManager", "Failed to load sound ID: $resId")
             }
             soundId
         } catch (e: android.content.res.Resources.NotFoundException) {

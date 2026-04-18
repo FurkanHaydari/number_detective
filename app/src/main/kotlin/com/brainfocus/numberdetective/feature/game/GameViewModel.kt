@@ -110,9 +110,6 @@ class GameViewModel @Inject constructor(
     val attempts: Int get() = _attempts
 
     init {
-        // Essential initialization
-        soundManager.initialize()
-        
         // Observe settings to update local states
         viewModelScope.launch {
             dataStoreManager.isSoundEnabledFlow.collect { enabled ->
@@ -156,7 +153,6 @@ class GameViewModel @Inject constructor(
         _guesses.value = emptyList()
         game.startNewGame(_currentLevel.value)
         _correctAnswer.value = game.getCorrectAnswer()
-        android.util.Log.d("NumberDetective", "SIA CONFIDENTIAL - TARGET CODE: ${_correctAnswer.value}")
         _gameState.value = GameState.Playing
 
         // Restore Hint Generation Logic
@@ -247,7 +243,6 @@ class GameViewModel @Inject constructor(
             isWin = isWin
         )
         GameResultStorage.lastGameSession = session
-        GameResultStorage.sessionsHistory.add(session)
         
         // Save to persistent storage
         viewModelScope.launch {
@@ -398,8 +393,7 @@ class GameViewModel @Inject constructor(
     fun resumeGame() {
         if (_currentReport.value is FieldReport.Pause) {
             _currentReport.value = null
-            // If we were supposed to be in countdown, start it again
-            startCountdown()
+            _isPaused.value = false
         }
     }
 
@@ -467,7 +461,7 @@ class GameViewModel @Inject constructor(
                     finalizeGameSession(false)
                     _gameState.value = GameState.GameOver(_score.value)
                     soundManager.playLoseSound()
-                    dataStoreManager.saveHighScore(_score.value)
+                    viewModelScope.launch { dataStoreManager.saveHighScore(_score.value) }
                 }
             }
         }
