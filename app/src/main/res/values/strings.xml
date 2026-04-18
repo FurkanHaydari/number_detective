@@ -5,19 +5,19 @@
     <!-- Game Activity -->
     <string name="submit_button">SUBMIT</string>
     
-    <!-- Seviye 3 İpuçları -->
-    <string name="hint_l3_1">One digit correct and correct position</string>
-    <string name="hint_l3_2">One digit correct but wrong position</string>
-    <string name="hint_l3_3">Two digits correct but one in position</string>
-    <string name="hint_l3_4">Two digits correct but one in position</string>
-    <string name="hint_l3_5">Two digits correct and both in positions</string>
+    <!-- Level 3 Hints (4 digits) -->
+    <string name="hint_l3_1">1 digit is correct and in the right spot</string>
+    <string name="hint_l3_2">1 digit is correct but in the wrong spot</string>
+    <string name="hint_l3_3">2 digits are correct, 1 is in the right spot</string>
+    <string name="hint_l3_4">2 digits are correct, 1 is in the right spot</string>
+    <string name="hint_l3_5">2 digits are correct, both in right spots</string>
 
-    <!-- Diğer Seviye İpuçları -->
-    <string name="hint_1">One correct, correct position</string>
-    <string name="hint_2">One correct, wrong position</string>
-    <string name="hint_3">Two correct, wrong positions</string>
-    <string name="hint_4">Two correct, wrong positions</string>
-    <string name="hint_5">Two correct, one in position</string>
+    <!-- Level 1-2 Hints (3 digits) -->
+    <string name="hint_1">1 digit is correct and in the right spot</string>
+    <string name="hint_2">1 digit is correct but in the wrong spot</string>
+    <string name="hint_3">2 digits are correct, both in wrong spots</string>
+    <string name="hint_4">2 digits are correct, both in wrong spots</string>
+    <string name="hint_5">2 digits are correct, 1 is in the right spot</string>
 
 
     <!-- Game Result Activity -->
@@ -129,10 +129,10 @@
     <string name="home_manual_button">DETECTION GUIDE</string>
 
     <!-- Validation Reports -->
-    <string name="report_duplicate_title">DUPLICATE ANALYSIS</string>
-    <string name="report_duplicate_msg">This sequence has already been cross-referenced. Try a different combination. (No points or attempts lost)</string>
+    <string name="report_duplicate_title">DUPLICATE ENTRY</string>
+    <string name="report_duplicate_msg">This combination has already been tried. Try a different sequence. (No points or attempts deducted)</string>
     <string name="report_unique_title">PROTOCOL BREACH</string>
-    <string name="report_unique_msg">System security requires all digits in the code to be unique. Re-evaluate your sequence. (No points or attempts lost)</string>
+    <string name="report_unique_msg">All digits in the code must be unique. Review your sequence. (No points or attempts deducted)</string>
 
     <!-- Settings Menu -->
     <string name="settings_title">MISSION SETTINGS</string>
@@ -163,10 +163,10 @@
     <string name="label_time">TIME</string>
 
     <string name="report_promotion_title">PROMOTION GRANTED</string>
-    <string name="report_promotion_msg">Level %1$d reached. Added %2$d extra attempts and %3$d seconds bonus. Ready for the next phase?</string>
+    <string name="report_promotion_msg">Level %1$d reached. You gained %2$d extra attempts and %3$d bonus seconds. Ready for the next phase?</string>
     <string name="score_points">%1$d PTS</string>
     <string name="report_compromised_title">SECURITY BREACH</string>
-    <string name="report_compromised_msg">Incorrect code sequence! Security is tightening. You have %d attempts left.</string>
+    <string name="report_compromised_msg">Wrong sequence! Security is tightening. You have %d attempts remaining.</string>
     <string name="final_report">FINAL REPORT</string>
     <string name="report_pause_title">INVESTIGATION ADJOURNED</string>
     <string name="report_pause_msg">The countdown has been halted. Your current intelligence is preserved.</string>

@@ -5,19 +5,19 @@
     <!-- Game Activity -->
     <string name="submit_button">GÖNDER</string>
 
-    <!-- Seviye 3 İpuçları -->
-    <string name="hint_l3_1">Bir rakam doğru ve doğru yerde</string>
-    <string name="hint_l3_2">Bir rakam doğru, yanlış yerde</string>
-    <string name="hint_l3_3">İki rakam doğru, biri doğru yerde</string>
-    <string name="hint_l3_4">İki rakam doğru, biri doğru yerde</string>
-    <string name="hint_l3_5">İki rakam doğru ve ikisi de doğru yerlerde</string>
+    <!-- Seviye 3 İpuçları (4 haneli) -->
+    <string name="hint_l3_1">1 rakam doğru ve doğru yerde</string>
+    <string name="hint_l3_2">1 rakam doğru ama yanlış yerde</string>
+    <string name="hint_l3_3">2 rakam doğru, 1 tanesi doğru yerde</string>
+    <string name="hint_l3_4">2 rakam doğru, 1 tanesi doğru yerde</string>
+    <string name="hint_l3_5">2 rakam doğru, ikisi de doğru yerde</string>
 
-    <!-- Diğer Seviye İpuçları -->
-    <string name="hint_1">Bir rakam doğru ve doğru yerde</string>
-    <string name="hint_2">Bir rakam doğru ama yanlış yerde</string>
-    <string name="hint_3">İki rakam doğru ama yanlış yerlerde</string>
-    <string name="hint_4">İki rakam doğru ama yanlış yerlerde</string>
-    <string name="hint_5">İki rakam doğru, biri doğru yerde</string>
+    <!-- Seviye 1-2 İpuçları (3 haneli) -->
+    <string name="hint_1">1 rakam doğru ve doğru yerde</string>
+    <string name="hint_2">1 rakam doğru ama yanlış yerde</string>
+    <string name="hint_3">2 rakam doğru, ikisi de yanlış yerde</string>
+    <string name="hint_4">2 rakam doğru, ikisi de yanlış yerde</string>
+    <string name="hint_5">2 rakam doğru, 1 tanesi doğru yerde</string>
 
 
     <!-- Game Result Activity -->
@@ -128,10 +128,10 @@
     <string name="home_manual_button">DEDEKTİF REHBERİ</string>
 
     <!-- Validation Reports -->
-    <string name="report_duplicate_title">MÜKERRER ANALİZ</string>
-    <string name="report_duplicate_msg">Bu dizilim daha önce analiz edildi. Lütfen farklı bir kombinasyon dene. (Puan/Hak kaybı yok)</string>
+    <string name="report_duplicate_title">MÜKERRER GİRİŞ</string>
+    <string name="report_duplicate_msg">Bu dizilim daha önce denendi. Farklı bir kombinasyon dene. (Puan/Hak kaybı oluşmadı)</string>
     <string name="report_unique_title">PROTOKOL İHLALİ</string>
-    <string name="report_unique_msg">Sistem güvenliği, şifredeki tüm rakamların benzersiz olmasını gerektirir. Dizilimi tekrar gözden geçir. (Puan/Hak kaybı yok)</string>
+    <string name="report_unique_msg">Şifredeki tüm rakamlar benzersiz olmalıdır. Dizilimi gözden geçir. (Puan/Hak kaybı oluşmadı)</string>
 
     <!-- Settings Menu -->
     <string name="settings_title">GÖREV AYARLARI</string>
@@ -162,13 +162,13 @@
     <string name="label_time">SÜRE</string>
 
     <string name="report_promotion_title">TERFİ ALDIN</string>
-    <string name="report_promotion_msg">Seviye %1$d\'e ulaşıldı. %2$d ekstra deneme hakkı ve %3$d saniye bonus eklendi. Sonraki aşamaya hazır mısın?</string>
+    <string name="report_promotion_msg">Seviye %1$d\'e ulaştın. %2$d ekstra deneme hakkı ve %3$d saniye bonus kazandın. Sonraki aşamaya hazır mısın?</string>
     <string name="score_points">%1$d PUAN</string>
     <string name="report_compromised_title">GÜVENLİK İHLALİ</string>
-    <string name="report_compromised_msg">Hatalı kod dizilimi! Güvenlik sıkılaşıyor. %d deneme hakkınız kaldı.</string>
+    <string name="report_compromised_msg">Yanlış dizilim! Güvenlik sıkılaşıyor. %d deneme hakkın kaldı.</string>
     <string name="final_report">SONUÇ RAPORU</string>
     <string name="report_pause_title">SORUŞTURMA DURAKLATILDI</string>
-    <string name="report_pause_msg">Zamanlayıcı durduruldu. Mevcut verileriniz koruma altında.</string>
+    <string name="report_pause_msg">Zamanlayıcı durduruldu. Mevcut verilerin koruma altında.</string>
     <string name="exit_mission">GÖREVİ İPTAL ET</string>
     <string name="resume_mission">GÖREVE DEVAM ET</string>
     <string name="countdown_go">BAŞLA!</string>
