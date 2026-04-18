@@ -41,47 +41,31 @@
     <string name="back_to_menu">ANA MENÜ</string>
 
     <string-array name="game_quotes">
-        <item>"Düşünmek en büyük eylemdir." - Blaise Pascal</item>
-        <item>"Zeka, değişime uyum sağlama yeteneğidir." - Stephen Hawking</item>
-        <item>"Her başarısızlık, yeni bir başlangıçtır." - Nikola Tesla</item>
-        <item>"Basitlik en üstün zerafettir." - Leonardo da Vinci</item>
-        <item>"Soru sormak, cevap vermekten daha önemlidir." - Albert Einstein</item>
-        <item>"Beyin bir kas gibidir, kullandıkça güçlenir." - Thomas Edison</item>
-        <item>"Düşünmeden öğrenmek faydasız, öğrenmeden düşünmek tehlikelidir." - Konfüçyus</item>
-        <item>"En büyük zafer, insanın kendini yenmesidir." - Platon</item>
-        <item>"Bilgi, insanı kuşkudan; erdem, insanı korkudan kurtarır." - Konfüçyus</item>
-        <item>"Büyük işler başarmak için yalnızca harekete geçmek yeterli değildir; ne yapılması gerektiğini de düşünmeliyiz." - Aristoteles</item>
-        <item>"Zihin, bir kez yeni bir fikri kabul ettiğinde asla eski boyutlarına dönemez." - Oliver Wendell Holmes</item>
-        <item>"Düşünen insanlar, dünyayı değiştiren insanlardır." - Mahatma Gandhi</item>
-        <item>"Problemlere odaklanırsanız, daha fazla problem görürsünüz. Çözümlere odaklanırsanız, daha fazla fırsat görürsünüz." - Albert Einstein</item>
-        <item>"Merak, bilginin kıvılcımıdır." - Neil deGrasse Tyson</item>
-        <item>"Ne kadar çok bilirsen, o kadar çok hayal edebilirsin." - Albert Einstein</item>
-        <item>"Sorunun kendisi, çözümün ilk adımıdır." - Carl Jung</item>
-        <item>"Düşünmek, insanı güçlü kılar; merak, insanı ileriye taşır." - Marie Curie</item>
-        <item>"Sınırlarımızı sadece kendi zihnimiz belirler." - Napoleon Hill</item>
-        <item>"Bilgi, uygulamaya dökülmedikçe güçsüzdür." - Peter Drucker</item>
-        <item>"Bir şeyin imkansız olduğunu düşünürseniz, o şeyin imkansız olmasını sağlarsınız." - Bruce Lee</item>
-        <item>"Eğer hiçbir hata yapmıyorsanız, yeni bir şey denemiyorsunuz demektir." - Albert Einstein</item>
-        <item>"Doğru soruyu sormak, bir problemin yarısını çözmektir." - Charles Kettering</item>
-        <item>"Beyin, en büyük laboratuvardır. Onu keşfetmekten korkmayın." - Carl Sagan</item>
-        <item>"Hayal gücü, bilginin çok ötesindedir." - Albert Einstein</item>
-        <item>"İnovasyon, hayal gücüyle başlar." - Walt Disney</item>
-        <item>"Öğrenmenin sonu yoktur, hayat boyu devam eder." - Mahatma Gandhi</item>
-        <item>"Geçmişteki tüm büyük işler, bir zamanlar imkansız olarak kabul edilirdi." - Thomas Carlyle</item>
-        <item>"Bilim, sonsuz bir merakla başlar." - Richard Feynman</item>
-        <item>"Hayatın anlamı, anlam yaratmaktır." - Viktor Frankl</item>
-        <item>"Bir insanın büyüklüğü, düşüncelerinin büyüklüğüyle ölçülür." - Ralph Waldo Emerson</item>
-        <item>"Her yeni fikir, başlangıçta delilik olarak görülür." - George Bernard Shaw</item>
-        <item>"Hayatta önemli olan, hep ileriye bakmaktır." - Walt Whitman</item>
-        <item>"Bilgi güçtür, ancak bilgelik her şeydir." - Francis Bacon</item>
-        <item>"Bir sorunu çözmenin en iyi yolu, onu anlamaktır." - Albert Einstein</item>
-        <item>"Hayatta başarı, korkularımızla yüzleşmekten geçer." - Oprah Winfrey</item>
-        <item>"Dünyayı değiştiren fikirler, cesur adımlarla başlar." - Steve Jobs</item>
-        <item>"Başarı, cesaretin başka bir adıdır." - Winston Churchill</item>
-        <item>"Eğer hayal edebiliyorsan, yapabilirsin." - Walt Disney</item>
-        <item>"Hiçbir şey öğrenmiyorsanız, hiçbir şey bilmiyorsunuzdur." - Socrates</item>
-        <item>"Kendini tanımak, bilgeliktir." - Lao Tzu</item>
-        <item>"Zorluklar, yaratıcılığın anasıdır." - Plato</item>
+        <item>"İmkansızı elediğinde, geriye kalan ne kadar olası dışı görünürse görünsün, gerçek olmalıdır." – Sherlock Holmes</item>
+        <item>"Veri olmadan teori üretmek büyük bir hatadır." – Sherlock Holmes</item>
+        <item>"Dünya, kimsenin fark etmediği apaçık şeylerle doludur." – Sherlock Holmes</item>
+        <item>"Apaçık bir doğrudan daha aldatıcı bir şey yoktur." – Sherlock Holmes</item>
+        <item>"Küçük şeyler, sonsuz derecede en önemli şeylerdir." – Sherlock Holmes</item>
+        <item>"Görüyorsun ama gözlemlemiyorsun. Aradaki fark çok net." – Sherlock Holmes</item>
+        <item>"Asla tahmin yürütmem. Bu, mantık yürütme yetisine zarar verir." – Sherlock Holmes</item>
+        <item>"Veri! Veri! Veri! Kil olmadan tuğla yapamam." – Sherlock Holmes</item>
+        <item>"Oyun başladı!" – Sherlock Holmes</item>
+        <item>"Eğitim asla bitmez. Bir dizi derstir, en büyüğü ise sona saklanmıştır." – Sherlock Holmes</item>
+        <item>"İnsanın güvenmesi gereken tek şey beynidir, o küçük gri hücrelerdir." – Hercule Poirot</item>
+        <item>"İmkansız olan gerçekleşmiş olamaz. Öyleyse imkansız gibi görünen şey aslında mümkün olmalıdır." – Hercule Poirot</item>
+        <item>"İçgüdü harika bir şeydir. Ne açıklanabilir ne de görmezden gelinebilir." – Agatha Christie</item>
+        <item>"Her vaka bir bulmacadır. Parçaları birleştirin ve resim ortaya çıksın." – Agatha Christie</item>
+        <item>"Gerçek, ne kadar çirkin olursa olsun, güzel bir yalandan her zaman daha iyidir." – Agatha Christie</item>
+        <item>"Mantık bilgeliğin sonu değil, başlangıcıdır." – Leonard Nimoy</item>
+        <item>"Zekanın ölçüsü, değişebilme yeteneğidir." – Albert Einstein</item>
+        <item>"Sayılar, bilginin en yüksek derecesidir." – Platon</item>
+        <item>"Her şifre, en nihayetinde kırılmak için oluşturulur."</item>
+        <item>"Bir dedektif, ancak görmezden gelmeyi reddettiği ipuçları kadar iyidir."</item>
+        <item>"Şifre her zaman konuşur. Sadece onun dilini öğrenmen gerekir."</item>
+        <item>"Sabır her kasayı açar. Acele ise her alarmı tetikler."</item>
+        <item>"Her yanlış cevap bir ihtimali eler. Bu da ilerlemedir."</item>
+        <item>"Örüntüye güven. Sayılar asla yalan söylemez."</item>
+        <item>"Keskin bir zihin, başkalarının kaos gördüğü yerde düzeni görür."</item>
     </string-array>
 
     <!-- Result Screen -->
