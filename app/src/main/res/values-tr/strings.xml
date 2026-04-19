@@ -110,6 +110,11 @@
     <string name="tutorial_continue_button">DEVAM ET</string>
     <string name="tutorial_finish_button">GÖREVİ KABUL ET</string>
     <string name="home_manual_button">DEDEKTİF REHBERİ</string>
+    <string name="home_about_button">BU OYUN HAKKINDA</string>
+    <string name="about_dialog_title">İnsanlığa Adanmış Bir Oyun</string>
+    <string name="about_dialog_body">Bu oyun, kar amacı gütmeden insanlığa hizmet için yapılmıştır. Amacı; sosyal medyanın yarattığı dikkat eksikliği ve brain rot karşısında kısa süreli hafızayı güçlendirmek, analitik zekayı geliştirmek ve odak ile dikkati keskinleştirmektir.\n\nOyunda reklam bulunmamaktadır. Sebebi basit: reklamlar da brain rot tetikleyicilerin başında gelmektedir.\n\nBu oyunu beğendiyseniz, bana bir kahve ısmarlayabilirsiniz ☕</string>
+    <string name="about_buy_coffee">☕ Bir Kahve Ismarla</string>
+    <string name="about_buy_coffee_url">https://www.patreon.com/AntiBrainRot/membership</string>
 
     <!-- Validation Reports -->
     <string name="report_duplicate_title">MÜKERRER GİRİŞ</string>

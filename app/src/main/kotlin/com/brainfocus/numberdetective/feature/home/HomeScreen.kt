@@ -1,5 +1,7 @@
 package com.brainfocus.numberdetective.feature.home
 
+import android.content.Intent
+import android.net.Uri
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.*
 import androidx.compose.animation.fadeIn
@@ -8,21 +10,24 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.blur
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.window.Dialog
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.brainfocus.numberdetective.R
 import com.brainfocus.numberdetective.core.designsystem.*
@@ -193,17 +198,16 @@ fun HomeScreen(
 
                     PlayButton(onClick = onPlayClick)
                     
-                    Spacer(modifier = Modifier.height(32.dp))
-                    
-                    // Reserve space for the ad to prevent layout jumps/shifts
-                    Box(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(60.dp), // Common banner height
-                        contentAlignment = Alignment.Center
-                    ) {
-                        BannerAd()
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    var showAboutDialog by remember { mutableStateOf(false) }
+                    AboutButton(onClick = { showAboutDialog = true })
+
+                    if (showAboutDialog) {
+                        AboutGameDialog(onDismiss = { showAboutDialog = false })
                     }
+
+                    Spacer(modifier = Modifier.height(16.dp))
                 }
             }
         }
@@ -388,6 +392,144 @@ fun ManualButton(onClick: () -> Unit) {
                     ),
                     color = PrimaryCyan.copy(alpha = 0.8f)
                 )
+            }
+        }
+    }
+}
+
+@Composable
+fun AboutButton(onClick: () -> Unit) {
+    Button(
+        onClick = onClick,
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(48.dp)
+            .border(1.dp, PrimaryCyan.copy(alpha = 0.25f), RoundedCornerShape(14.dp)),
+        shape = RoundedCornerShape(14.dp),
+        contentPadding = PaddingValues(0.dp),
+        colors = ButtonDefaults.buttonColors(containerColor = Color.Transparent)
+    ) {
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(Color.White.copy(alpha = 0.03f)),
+            contentAlignment = Alignment.Center
+        ) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.Center
+            ) {
+                Text(text = "🧬", fontSize = 16.sp)
+                Spacer(modifier = Modifier.width(10.dp))
+                Text(
+                    stringResource(R.string.home_about_button).uppercase(),
+                    style = MaterialTheme.typography.bodyMedium.copy(
+                        fontWeight = FontWeight.SemiBold,
+                        letterSpacing = 1.5.sp
+                    ),
+                    color = Color.White.copy(alpha = 0.55f)
+                )
+            }
+        }
+    }
+}
+
+@Composable
+fun AboutGameDialog(onDismiss: () -> Unit) {
+    val context = LocalContext.current
+    val coffeeUrl = stringResource(R.string.about_buy_coffee_url)
+
+    Dialog(onDismissRequest = onDismiss) {
+        Surface(
+            shape = RoundedCornerShape(24.dp),
+            color = Color(0xFF0F1923),
+            border = androidx.compose.foundation.BorderStroke(
+                1.dp,
+                PrimaryCyan.copy(alpha = 0.3f)
+            ),
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Column(
+                modifier = Modifier
+                    .padding(28.dp)
+                    .verticalScroll(rememberScrollState()),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                // Title
+                Text(
+                    text = "✦",
+                    fontSize = 24.sp,
+                    color = PrimaryCyan
+                )
+
+                Spacer(modifier = Modifier.height(8.dp))
+
+                Text(
+                    text = stringResource(R.string.about_dialog_title).uppercase(),
+                    style = MaterialTheme.typography.titleMedium.copy(
+                        fontWeight = FontWeight.Bold,
+                        letterSpacing = 2.sp
+                    ),
+                    color = PrimaryCyan,
+                    textAlign = TextAlign.Center
+                )
+
+                Spacer(modifier = Modifier.height(20.dp))
+
+                // Divider line
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(1.dp)
+                        .background(PrimaryCyan.copy(alpha = 0.15f))
+                )
+
+                Spacer(modifier = Modifier.height(20.dp))
+
+                // Body text
+                Text(
+                    text = stringResource(R.string.about_dialog_body),
+                    style = MaterialTheme.typography.bodyMedium.copy(lineHeight = 22.sp),
+                    color = Color.White.copy(alpha = 0.82f),
+                    textAlign = TextAlign.Start
+                )
+
+                Spacer(modifier = Modifier.height(28.dp))
+
+                // Buy Me a Coffee button
+                Button(
+                    onClick = {
+                        val intent = Intent(Intent.ACTION_VIEW, Uri.parse(coffeeUrl))
+                        context.startActivity(intent)
+                    },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(52.dp),
+                    shape = RoundedCornerShape(14.dp),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = Color(0xFFFFDD00)
+                    )
+                ) {
+                    Text(
+                        text = stringResource(R.string.about_buy_coffee),
+                        style = MaterialTheme.typography.titleSmall.copy(
+                            fontWeight = FontWeight.Bold,
+                            letterSpacing = 0.5.sp
+                        ),
+                        color = Color(0xFF1A1200)
+                    )
+                }
+
+                Spacer(modifier = Modifier.height(12.dp))
+
+                // Close
+                TextButton(onClick = onDismiss) {
+                    Text(
+                        text = "✕",
+                        color = Color.White.copy(alpha = 0.35f),
+                        fontSize = 13.sp
+                    )
+                }
             }
         }
     }

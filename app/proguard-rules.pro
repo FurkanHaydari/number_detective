@@ -4,11 +4,6 @@
 -keepattributes SourceFile,LineNumberTable
 -keepattributes Exceptions,InnerClasses
 
-# AdMob rules
--dontwarn android.media.LoudnessCodecController
--dontwarn android.media.LoudnessCodecController$OnLoudnessCodecUpdateListener
--dontwarn com.google.android.gms.internal.ads.**
-
 # Hilt / Dagger rules
 -keep class dagger.hilt.android.internal.managers.ViewComponentManager { *; }
 -keep class * extends androidx.lifecycle.ViewModel {
